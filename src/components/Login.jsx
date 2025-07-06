@@ -9,7 +9,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-
+import { handleGetAllUserApi } from "../services/UserService";
 import GoogleIcon from "@mui/icons-material/Google";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,13 @@ import { getToken, setToken } from "../services/localStorageService";
 export default function Login() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchData = async () => {
+      let res = await handleGetAllUserApi();
+      console.log("resss data >>", res);
+    };
+    fetchData();
+  }, []); // [] đảm bảo useEffect chạy một lần khi component mount
   const handleCloseSnackBar = (event, reason) => {
     if (reason === "clickaway") {
       return;
