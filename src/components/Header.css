@@ -1,0 +1,93 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #fff;
+}
+
+header {
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  text-align: center;
+}
+
+header img {
+  width: 100%;
+  height: 220px;
+}
+
+nav {
+  padding: 10px 20px;
+  margin-top: -220px;
+  margin-bottom: 20px;
+  padding: 15px 220px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: space-around;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s, background-color 0.3s;
+}
+
+nav ul li a:hover {
+  color: #fff; 
+  text-shadow: 0 0 8px #FFD700;
+}
+
+/* ---------- phần hero và form tìm kiếm ---------- */
+
+.hero-container {
+  display: flex;
+  align-items: center; 
+  justify-content: space-between;
+  padding: 0 170px;
+  top: -234px;
+  position: relative;
+  width: 100%;
+  height: 80px;
+}
+
+.logo-image {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 295px !important;
+  z-index: 10; 
+  top: 29px;
+}
+
+.hero-image {
+  width: auto;
+  height: 60px;
+  object-fit: contain;
+  flex: 1;
+  text-align: center;
+  margin-left: -350px;
+}
+
+.login-btn {
+  padding: 10px 20px;
+  background-color: #fff;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  flex: 1;
+}
+
+.login-btn:hover {
+  background-color: #ff4500;
+}
