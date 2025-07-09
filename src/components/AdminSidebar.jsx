@@ -1,7 +1,8 @@
 import { useState } from "react";
 
 const menuItems = [
-  { icon: "/images/admin_image/user.png", label: "Người Dùng" },
+  { icon: "/images/admin_image/user.png", label: "Quản lý Người Dùng" },
+  { icon: "/images/admin_image/driver.png", label: "Quản lý Tài Xế" },
   { icon: "/images/admin_image/order.png", label: "Quản Lý Vé" },
   { icon: "/images/admin_image/route.png", label: "Quản Lý Tuyến Xe" },
   { icon: "/images/admin_image/map.png", label: "Quản Lý Chuyến Xe" },

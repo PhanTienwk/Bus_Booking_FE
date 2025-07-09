@@ -2,7 +2,7 @@ import React from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
-const TicketPage = () => {
+const SeatSelectionPage = () => {
   return (
     <div>
       <Header />
@@ -300,4 +300,4 @@ const TicketPage = () => {
   );
 };
 
-export default TicketPage;
+export default SeatSelectionPage;

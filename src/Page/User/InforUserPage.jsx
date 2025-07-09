@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
-const InforPage = () => {
+const InforUserPage = () => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
@@ -187,4 +187,4 @@ const InforPage = () => {
   );
 };
 
-export default InforPage;
+export default InforUserPage;
