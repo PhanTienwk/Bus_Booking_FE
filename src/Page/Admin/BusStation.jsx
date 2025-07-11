@@ -3,144 +3,77 @@ import {
   Button,
   Card,
   CardContent,
-  Divider,
-  TextField,
   Typography,
   Snackbar,
   Alert,
 } from "@mui/material";
-import {
-  Table,
-  Modal,
-  Image,
-  Upload,
-  Empty,
-  Popover,
-  Switch,
-  Select,
-} from "antd";
-
-import GoogleIcon from "@mui/icons-material/Google";
+import { Table, Modal, Popover, Switch, Select, Empty, Input } from "antd";
+import { PlusSquareOutlined, FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { handleGetAllBusStation } from "../../services/BusStationService";
+// import FilterButtonBusStation from "../components/FilterButtonBusStation"; // Giả định component lọc
 
-export default function Login() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState({ roles: [{ role: "ADMIN" }] }); // Sample user role for testing (can be "CUSTOMER" to test role-based rendering)
+export default function BusStationManage() {
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [selectedBusStation, setSelectedBusStation] = useState(null);
+  const [idDelete, setIdDelete] = useState(null);
+  const [openFormFilter, setOpenFormFilter] = useState(false);
+  const [provinces, setProvinces] = useState([]);
+  const [dataAdd, setDataAdd] = useState({
+    provinceIdAdd: "",
+    nameAdd: "",
+    addressAdd: "",
+    phoneAdd: "",
+    statusAdd: true,
+  });
+  const [modals, setModals] = useState({
+    update: false,
+    add: false,
+    delete: false,
+  });
+  const [snackBar, setSnackBar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  // Mock data (unchanged)
-  const mockProvinces = [
-    {
-      id: 1,
-      name: "Hà Nội",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-    },
-    {
-      id: 2,
-      name: "TP. Hồ Chí Minh",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-    },
-    {
-      id: 3,
-      name: "Đà Nẵng",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("Bắt đầu gọi API bến xe..."); // Bước 1
+        const busStationsRes = await handleGetAllBusStation();
+        console.log("Kết quả từ API:", busStationsRes); // Bước 2
 
-  const mockBusStations = [
-    {
-      id: 1,
-      name: "Bến xe Giáp Bát",
-      address: "123 Đường Láng, Hà Nội",
-      phone: "0912345679",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-      id_province: 1,
-      province: { id: 1, name: "Hà Nội" },
-    },
-    {
-      id: 2,
-      name: "Bến xe Miền Đông",
-      address: "456 Lê Lợi, TP. HCM",
-      phone: "0987654322",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-      id_province: 2,
-      province: { id: 2, name: "TP. Hồ Chí Minh" },
-    },
-    {
-      id: 3,
-      name: "Bến xe Đà Nẵng",
-      address: "789 Tôn Đức Thắng, Đà Nẵng",
-      phone: "0901234568",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-      id_province: 3,
-      province: { id: 3, name: "Đà Nẵng" },
-    },
-    {
-      id: 4,
-      name: "Bến xe Nước Ngầm",
-      address: "99 Ngọc Hồi, Hà Nội",
-      phone: "0932145679",
-      status: 0,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-      id_province: 1,
-      province: { id: 1, name: "Hà Nội" },
-    },
-  ];
+        if (busStationsRes.code === 1000) {
+          setData(busStationsRes.result);
+          setFilteredData(busStationsRes.result);
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách bến xe!", "error");
+        }
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error); // Bước 3
+        handleOpenSnackBar("Lỗi khi tải dữ liệu!", "error");
+      }
+    };
 
-  // useEffect for fetching user data (unchanged)
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     let res = await handleGetAllUserApi();
-  //     console.log("resss data >>", res);
-  //     // Optionally update user state with fetched data
-  //     // setUser(res.data); // Uncomment if API returns user data
-  //   };
-  //   fetchData();
-  // }, []);
+    fetchData();
+  }, []);
 
-  // useEffect for token-based navigation (unchanged)
+  // Xử lý Snackbar
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackBar({ open: true, message, severity });
+  };
 
-  // Handle Snackbar close (unchanged)
   const handleCloseSnackBar = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
+    if (reason === "clickaway") return;
+    setSnackBar({ ...snackBar, open: false });
   };
 
-  // Placeholder functions for table actions
-  const handleToggleStatus = (id, checked) => {
-    console.log(`Toggle status for bus station ID ${id}: ${checked}`);
-    // Implement status update logic here
-  };
-
-  const handleUpdate = (record) => {
-    console.log(`Update bus station:`, record);
-    // Implement update logic here
-  };
-
-  const handleDelete = (id) => {
-    console.log(`Delete bus station ID ${id}`);
-    // Implement delete logic here
-  };
-
-  // Define table columns
+  // Định nghĩa cột cho bảng
   const getColumns = () => {
-    const role = user.roles?.[0]?.role || -1;
-
-    const columns = [
+    return [
       {
         title: "ID",
         dataIndex: "id",
@@ -165,6 +98,7 @@ export default function Login() {
         title: "Tỉnh/Thành phố",
         dataIndex: ["province", "name"],
         key: "provinceName",
+        render: (text) => text || "Chưa xác định",
       },
       {
         title: "Trạng thái",
@@ -173,14 +107,10 @@ export default function Login() {
           <Switch
             checked={record.status === 1}
             onChange={(checked) => handleToggleStatus(record.id, checked)}
-            disabled={role === "CUSTOMER"}
           />
         ),
       },
-    ];
-
-    if (role !== "CUSTOMER") {
-      columns.push({
+      {
         title: "Hành động",
         key: "action",
         render: (_, record) => (
@@ -198,27 +128,388 @@ export default function Login() {
             </Button>
           </div>
         ),
-      });
-    }
-
-    return columns;
+      },
+    ];
   };
+
+  // Xử lý chuyển đổi trạng thái
+  const handleToggleStatus = () => {
+    handleOpenSnackBar(
+      "Chức năng cập nhật trạng thái chưa được triển khai!",
+      "error"
+    );
+  };
+
+  // Xử lý mở modal cập nhật
+  const handleUpdate = (record) => {
+    setModals({ ...modals, update: true });
+    setSelectedBusStation({ ...record, provinceId: record.province?.id || "" });
+  };
+
+  // Xử lý mở modal xóa
+  const handleDelete = (id) => {
+    setModals({ ...modals, delete: true });
+    setIdDelete(id);
+  };
+
+  // Xử lý đóng/mở modal
+  const toggleModal = (type, value) => {
+    setModals({ ...modals, [type]: value });
+  };
+
+  // Xử lý thay đổi input trong modal cập nhật
+  const handleOnChangeInput = (id, event) => {
+    const value = event.target.value;
+    setSelectedBusStation({ ...selectedBusStation, [id]: value });
+  };
+
+  // Xử lý thay đổi input trong modal thêm
+  const handleOnChangeInputAdd = (id, event) => {
+    // const value = event.target.value;
+    // setDataAdd personalmente({ ...dataAdd, [id]: value });
+  };
+
+  // Xử lý thay đổi select trong modal thêm
+  const handleSelectChange = (id, value) => {
+    setDataAdd({ ...dataAdd, [id]: value });
+  };
+
+  // Xử lý thay đổi switch trong modal thêm
+  const handleSwitchChange = (id, checked) => {
+    setDataAdd({ ...dataAdd, [id]: checked });
+  };
+
+  // Xử lý lọc
+  const onSubmitPopover = () => {
+    handleOpenSnackBar("Chức năng lọc chưa được triển khai!", "error");
+    setOpenFormFilter(false);
+  };
+
+  // Xử lý thêm bến xe
+  const handleOkAdd = () => {
+    handleOpenSnackBar("Chức năng thêm bến xe chưa được triển khai!", "error");
+    setModals({ ...modals, add: false });
+  };
+
+  // Xử lý cập nhật bến xe
+  const handleOkUpdate = () => {
+    handleOpenSnackBar(
+      "Chức năng cập nhật bến xe chưa được triển khai!",
+      "error"
+    );
+    setModals({ ...modals, update: false });
+    setSelectedBusStation(null);
+  };
+
+  // Xử lý xóa bến xe
+  const handleOkDelete = () => {
+    handleOpenSnackBar("Chức năng xóa chưa được triển khai!", "error");
+    setModals({ ...modals, delete: false });
+  };
+
+  // Modal thêm bến xe
+  const AddModal = (
+    <div className="container">
+      <div className="row">
+        <div className="col-md-12">
+          <div className="mb-3">
+            <label htmlFor="provinceIdAdd" className="form-label">
+              Tỉnh/Thành phố <span style={{ color: "red" }}>*</span>
+            </label>
+            <Select
+              id="provinceIdAdd"
+              className="w-100"
+              placeholder="Chọn tỉnh/thành phố"
+              value={dataAdd.provinceIdAdd || undefined}
+              onChange={(value) => handleSelectChange("provinceIdAdd", value)}
+              showSearch
+              filterOption={(input, option) =>
+                (option.label || "").toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {provinces.length > 0 ? (
+                provinces.map((province) => (
+                  <Select.Option
+                    key={province.id}
+                    value={province.id}
+                    label={province.name}
+                  >
+                    {province.name}
+                  </Select.Option>
+                ))
+              ) : (
+                <Select.Option disabled value="">
+                  Không có tỉnh/thành phố
+                </Select.Option>
+              )}
+            </Select>
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="nameAdd" className="form-label">
+              Tên bến xe <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="nameAdd"
+              placeholder="Nhập tên bến xe"
+              value={dataAdd.nameAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
+            />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="addressAdd" className="form-label">
+              Địa chỉ <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="addressAdd"
+              placeholder="Nhập địa chỉ"
+              value={dataAdd.addressAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
+            />
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="phoneAdd" className="form-label">
+              Số điện thoại <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="phoneAdd"
+              placeholder="Nhập số điện thoại"
+              value={dataAdd.phoneAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
+            />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label className="form-label">Trạng thái</label>
+            <Switch
+              checked={dataAdd.statusAdd}
+              onChange={(checked) => handleSwitchChange("statusAdd", checked)}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Modal cập nhật bến xe
+  const UpdateModal = (
+    <div className="container">
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="id" className="form-label">
+              ID
+            </label>
+            <Input disabled id="id" value={selectedBusStation?.id || ""} />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="provinceId" className="form-label">
+              Tỉnh/Thành phố <span style={{ color: "red" }}>*</span>
+            </label>
+            <Select
+              id="provinceId"
+              className="w-100"
+              placeholder="Chọn tỉnh/thành phố"
+              value={selectedBusStation?.provinceId || undefined}
+              onChange={(value) =>
+                setSelectedBusStation({
+                  ...selectedBusStation,
+                  provinceId: value,
+                })
+              }
+              showSearch
+              filterOption={(input, option) =>
+                (option.label || "").toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {provinces.length > 0 ? (
+                provinces.map((province) => (
+                  <Select.Option
+                    key={province.id}
+                    value={province.id}
+                    label={province.name}
+                  >
+                    {province.name}
+                  </Select.Option>
+                ))
+              ) : (
+                <Select.Option disabled value="">
+                  Không có tỉnh/thành phố
+                </Select.Option>
+              )}
+            </Select>
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">
+              Tên bến xe <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="name"
+              placeholder="Nhập tên bến xe"
+              value={selectedBusStation?.name || ""}
+              onChange={(event) => handleOnChangeInput(event.target.id, event)}
+            />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="address" className="form-label">
+              Địa chỉ <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="address"
+              placeholder="Nhập địa chỉ"
+              value={selectedBusStation?.address || ""}
+              onChange={(event) => handleOnChangeInput(event.target.id, event)}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="phone" className="form-label">
+              Số điện thoại <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="phone"
+              placeholder="Nhập số điện thoại"
+              value={selectedBusStation?.phone || ""}
+              onChange={(event) => handleOnChangeInput(event.target.id, event)}
+            />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label className="form-label">Trạng thái</label>
+            <Switch
+              checked={selectedBusStation?.status === 1}
+              onChange={(checked) =>
+                setSelectedBusStation({
+                  ...selectedBusStation,
+                  status: checked ? 1 : 0,
+                })
+              }
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <Box sx={{ padding: 3 }}>
       <Card>
         <CardContent>
           <Typography variant="h5" gutterBottom>
-            Danh sách bến xe
+            QUẢN LÝ BẾN XE
           </Typography>
-          <Table
-            columns={getColumns()}
-            dataSource={mockBusStations}
-            rowKey="id"
-            pagination={{ pageSize: 5 }}
-          />
+          <div className="button-group">
+            <Button
+              className="button-add"
+              size="large"
+              onClick={() => toggleModal("add", true)}
+            >
+              <PlusSquareOutlined /> Tạo mới
+            </Button>
+            {/* <Popover
+              placement="bottomRight"
+              content={
+                <div style={{ width: 400 }}>
+                  <FilterButtonBusStation
+                    onClose={() => setOpenFormFilter(false)}
+                    onSubmit={onSubmitPopover}
+                  />
+                </div>
+              }
+              title="Lọc Bến Xe"
+              trigger="click"
+              open={openFormFilter}
+              onOpenChange={setOpenFormFilter}
+              destroyTooltipOnHide={false}
+            >
+              <Button className="filter-button">
+                Lọc <FilterOutlined />
+              </Button>
+            </Popover> */}
+          </div>
+          {filteredData.length === 0 ? (
+            <Empty />
+          ) : (
+            <Table
+              columns={getColumns()}
+              dataSource={filteredData}
+              rowKey="id"
+              pagination={{ pageSize: 5 }}
+            />
+          )}
         </CardContent>
       </Card>
+
+      <Modal
+        title="Thêm Bến Xe"
+        open={modals.add}
+        onOk={handleOkAdd}
+        onCancel={() => toggleModal("add", false)}
+        width={800}
+      >
+        {AddModal}
+      </Modal>
+
+      <Modal
+        title="Xác Nhận Xóa"
+        open={modals.delete}
+        onOk={handleOkDelete}
+        onCancel={() => toggleModal("delete", false)}
+      >
+        Xác nhận xóa bến xe?
+      </Modal>
+
+      <Modal
+        title="Cập Nhật Bến Xe"
+        open={modals.update}
+        onOk={handleOkUpdate}
+        onCancel={() => toggleModal("update", false)}
+        width={800}
+      >
+        {selectedBusStation ? UpdateModal : <p>Đang tải...</p>}
+      </Modal>
+
+      <Snackbar
+        open={snackBar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackBar}
+      >
+        <Alert
+          onClose={handleCloseSnackBar}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

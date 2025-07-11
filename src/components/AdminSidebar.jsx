@@ -13,9 +13,7 @@ const menuItems = [
   { icon: "/images/admin_image/profile.png", label: "Thông tin tài khoản" },
 ];
 
-const AdminSidebar = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
-
+const AdminSidebar = ({ activeIndex, setActiveIndex }) => {
   const handleLogout = () => {
     console.log("Đăng xuất");
   };
