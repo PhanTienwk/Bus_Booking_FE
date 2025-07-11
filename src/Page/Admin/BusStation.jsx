@@ -1,18 +1,32 @@
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Typography,
   Snackbar,
   Alert,
 } from "@mui/material";
-import { Table, Modal, Popover, Switch, Select, Empty, Input } from "antd";
+import {
+  Table,
+  Modal,
+  Popover,
+  Switch,
+  Select,
+  Empty,
+  Input,
+  Button,
+} from "antd";
 import { PlusSquareOutlined, FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { handleGetAllBusStation } from "../../services/BusStationService";
-// import FilterButtonBusStation from "../components/FilterButtonBusStation"; // Giả định component lọc
+import "./BusStation.css";
+import {
+  handleGetAllBusStation,
+  handleGetAllProvince,
+  handleUpdateBusStation,
+  handleAddBusStation,
+} from "../../services/BusStationService";
+import FilterButtonBusStation from "../../components/Button/FilterButtonBusStation"; // Giả định component lọc
 
 export default function BusStationManage() {
   const [data, setData] = useState([]);
@@ -42,10 +56,9 @@ export default function BusStationManage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Bắt đầu gọi API bến xe..."); // Bước 1
         const busStationsRes = await handleGetAllBusStation();
-        console.log("Kết quả từ API:", busStationsRes); // Bước 2
-
+        const provinceRes = await handleGetAllProvince();
+        setProvinces(provinceRes.result);
         if (busStationsRes.code === 1000) {
           setData(busStationsRes.result);
           setFilteredData(busStationsRes.result);
@@ -115,16 +128,8 @@ export default function BusStationManage() {
         key: "action",
         render: (_, record) => (
           <div>
-            <Button
-              type="primary"
-              ghost
-              onClick={() => handleUpdate(record)}
-              style={{ marginRight: "10px" }}
-            >
+            <Button type="primary" ghost onClick={() => handleUpdate(record)}>
               Cập nhật
-            </Button>
-            <Button type="danger" ghost onClick={() => handleDelete(record.id)}>
-              Xóa
             </Button>
           </div>
         ),
@@ -165,8 +170,8 @@ export default function BusStationManage() {
 
   // Xử lý thay đổi input trong modal thêm
   const handleOnChangeInputAdd = (id, event) => {
-    // const value = event.target.value;
-    // setDataAdd personalmente({ ...dataAdd, [id]: value });
+    const value = event.target.value;
+    setDataAdd({ ...dataAdd, [id]: value });
   };
 
   // Xử lý thay đổi select trong modal thêm
@@ -186,19 +191,103 @@ export default function BusStationManage() {
   };
 
   // Xử lý thêm bến xe
-  const handleOkAdd = () => {
-    handleOpenSnackBar("Chức năng thêm bến xe chưa được triển khai!", "error");
-    setModals({ ...modals, add: false });
+  const handleOkAdd = async () => {
+    try {
+      // Xác thực dữ liệu trước khi gửi
+      if (
+        !dataAdd.provinceIdAdd ||
+        !dataAdd.nameAdd ||
+        !dataAdd.addressAdd ||
+        !dataAdd.phoneAdd
+      ) {
+        handleOpenSnackBar(
+          "Vui lòng điền đầy đủ các trường bắt buộc!",
+          "error"
+        );
+        return;
+      }
+
+      // Kiểm tra định dạng số điện thoại (ví dụ: 10 chữ số, tùy chỉnh theo yêu cầu API)
+      // const phoneRegex = /^[0-9]{10}$/;
+      // if (!phoneRegex.test(dataAdd.phoneAdd)) {
+      //   handleOpenSnackBar("Số điện thoại phải có 10 chữ số!", "error");
+      //   return;
+      // }
+
+      // Chuẩn bị payload theo định dạng API yêu cầu
+      const payload = {
+        provinceIdAdd: parseInt(dataAdd.provinceIdAdd), // Chuyển thành số nguyên
+        nameAdd: dataAdd.nameAdd,
+        addressAdd: dataAdd.addressAdd,
+        phoneAdd: dataAdd.phoneAdd,
+        statusAdd: dataAdd.statusAdd ? 1 : 0, // Chuyển Boolean thành 1/0
+      };
+      console.log("Payload for add:", payload); // Debug dữ liệu gửi đi
+
+      const addRes = await handleAddBusStation(payload);
+      if (addRes.code === 1000) {
+        const busStationsRes = await handleGetAllBusStation();
+        if (busStationsRes.code === 1000) {
+          setData(busStationsRes.result);
+          setFilteredData(busStationsRes.result);
+          handleOpenSnackBar("Thêm bến xe thành công!", "success");
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách bến xe!", "error");
+        }
+      } else {
+        handleOpenSnackBar(addRes.message || "Thêm bến xe thất bại!", "error");
+      }
+
+      // Đóng modal và reset dataAdd
+      setModals({ ...modals, add: false });
+      setDataAdd({
+        provinceIdAdd: "",
+        nameAdd: "",
+        addressAdd: "",
+        phoneAdd: "",
+        statusAdd: true,
+      });
+    } catch (error) {
+      console.error("Lỗi khi thêm bến xe:", error.response?.data || error);
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi thêm bến xe!",
+        "error"
+      );
+      setModals({ ...modals, add: false });
+    }
   };
 
   // Xử lý cập nhật bến xe
-  const handleOkUpdate = () => {
-    handleOpenSnackBar(
-      "Chức năng cập nhật bến xe chưa được triển khai!",
-      "error"
-    );
-    setModals({ ...modals, update: false });
-    setSelectedBusStation(null);
+  const handleOkUpdate = async () => {
+    try {
+      // Gọi API cập nhật bến xe
+      const updateRes = await handleUpdateBusStation(selectedBusStation);
+
+      // Kiểm tra nếu cập nhật thành công
+      if (updateRes.code === 1000) {
+        // Gọi lại API để lấy danh sách bến xe mới nhất
+        const busStationsRes = await handleGetAllBusStation();
+        if (busStationsRes.code === 1000) {
+          // Cập nhật state với dữ liệu mới
+          setData(busStationsRes.result);
+          setFilteredData(busStationsRes.result);
+          handleOpenSnackBar("Cập nhật bến xe thành công!", "success");
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách bến xe!", "error");
+        }
+      } else {
+        handleOpenSnackBar("Cập nhật bến xe thất bại!", "error");
+      }
+
+      // Đóng modal và reset selectedBusStation
+      setModals({ ...modals, update: false });
+      setSelectedBusStation(null);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật bến xe:", error);
+      handleOpenSnackBar("Lỗi khi cập nhật bến xe!", "error");
+      setModals({ ...modals, update: false });
+      setSelectedBusStation(null);
+    }
   };
 
   // Xử lý xóa bến xe
@@ -434,13 +523,14 @@ export default function BusStationManage() {
             >
               <PlusSquareOutlined /> Tạo mới
             </Button>
-            {/* <Popover
+            <Popover
               placement="bottomRight"
               content={
                 <div style={{ width: 400 }}>
                   <FilterButtonBusStation
                     onClose={() => setOpenFormFilter(false)}
                     onSubmit={onSubmitPopover}
+                    provinces={provinces}
                   />
                 </div>
               }
@@ -453,7 +543,7 @@ export default function BusStationManage() {
               <Button className="filter-button">
                 Lọc <FilterOutlined />
               </Button>
-            </Popover> */}
+            </Popover>
           </div>
           {filteredData.length === 0 ? (
             <Empty />
