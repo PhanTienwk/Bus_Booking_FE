@@ -3,55 +3,55 @@ import {
   Button,
   Card,
   CardContent,
-  Divider,
-  TextField,
+  // Divider,
+  // TextField,
   Typography,
-  Snackbar,
-  Alert,
+  // Snackbar,
+  // Alert,
 } from "@mui/material";
 import {
   Table,
-  Modal,
-  Image,
-  Upload,
-  Empty,
-  Popover,
+  // Modal,
+  // Image,
+  // Upload,
+  // Empty,
+  // Popover,
   Switch,
-  Select,
+  // Select,
 } from "antd";
 
-import GoogleIcon from "@mui/icons-material/Google";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import GoogleIcon from "@mui/icons-material/Google";
+import { useState } from "react";
+// import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState({ roles: [{ role: "ADMIN" }] }); // Sample user role for testing (can be "CUSTOMER" to test role-based rendering)
+  // const navigate = useNavigate();
+  const [user] = useState({ roles: [{ role: "ADMIN" }] }); // Sample user role for testing (can be "CUSTOMER" to test role-based rendering)
 
   // Mock data (unchanged)
-  const mockProvinces = [
-    {
-      id: 1,
-      name: "Hà Nội",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-    },
-    {
-      id: 2,
-      name: "TP. Hồ Chí Minh",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-    },
-    {
-      id: 3,
-      name: "Đà Nẵng",
-      status: 1,
-      created_at: "2025-07-01T09:00:00.000Z",
-      updated_at: "2025-07-01T09:00:00.000Z",
-    },
-  ];
+  // const mockProvinces = [
+  //   {
+  //     id: 1,
+  //     name: "Hà Nội",
+  //     status: 1,
+  //     created_at: "2025-07-01T09:00:00.000Z",
+  //     updated_at: "2025-07-01T09:00:00.000Z",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "TP. Hồ Chí Minh",
+  //     status: 1,
+  //     created_at: "2025-07-01T09:00:00.000Z",
+  //     updated_at: "2025-07-01T09:00:00.000Z",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Đà Nẵng",
+  //     status: 1,
+  //     created_at: "2025-07-01T09:00:00.000Z",
+  //     updated_at: "2025-07-01T09:00:00.000Z",
+  //   },
+  // ];
 
   const mockBusStations = [
     {
@@ -114,11 +114,11 @@ export default function Login() {
   // useEffect for token-based navigation (unchanged)
 
   // Handle Snackbar close (unchanged)
-  const handleCloseSnackBar = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-  };
+  // const handleCloseSnackBar = (event, reason) => {
+  //   if (reason === "clickaway") {
+  //     return;
+  //   }
+  // };
 
   // Placeholder functions for table actions
   const handleToggleStatus = (id, checked) => {

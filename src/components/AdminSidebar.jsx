@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
-  { icon: "/images/admin_image/user.png", label: "Quản lý Người Dùng" },
-  { icon: "/images/admin_image/driver.png", label: "Quản lý Tài Xế" },
+  {
+    icon: "/images/admin_image/user.png",
+    label: "Quản lý Người Dùng",
+    path: "/admin",
+  },
+  {
+    icon: "/images/admin_image/driver.png",
+    label: "Quản lý Tài Xế",
+    path: "/admin/driver",
+  },
   { icon: "/images/admin_image/order.png", label: "Quản Lý Vé" },
   { icon: "/images/admin_image/route.png", label: "Quản Lý Tuyến Xe" },
   { icon: "/images/admin_image/map.png", label: "Quản Lý Chuyến Xe" },
@@ -14,7 +22,7 @@ const menuItems = [
 ];
 
 const AdminSidebar = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const location = useLocation();
 
   const handleLogout = () => {
     console.log("Đăng xuất");
@@ -29,23 +37,24 @@ const AdminSidebar = () => {
 
         <ul className="space-y-3 text-sm font-medium">
           {menuItems.map((item, index) => (
-            <li
-              key={index}
-              onClick={() => setActiveIndex(index)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition ${
-                activeIndex === index
-                  ? "bg-blue-100 text-blue-600 font-semibold"
-                  : "text-gray-500 hover:bg-gray-100"
-              }`}
-            >
-              <img
-                src={item.icon}
-                alt=""
-                className={`w-5 h-5 ${
-                  activeIndex !== index ? "opacity-70" : ""
+            <li key={index}>
+              <Link
+                to={item.path || "#"}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition ${
+                  item.path === location.pathname
+                    ? "bg-blue-100 text-blue-600 font-semibold"
+                    : "text-gray-500 hover:bg-gray-100"
                 }`}
-              />
-              <span>{item.label}</span>
+              >
+                <img
+                  src={item.icon}
+                  alt=""
+                  className={`w-5 h-5 ${
+                    item.path !== location.pathname ? "opacity-70" : ""
+                  }`}
+                />
+                <span>{item.label}</span>
+              </Link>
             </li>
           ))}
         </ul>

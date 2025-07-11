@@ -10,7 +10,8 @@ import InforUserPage from "../Page/User/InforUserPage";
 import HistoryTicketPage from "../Page/User/HistoryTicketPage";
 import ChangePasswordPage from "../Page/User/ChangePasswordPage";
 import BusStaion from "../Page/Admin/BusStation";
-import AdminPage from "../Page/Admin/AdminPage";
+import UserPage from "../Page/Admin/UserPage";
+import DriverPage from "../Page/Admin/DriverPage";
 
 import "../tailwind.css";
 
@@ -27,7 +28,8 @@ const AppRoutes = () => {
         <Route path="/infor-user" element={<InforUserPage />} />
         <Route path="/history-ticket" element={<HistoryTicketPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<UserPage />} />
+        <Route path="/admin/driver" element={<DriverPage />} />
         <Route path="/admin/bus-station" element={<BusStaion />} />
       </Routes>
     </Router>
