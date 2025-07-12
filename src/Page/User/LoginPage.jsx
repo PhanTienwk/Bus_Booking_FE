@@ -1,10 +1,50 @@
 import React, { useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { login } from "../../services/auth"; 
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const data = await login({ email: credentials.email, password: credentials.password }); 
+      console.log("Response data:", data);
+      const role = localStorage.getItem("role"); 
+      console.log("Role from token:", role);
+      if (data && data.token) {
+        const decodedToken = jwtDecode(data.token);
+        const role = decodedToken.role;
+        console.log("Role from token:", role); 
+        setMessage("Đăng nhập thành công! Token nhận được.");
+        if (role === "ADMIN") {
+          navigate("/");
+        } else if (role === "USER") {
+          navigate("/");
+        }else if (role === "DRIVER") {
+          navigate("/");
+        } else {
+          setMessage("Vai trò không xác định, vui lòng liên hệ admin.");
+        }
+      } else {
+        setMessage("Đăng nhập thành công, nhưng không nhận được token.");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      setMessage(error.message || "Đăng nhập thất bại.");
+    }
+  };
 
   return (
     <div>
@@ -52,7 +92,7 @@ const LoginPage = () => {
                   </div>
 
                   {isLogin ? (
-                    <form className="space-y-4">
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                       <div className="flex items-center border rounded-md px-3 py-2 bg-[#fff7f5]">
                         <img
                           src="/images/email.png"
@@ -61,7 +101,10 @@ const LoginPage = () => {
                         />
                         <input
                           type="text"
+                          name="email"
                           placeholder="Email"
+                          value={credentials.email}
+                          onChange={handleChange}
                           className="bg-transparent outline-none w-full"
                         />
                       </div>
@@ -74,7 +117,10 @@ const LoginPage = () => {
                         />
                         <input
                           type={showPassword ? "text" : "password"}
+                          name="password"
                           placeholder="Mật khẩu"
+                          value={credentials.password}
+                          onChange={handleChange}
                           className="bg-transparent outline-none w-full"
                         />
                         <img
@@ -85,9 +131,13 @@ const LoginPage = () => {
                         />
                       </div>
 
-                      <button className="w-full bg-[#EF5222] text-white rounded-full py-2 mt-2 hover:opacity-90">
+                      <button
+                        type="submit"
+                        className="w-full bg-[#EF5222] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                      >
                         Đăng nhập
                       </button>
+                      {message && <p className="text-center text-red-500">{message}</p>}
                     </form>
                   ) : (
                     <form className="space-y-4">
@@ -128,19 +178,19 @@ const LoginPage = () => {
       </section>
 
       <section className="bg-white py-10">
-         <div className="max-w-6xl mx-auto text-center">
-           <h2 className="text-3xl font-bold text-green-800 text-center mb-2">
-             KẾT NỐI FUTA GROUP
-           </h2>
-           <p className="text-gray-600 mb-8">
-             Kết nối đa dạng hệ sinh thái FUTA Group qua App FUTA: mua vé Xe
-             Phương Trang, Xe Buýt, Xe Hợp Đồng, Giao Hàng,...
-           </p>
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-green-800 text-center mb-2">
+            KẾT NỐI FUTA GROUP
+          </h2>
+          <p className="text-gray-600 mb-8">
+            Kết nối đa dạng hệ sinh thái FUTA Group qua App FUTA: mua vé Xe
+            Phương Trang, Xe Buýt, Xe Hợp Đồng, Giao Hàng,...
+          </p>
 
-           <div className="max-w-4xl mx-auto">
-             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 items-center justify-center">
-               <div className="flex flex-col items-center">
-                 <img
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 items-center justify-center">
+              <div className="flex flex-col items-center">
+                <img
                   src="/images/icon-hopdong.png"
                   alt="Xe Hợp Đồng"
                   className="w-23 h-23"
