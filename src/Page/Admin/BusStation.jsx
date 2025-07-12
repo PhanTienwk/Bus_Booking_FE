@@ -25,8 +25,9 @@ import {
   handleGetAllProvince,
   handleUpdateBusStation,
   handleAddBusStation,
+  handleFilterBusStations, // Import hàm mới
 } from "../../services/BusStationService";
-import FilterButtonBusStation from "../../components/Button/FilterButtonBusStation"; // Giả định component lọc
+import FilterButtonBusStation from "../../components/Button/FilterButtonBusStation";
 
 export default function BusStationManage() {
   const [data, setData] = useState([]);
@@ -66,7 +67,7 @@ export default function BusStationManage() {
           handleOpenSnackBar("Lỗi khi tải danh sách bến xe!", "error");
         }
       } catch (error) {
-        console.error("Lỗi khi gọi API:", error); // Bước 3
+        console.error("Lỗi khi gọi API:", error);
         handleOpenSnackBar("Lỗi khi tải dữ liệu!", "error");
       }
     };
@@ -185,8 +186,22 @@ export default function BusStationManage() {
   };
 
   // Xử lý lọc
-  const onSubmitPopover = () => {
-    handleOpenSnackBar("Chức năng lọc chưa được triển khai!", "error");
+  const onSubmitPopover = async (filterData) => {
+    try {
+      const response = await handleFilterBusStations(filterData);
+      if (response.code === 1000) {
+        setFilteredData(response.result);
+        handleOpenSnackBar("Lọc bến xe thành công!", "success");
+      } else {
+        handleOpenSnackBar(response.message || "Lọc bến xe thất bại!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lọc bến xe:", error.response?.data || error);
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi lọc bến xe!",
+        "error"
+      );
+    }
     setOpenFormFilter(false);
   };
 
@@ -207,22 +222,14 @@ export default function BusStationManage() {
         return;
       }
 
-      // Kiểm tra định dạng số điện thoại (ví dụ: 10 chữ số, tùy chỉnh theo yêu cầu API)
-      // const phoneRegex = /^[0-9]{10}$/;
-      // if (!phoneRegex.test(dataAdd.phoneAdd)) {
-      //   handleOpenSnackBar("Số điện thoại phải có 10 chữ số!", "error");
-      //   return;
-      // }
-
-      // Chuẩn bị payload theo định dạng API yêu cầu
       const payload = {
-        provinceIdAdd: parseInt(dataAdd.provinceIdAdd), // Chuyển thành số nguyên
+        provinceIdAdd: parseInt(dataAdd.provinceIdAdd),
         nameAdd: dataAdd.nameAdd,
         addressAdd: dataAdd.addressAdd,
         phoneAdd: dataAdd.phoneAdd,
-        statusAdd: dataAdd.statusAdd ? 1 : 0, // Chuyển Boolean thành 1/0
+        statusAdd: dataAdd.statusAdd ? 1 : 0,
       };
-      console.log("Payload for add:", payload); // Debug dữ liệu gửi đi
+      console.log("Payload for add:", payload);
 
       const addRes = await handleAddBusStation(payload);
       if (addRes.code === 1000) {
@@ -238,7 +245,6 @@ export default function BusStationManage() {
         handleOpenSnackBar(addRes.message || "Thêm bến xe thất bại!", "error");
       }
 
-      // Đóng modal và reset dataAdd
       setModals({ ...modals, add: false });
       setDataAdd({
         provinceIdAdd: "",
@@ -260,15 +266,10 @@ export default function BusStationManage() {
   // Xử lý cập nhật bến xe
   const handleOkUpdate = async () => {
     try {
-      // Gọi API cập nhật bến xe
       const updateRes = await handleUpdateBusStation(selectedBusStation);
-
-      // Kiểm tra nếu cập nhật thành công
       if (updateRes.code === 1000) {
-        // Gọi lại API để lấy danh sách bến xe mới nhất
         const busStationsRes = await handleGetAllBusStation();
         if (busStationsRes.code === 1000) {
-          // Cập nhật state với dữ liệu mới
           setData(busStationsRes.result);
           setFilteredData(busStationsRes.result);
           handleOpenSnackBar("Cập nhật bến xe thành công!", "success");
@@ -279,7 +280,6 @@ export default function BusStationManage() {
         handleOpenSnackBar("Cập nhật bến xe thất bại!", "error");
       }
 
-      // Đóng modal và reset selectedBusStation
       setModals({ ...modals, update: false });
       setSelectedBusStation(null);
     } catch (error) {
