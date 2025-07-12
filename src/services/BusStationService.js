@@ -32,10 +32,15 @@ const handleFilterBusStations = (data) => {
     status: data.status,
   });
 };
+
+const handleUpdateBusStationStatus = (id, status) => {
+  return axios.put(`/api/update-bus-station-status?id=${id}&status=${status}`);
+};
 export {
   handleGetAllBusStation,
   handleGetAllProvince,
   handleUpdateBusStation,
   handleAddBusStation,
   handleFilterBusStations,
+  handleUpdateBusStationStatus,
 };

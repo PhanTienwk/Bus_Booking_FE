@@ -25,7 +25,8 @@ import {
   handleGetAllProvince,
   handleUpdateBusStation,
   handleAddBusStation,
-  handleFilterBusStations, // Import hàm mới
+  handleFilterBusStations,
+  handleUpdateBusStationStatus,
 } from "../../services/BusStationService";
 import FilterButtonBusStation from "../../components/Button/FilterButtonBusStation";
 
@@ -139,11 +140,38 @@ export default function BusStationManage() {
   };
 
   // Xử lý chuyển đổi trạng thái
-  const handleToggleStatus = () => {
-    handleOpenSnackBar(
-      "Chức năng cập nhật trạng thái chưa được triển khai!",
-      "error"
-    );
+  const handleToggleStatus = async (id, checked) => {
+    try {
+      const status = checked ? 1 : 0;
+      const response = await handleUpdateBusStationStatus(id, status);
+      if (response.code === 1000) {
+        const busStationsRes = await handleGetAllBusStation();
+        if (busStationsRes.code === 1000) {
+          setData(busStationsRes.result);
+          setFilteredData(busStationsRes.result);
+          handleOpenSnackBar(
+            "Cập nhật trạng thái bến xe thành công!",
+            "success"
+          );
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách bến xe!", "error");
+        }
+      } else {
+        handleOpenSnackBar(
+          response.message || "Cập nhật trạng thái thất bại!",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Lỗi khi cập nhật trạng thái:",
+        error.response?.data || error
+      );
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi cập nhật trạng thái!",
+        "error"
+      );
+    }
   };
 
   // Xử lý mở modal cập nhật
