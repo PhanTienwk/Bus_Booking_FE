@@ -12,9 +12,29 @@ const deleteUserById = (id) => {
   return axios.delete(`/api/admin/delete-user/${id}`);
 };
 
+const getAllInvoices = () => {
+  return axios.get("/api/admin/list-invoice");
+};
+
+const getAllBusRoutes = () => {
+  return axios.get("/api/admin/list-bus-route");
+};
+
+
+const getAllBusTrips = () => {
+  return axios.get("/api/admin/list-bus-trip");
+};
+
+const getAllProvinces = () => {
+  return axios.get("/api/admin/list-province");
+};
 
 export { 
   getAllUsers,
   updateUserById,
-  deleteUserById
+  deleteUserById,
+  getAllInvoices,
+  getAllBusRoutes,
+  getAllBusTrips,
+  getAllProvinces
  };

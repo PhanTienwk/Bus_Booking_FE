@@ -11,14 +11,45 @@ const menuItems = [
     label: "Quản lý Tài Xế",
     path: "/admin/driver",
   },
-  { icon: "/images/admin_image/order.png", label: "Quản Lý Vé" },
-  { icon: "/images/admin_image/route.png", label: "Quản Lý Tuyến Xe" },
-  { icon: "/images/admin_image/map.png", label: "Quản Lý Chuyến Xe" },
-  { icon: "/images/admin_image/bus-station.png", label: "Quản Lý Bến Xe" },
-  { icon: "/images/admin_image/bus-bus.png", label: "Quản Lý Xe" },
-  { icon: "/images/admin_image/buildings.png", label: "Quản Lý địa điểm" },
-  { icon: "/images/admin_image/bill.png", label: "Thống Kê" },
-  { icon: "/images/admin_image/profile.png", label: "Thông tin tài khoản" },
+  {
+    icon: "/images/admin_image/order.png",
+    label: "Quản Lý Vé",
+    path: "/admin/invoice",
+  },
+  {
+    icon: "/images/admin_image/route.png",
+    label: "Quản Lý Tuyến Xe",
+    path: "/admin/route",
+  },
+  {
+    icon: "/images/admin_image/map.png",
+    label: "Quản Lý Chuyến Xe",
+    path: "/admin/trip",
+  },
+  {
+    icon: "/images/admin_image/bus-station.png",
+    label: "Quản Lý Bến Xe",
+    path: "/admin/bus-station",
+  },
+  {
+    icon: "/images/admin_image/bus-bus.png",
+    label: "Quản Lý Xe",
+  },
+  {
+    icon: "/images/admin_image/buildings.png",
+    label: "Quản Lý địa điểm",
+    path: "/admin/location",
+  },
+  {
+    icon: "/images/admin_image/bill.png",
+    label: "Thống Kê",
+    path: "/admin/statistic",
+  },
+  {
+    icon: "/images/admin_image/profile.png",
+    label: "Thông tin tài khoản",
+    path: "/admin/information",
+  },
 ];
 
 const AdminSidebar = () => {
