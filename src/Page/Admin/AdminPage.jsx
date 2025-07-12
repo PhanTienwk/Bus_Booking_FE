@@ -2,7 +2,7 @@ import { useState } from "react";
 import AdminSidebar from "../../components/AdminSidebar";
 import AdminTopbar from "../../components/AdminTopbar";
 import BusStationManage from "./BusStation";
-
+import BusManage from "./Bus";
 const AdminLayout = () => {
   const username = "Admin Dũng";
   const [activeIndex, setActiveIndex] = useState(0);
@@ -11,6 +11,8 @@ const AdminLayout = () => {
     switch (activeIndex) {
       case 5: // Quản Lý Bến Xe
         return <BusStationManage />;
+      case 6: // Quản Lý Bến Xe
+        return <BusManage />;
       case 0: // Quản lý Người Dùng (mặc định)
       default:
         return (

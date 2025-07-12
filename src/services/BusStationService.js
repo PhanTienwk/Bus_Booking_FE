@@ -21,9 +21,26 @@ const handleAddBusStation = (data) => {
     statusAdd: data.statusAdd,
   });
 };
+
+const handleFilterBusStations = (data) => {
+  return axios.post("/api/filter-bus-station", {
+    id: data.id,
+    name: data.name,
+    address: data.address,
+    phone: data.phone,
+    provinceId: data.provinceId,
+    status: data.status,
+  });
+};
+
+const handleUpdateBusStationStatus = (id, status) => {
+  return axios.put(`/api/update-bus-station-status?id=${id}&status=${status}`);
+};
 export {
   handleGetAllBusStation,
   handleGetAllProvince,
   handleUpdateBusStation,
   handleAddBusStation,
+  handleFilterBusStations,
+  handleUpdateBusStationStatus,
 };
