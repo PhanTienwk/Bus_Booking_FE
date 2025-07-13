@@ -86,7 +86,7 @@ const ProvincePage = () => {
 
   return (
     <div className="flex">
-      <AdminSidebar />
+      {/* <AdminSidebar /> */}
       <main className="ml-64 w-full bg-gray-50 min-h-screen">
         <AdminTopbar username={username} />
         <div className="px-6 pt-6 pb-2">

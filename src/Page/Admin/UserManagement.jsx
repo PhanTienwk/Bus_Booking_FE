@@ -37,6 +37,8 @@ const AdminLayout = () => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
 
+  const [activeIndex, setActiveIndex] = useState(0);
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -163,7 +165,7 @@ const AdminLayout = () => {
 
   return (
     <div className="flex">
-      <AdminSidebar />
+      <AdminSidebar activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
       <main className="ml-64 w-full bg-gray-50 min-h-screen">
         <AdminTopbar username={username} />
 
