@@ -27,7 +27,7 @@ import {
   handleUpdateBusStatus,
   handleFilterBuses,
 } from "../../services/BusService";
-import FilterButtonBus from "../../components/Button/FilterButtonBusStation";
+import FilterButtonBus from "../../components/Button/FilterButtonBus";
 
 export default function BusManage() {
   const [data, setData] = useState([]);
@@ -210,14 +210,11 @@ export default function BusManage() {
   const onSubmitPopover = async (filterData) => {
     try {
       const response = await handleFilterBuses(filterData);
-      if (response.data.code === 1000) {
-        setFilteredData(response.data.result);
+      if (response.code === 1000) {
+        setFilteredData(response.result);
         handleOpenSnackBar("Lọc xe thành công!", "success");
       } else {
-        handleOpenSnackBar(
-          response.data.message || "Lọc xe thất bại!",
-          "error"
-        );
+        handleOpenSnackBar(response.message || "Lọc xe thất bại!", "error");
       }
     } catch (error) {
       console.error("Lỗi khi lọc xe:", error.response?.data || error);
