@@ -619,6 +619,7 @@ export default function BusStationManage() {
         open={snackBar.open}
         autoHideDuration={3000}
         onClose={handleCloseSnackBar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackBar}
