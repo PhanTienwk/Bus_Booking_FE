@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import React from "react";
+import AdminPage from "../Page/Admin/AdminPage";
 import HomePage from "../Page/User/HomePage";
 import LoginPage from "../Page/User/LoginPage";
 import BusRoutePage from "../Page/User/BusRoutePage";
@@ -10,7 +11,14 @@ import InforUserPage from "../Page/User/InforUserPage";
 import HistoryTicketPage from "../Page/User/HistoryTicketPage";
 import ChangePasswordPage from "../Page/User/ChangePasswordPage";
 import BusStaion from "../Page/Admin/BusStation";
-import AdminPage from "../Page/Admin/AdminPage";
+import UserManagement from "../Page/Admin/UserManagement";
+import DriverManagement from "../Page/Admin/DriverManagement";
+import LocationManagement from "../Page/Admin/LocationManagement";
+import RouteManagement from "../Page/Admin/RouteManagement";
+import Statistic from "../Page/Admin/Statistic";
+import InvoiceManagement from "../Page/Admin/InvoiceManagement";
+import TripManagement from "../Page/Admin/TripManagement";
+import UserInformation from "../Page/Admin/UserInformation";
 
 import "../tailwind.css";
 
@@ -27,8 +35,16 @@ const AppRoutes = () => {
         <Route path="/infor-user" element={<InforUserPage />} />
         <Route path="/history-ticket" element={<HistoryTicketPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
+
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/driver" element={<DriverManagement />} />
+        <Route path="/admin/invoice" element={<InvoiceManagement />} />
+        <Route path="/admin/route" element={<RouteManagement />} />
+        <Route path="/admin/trip" element={<TripManagement />} />
         <Route path="/admin/bus-station" element={<BusStaion />} />
+        <Route path="/admin/location" element={<LocationManagement />} />
+        <Route path="/admin/statistic" element={<Statistic />} />    
+        <Route path="/admin/information" element={<UserInformation />} />  
       </Routes>
     </Router>
   );

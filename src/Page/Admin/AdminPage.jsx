@@ -2,6 +2,12 @@ import { useState } from "react";
 import AdminSidebar from "../../components/AdminSidebar";
 import AdminTopbar from "../../components/AdminTopbar";
 import BusStationManage from "./BusStation";
+import DriverManage from "./DriverManagement";
+import InvoiceManage from "./InvoiceManagement";
+import RouteManage from "./RouteManagement";
+import TripManage from "./TripManagement";
+import LocationManage from "./LocationManagement";
+import UserInformation from "./UserInformation";
 import BusManage from "./Bus";
 const AdminLayout = () => {
   const username = "Admin Dũng";
@@ -9,11 +15,24 @@ const AdminLayout = () => {
 
   const renderContent = () => {
     switch (activeIndex) {
-      case 5: // Quản Lý Bến Xe
+
+      case 1:
+        return <DriverManage />;
+      case 2:
+        return <InvoiceManage />;
+      case 3:
+        return <RouteManage />;
+      case 4:
+        return <TripManage />;
+      case 5:
         return <BusStationManage />;
-      case 6: // Quản Lý Bến Xe
+      case 6: 
         return <BusManage />;
-      case 0: // Quản lý Người Dùng (mặc định)
+      case 7: 
+        return <LocationManage />;
+      case 8: 
+        return <UserInformation />;
+      case 0: 
       default:
         return (
           <div className="px-6 pt-6 pb-2">
