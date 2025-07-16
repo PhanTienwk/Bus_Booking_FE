@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import React from "react";
-import AdminPage from "../Page/Admin/AdminPage";
 import HomePage from "../Page/User/HomePage";
 import LoginPage from "../Page/User/LoginPage";
 import BusRoutePage from "../Page/User/BusRoutePage";
@@ -36,7 +35,7 @@ const AppRoutes = () => {
         <Route path="/history-ticket" element={<HistoryTicketPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
 
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin" element={<UserManagement />} />
         <Route path="/admin/driver" element={<DriverManagement />} />
         <Route path="/admin/invoice" element={<InvoiceManagement />} />
         <Route path="/admin/route" element={<RouteManagement />} />

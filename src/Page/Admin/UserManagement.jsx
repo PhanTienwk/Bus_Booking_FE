@@ -1,118 +1,115 @@
 import AdminSidebar from "../../components/AdminSidebar";
 import AdminTopbar from "../../components/AdminTopbar";
-
-import { Table } from "antd";
+import BusStationManage from "./BusStation";
+import DriverManage from "./DriverManagement";
+import InvoiceManage from "./InvoiceManagement";
+import RouteManage from "./RouteManagement";
+import TripManage from "./TripManagement";
+import LocationManage from "./LocationManagement";
+import UserInformation from "./UserInformation";
+import BusManage from "./Bus";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import {
+  Table,
+  Modal,
+  Popover,
+  Switch,
+  Select,
+  Empty,
+  Input,
+  Button,
+} from "antd";
+import { PlusSquareOutlined, FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
+import "./BusStation.css";
+
 import {
   getAllUsers,
   updateUserById,
   deleteUserById,
+  restoreUserById,
+  handleFilterUsers,
 } from "../../services/UserService";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import FilterButtonUser from "../../components/Button/FilterButtonUser";
 
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Typography,
-  Modal,
-  Box,
-  Button,
-  Card,
-  CardContent,
-} from "@mui/material";
-
-const AdminLayout = () => {
+const UserManagement = () => {
   const username = "Admin Dũng";
-
-  const [user] = useState({ roles: [{ role: "ADMIN" }] });
-
-  const [userList, setUserList] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
-
   const [activeIndex, setActiveIndex] = useState(0);
+  const [, setUserList] = useState([]);
+
+  const [filteredData, setFilteredData] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [openFormFilter, setOpenFormFilter] = useState(false);
+  const [dataAdd, setDataAdd] = useState({
+    nameAdd: "",
+    genderAdd: "",
+    birtdayAdd: "",
+    phoneAdd: "",
+    emailAdd: "",
+    passwordAdd: "",
+  });
+  const [modals, setModals] = useState({
+    update: false,
+    add: false,
+    delete: false,
+  });
+  const [snackBar, setSnackBar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   useEffect(() => {
-    fetchUsers();
+    const fetchData = async () => {
+      try {
+        const usersRes = await getAllUsers();
+
+        if (usersRes.code === 1000) {
+          const filteredUsers = usersRes.result?.filter(
+            (user) => user.account?.role?.id === 1 && user.account?.status === 1
+          );
+          setUserList(filteredUsers);
+          setFilteredData(filteredUsers);
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách người dùng!", "error");
+        }
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+        handleOpenSnackBar("Lỗi khi tải dữ liệu người dùng!", "error");
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await getAllUsers();
-      const filteredUsers = response.result?.filter(
-        (user) => user.account?.role?.id === 1 && user.account?.status === 1
-      );
-      setUserList(filteredUsers);
-    } catch (error) {
-      console.error("Lỗi khi tải danh sách người dùng:", error);
-    }
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackBar({ open: true, message, severity });
   };
 
-  const handleUpdate = (record) => {
-    setSelectedUser(record);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = async () => {
-    try {
-      const formattedBirthDate = selectedUser.birthDate
-        ? selectedUser.birthDate.includes("T")
-          ? selectedUser.birthDate
-          : `${selectedUser.birthDate}T00:00:00`
-        : null;
-
-      const payload = {
-        name: selectedUser.name,
-        phone: selectedUser.phone,
-        gender: selectedUser.gender,
-        birthDate: formattedBirthDate,
-      };
-
-      await updateUserById(selectedUser.id, payload);
-      await fetchUsers();
-      toast.success("Cập nhật thành công");
-      setIsModalOpen(false);
-    } catch (error) {
-      toast.error("Cập nhật thất bại");
-      console.error("Lỗi cập nhật:", error);
-    }
-  };
-
-  const handleDelete = (user) => {
-    setUserToDelete(user);
-    setConfirmDeleteOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!userToDelete) return;
-
-    try {
-      await deleteUserById(userToDelete.id);
-      toast.success("Xóa người dùng thành công");
-      await fetchUsers();
-      setConfirmDeleteOpen(false);
-    } catch (error) {
-      toast.error("Xóa thất bại");
-      console.error("Lỗi xóa:", error);
-    } finally {
-      setConfirmDeleteOpen(false);
-      setUserToDelete(null);
-    }
+  const handleCloseSnackBar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackBar({ ...snackBar, open: false });
   };
 
   const getColumns = () => {
-    const role = user.roles?.[0]?.role || -1;
-
-    const columns = [
-      { title: "ID", dataIndex: "id", key: "id" },
-      { title: "Tên", dataIndex: "name", key: "name" },
+    return [
+      {
+        title: "ID",
+        dataIndex: "id",
+        key: "id",
+      },
+      {
+        title: "Tên người dùng",
+        dataIndex: "name",
+        key: "name",
+      },
       {
         title: "Giới tính",
         dataIndex: "gender",
@@ -140,27 +137,597 @@ const AdminLayout = () => {
         dataIndex: ["account", "username"],
         key: "username",
       },
-    ];
+      {
+        title: "Trạng thái",
+        key: "status",
+        render: (_, record) => (
+          <Switch
+            checked={parseInt(record.account?.status) === 1}
+            onChange={(checked) => handleToggleStatus(record.id, checked)}
+          />
+        ),
+      },
 
-    if (role !== "CUSTOMER") {
-      columns.push({
+      {
         title: "Hành động",
         key: "action",
         render: (_, record) => (
           <div>
-            <Button
-              onClick={() => handleUpdate(record)}
-              style={{ marginRight: "10px" }}
-            >
+            <Button type="primary" ghost onClick={() => handleUpdate(record)}>
               Cập nhật
             </Button>
-            <Button onClick={() => handleDelete(record)}>Xóa</Button>
           </div>
         ),
-      });
+      },
+    ];
+  };
+
+  const handleToggleStatus = async (id, checked) => {
+    try {
+      let response;
+      if (!checked) {
+        response = await deleteUserById(id);
+      } else {
+        response = await restoreUserById(id);
+      }
+
+      if (response.code === 1000) {
+        const usersRes = await getAllUsers();
+        if (usersRes.code === 1000) {
+          const filteredUsers = usersRes.result?.filter(
+            (user) => user.account?.role?.id === 1 && user.account?.status === 1
+          );
+          setUserList(filteredUsers);
+          setFilteredData(filteredUsers);
+          handleOpenSnackBar(
+            checked
+              ? "Khôi phục người dùng thành công!"
+              : "Vô hiệu hóa người dùng thành công!",
+            "success"
+          );
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách người dùng!", "error");
+        }
+      } else {
+        handleOpenSnackBar(
+          response.message || "Cập nhật trạng thái người dùng thất bại!",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Lỗi khi cập nhật trạng thái:",
+        error.response?.data || error
+      );
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi cập nhật trạng thái!",
+        "error"
+      );
+    }
+  };
+
+  const handleUpdate = (record) => {
+    let genderLabel = "";
+    switch (record.gender) {
+      case 1:
+        genderLabel = "Nam";
+        break;
+      case 2:
+        genderLabel = "Nữ";
+        break;
+      case 3:
+        genderLabel = "Khác";
+        break;
+      default:
+        genderLabel = "";
     }
 
-    return columns;
+    let formattedDob = "";
+    if (record.birthDate) {
+      const date = new Date(record.birthDate);
+      const localDate = new Date(
+        date.getTime() + Math.abs(date.getTimezoneOffset() * 60000)
+      );
+      formattedDob = localDate.toISOString().split("T")[0];
+    }
+
+    setSelectedUser({
+      ...record,
+      email: record.account?.username || "",
+      gender: genderLabel,
+      dob: formattedDob,
+    });
+
+    setModals({ ...modals, update: true });
+  };
+
+  const toggleModal = (type, value) => {
+    setModals({ ...modals, [type]: value });
+  };
+
+  // Xử lý thay đổi input trong modal cập nhật
+  const handleOnChangeInput = (id, event) => {
+    const value = event.target.value;
+    setSelectedUser({ ...selectedUser, [id]: value });
+  };
+
+  const handleOnChangeInputAdd = (id, event) => {
+    const value = event.target.value;
+    setDataAdd({ ...dataAdd, [id]: value });
+  };
+
+  const handleSelectChange = (id, value) => {
+    setDataAdd({ ...dataAdd, [id]: value });
+  };
+
+  const onSubmitPopover = async (filterData) => {
+    try {
+      const response = await handleFilterUsers(filterData);
+      if (response.code === 1000) {
+        setFilteredData(response.result);
+        handleOpenSnackBar("Lọc người dùng thành công!", "success");
+      } else {
+        handleOpenSnackBar(response.message || "Lọc thất bại!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lọc người dùng:", error.response?.data || error);
+      handleOpenSnackBar("Lỗi khi lọc người dùng!", "error");
+    }
+    setOpenFormFilter(false);
+  };
+
+  const handleOkAdd = async () => {
+    try {
+      if (
+        !dataAdd.nameAdd ||
+        !dataAdd.genderAdd ||
+        !dataAdd.dobAdd ||
+        !dataAdd.phoneAdd ||
+        !dataAdd.emailAdd
+      ) {
+        handleOpenSnackBar(
+          "Vui lòng điền đầy đủ các trường bắt buộc!",
+          "error"
+        );
+        return;
+      }
+
+      const payload = {
+        name: dataAdd.nameAdd,
+        gender: dataAdd.genderAdd,
+        dob: dataAdd.dobAdd,
+        phone: dataAdd.phoneAdd,
+        email: dataAdd.emailAdd,
+      };
+
+      console.log("Payload for add user:", payload);
+
+      // const addRes = await handleAddUser(payload);
+      // if (addRes.code === 1000) {
+      //   const usersRes = await getAllUsers();
+      //   if (usersRes.code === 1000) {
+      //     setData(usersRes.result);
+      //     setFilteredData(usersRes.result);
+      //     handleOpenSnackBar("Thêm người dùng thành công!", "success");
+      //   } else {
+      //     handleOpenSnackBar("Lỗi khi tải danh sách người dùng!", "error");
+      //   }
+      // } else {
+      //   handleOpenSnackBar(
+      //     addRes.message || "Thêm người dùng thất bại!",
+      //     "error"
+      //   );
+      // }
+
+      // setModals({ ...modals, add: false });
+      // setDataAdd({
+      //   nameAdd: "",
+      //   genderAdd: "",
+      //   dobAdd: "",
+      //   phoneAdd: "",
+      //   emailAdd: "",
+      // });
+    } catch (error) {
+      console.error("Lỗi khi thêm người dùng:", error.response?.data || error);
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi thêm người dùng!",
+        "error"
+      );
+      setModals({ ...modals, add: false });
+    }
+  };
+
+  const handleOkUpdate = async () => {
+    if (!selectedUser.name || selectedUser.name.trim() === "") {
+      handleOpenSnackBar("Tên không được để trống!", "error");
+      return;
+    }
+
+    if (!selectedUser.birthDate) {
+      handleOpenSnackBar("Ngày sinh không được để trống!", "error");
+      return;
+    }
+
+    const phoneRegex = /^[0-9]{10,11}$/;
+    if (!selectedUser.phone || !phoneRegex.test(selectedUser.phone)) {
+      handleOpenSnackBar(
+        "Số điện thoại phải có 10–11 chữ số và không chứa ký tự đặc biệt!",
+        "error"
+      );
+      return;
+    }
+
+    try {
+      const userId = selectedUser?.id;
+
+      const genderNumber =
+        selectedUser.gender === "Nam"
+          ? 1
+          : selectedUser.gender === "Nữ"
+          ? 2
+          : selectedUser.gender === "Khác"
+          ? 3
+          : null;
+
+      const formattedBirthDate = selectedUser.dob
+        ? selectedUser.dob.includes("T")
+          ? selectedUser.dob
+          : `${selectedUser.dob}T00:00:00`
+        : null;
+
+      const payload = {
+        name: selectedUser.name,
+        gender: genderNumber,
+        birthDate: formattedBirthDate,
+        phone: selectedUser.phone,
+      };
+
+      const updateRes = await updateUserById(userId, payload);
+
+      if (updateRes.code === 1000) {
+        const usersRes = await getAllUsers();
+        if (usersRes.code === 1000) {
+          const filteredUsers = usersRes.result?.filter(
+            (user) => user.account?.role?.id === 1 && user.account?.status === 1
+          );
+          setUserList(filteredUsers);
+          setFilteredData(usersRes.result);
+          handleOpenSnackBar("Cập nhật người dùng thành công!", "success");
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách người dùng!", "error");
+        }
+      } else {
+        handleOpenSnackBar("Cập nhật người dùng thất bại!", "error");
+      }
+
+      setModals({ ...modals, update: false });
+      setSelectedUser(null);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật người dùng:", error);
+      handleOpenSnackBar("Lỗi khi cập nhật người dùng!", "error");
+      setModals({ ...modals, update: false });
+      setSelectedUser(null);
+    }
+  };
+
+  const handleOkDelete = () => {
+    handleOpenSnackBar("Chức năng xóa chưa được triển khai!", "error");
+    setModals({ ...modals, delete: false });
+  };
+
+  const AddModal = (
+    <div className="container">
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="nameAdd" className="form-label">
+              Họ và tên <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="nameAdd"
+              placeholder="Nhập họ và tên"
+              value={dataAdd.nameAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
+            />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="genderAdd" className="form-label">
+              Giới tính <span style={{ color: "red" }}>*</span>
+            </label>
+            <Select
+              id="genderAdd"
+              className="w-100"
+              placeholder="Chọn giới tính"
+              value={dataAdd.genderAdd || undefined}
+              onChange={(value) => handleSelectChange("genderAdd", value)}
+              options={[
+                { label: "Nam", value: "Nam" },
+                { label: "Nữ", value: "Nữ" },
+                { label: "Khác", value: "Khác" },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="dobAdd" className="form-label">
+              Ngày sinh <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="dobAdd"
+              type="date"
+              value={dataAdd.dobAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
+            />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="phoneAdd" className="form-label">
+              Số điện thoại <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="phoneAdd"
+              placeholder="Nhập số điện thoại"
+              value={dataAdd.phoneAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-12">
+          <div className="mb-3">
+            <label htmlFor="emailAdd" className="form-label">
+              Email <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="emailAdd"
+              placeholder="Nhập email"
+              value={dataAdd.emailAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-12">
+          <div className="mb-3">
+            <label htmlFor="passwordAdd" className="form-label">
+              Mật khẩu <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input.Password
+              id="passwordAdd"
+              placeholder="Nhập mật khẩu"
+              value={dataAdd.passwordAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const UpdateModal = (
+    <div className="container">
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">
+              Họ và tên <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="name"
+              placeholder="Nhập họ và tên"
+              value={selectedUser?.name || ""}
+              onChange={(event) => handleOnChangeInput(event.target.id, event)}
+            />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="gender" className="form-label">
+              Giới tính <span style={{ color: "red" }}>*</span>
+            </label>
+            <Select
+              id="gender"
+              className="w-100"
+              placeholder="Chọn giới tính"
+              value={selectedUser?.gender || undefined}
+              onChange={(value) =>
+                setSelectedUser({
+                  ...selectedUser,
+                  gender: value,
+                })
+              }
+              options={[
+                { label: "Nam", value: "Nam" },
+                { label: "Nữ", value: "Nữ" },
+                { label: "Khác", value: "Khác" },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="dob" className="form-label">
+              Ngày sinh <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="dob"
+              type="date"
+              value={selectedUser?.dob || ""}
+              onChange={(event) => handleOnChangeInput(event.target.id, event)}
+            />
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="mb-3">
+            <label htmlFor="phone" className="form-label">
+              Số điện thoại <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="phone"
+              placeholder="Nhập số điện thoại"
+              value={selectedUser?.phone || ""}
+              onChange={(event) => handleOnChangeInput(event.target.id, event)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-12">
+          <div className="mb-3">
+            <label htmlFor="email" className="form-label">
+              Email <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="email"
+              placeholder="Nhập email"
+              value={selectedUser?.email || ""}
+              disabled
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (activeIndex) {
+      case 1:
+        return <DriverManage />;
+      case 2:
+        return <InvoiceManage />;
+      case 3:
+        return <RouteManage />;
+      case 4:
+        return <TripManage />;
+      case 5:
+        return <BusStationManage />;
+      case 6:
+        return <BusManage />;
+      case 7:
+        return <LocationManage />;
+      case 8:
+        return <UserInformation />;
+      case 0:
+      default:
+        return (
+          <Box sx={{ padding: 3 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  QUẢN LÝ NGƯỜI DÙNG
+                </Typography>
+                <div className="button-group">
+                  <Button
+                    className="button-add"
+                    size="large"
+                    onClick={() => toggleModal("add", true)}
+                  >
+                    <PlusSquareOutlined /> Tạo mới
+                  </Button>
+                  <Popover
+                    placement="bottomRight"
+                    content={
+                      <div style={{ width: 400 }}>
+                        <FilterButtonUser
+                          onClose={() => setOpenFormFilter(false)}
+                          onSubmit={onSubmitPopover}
+                        />
+                      </div>
+                    }
+                    title="Lọc Người Dùng"
+                    trigger="click"
+                    open={openFormFilter}
+                    onOpenChange={setOpenFormFilter}
+                    destroyOnHidden={false}
+                  >
+                    <Button className="filter-button">
+                      Lọc <FilterOutlined />
+                    </Button>
+                  </Popover>
+                </div>
+                {filteredData.length === 0 ? (
+                  <Empty />
+                ) : (
+                  <Table
+                    columns={getColumns()}
+                    dataSource={filteredData}
+                    rowKey="id"
+                    pagination={{ pageSize: 5 }}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            <Modal
+              title="Thêm Người Dùng"
+              open={modals.add}
+              onOk={handleOkAdd}
+              onCancel={() => toggleModal("add", false)}
+              width={800}
+            >
+              {AddModal}
+            </Modal>
+
+            <Modal
+              title="Xác Nhận Xóa"
+              open={modals.delete}
+              onOk={handleOkDelete}
+              onCancel={() => toggleModal("delete", false)}
+            >
+              Xác nhận xóa người dùng?
+            </Modal>
+
+            <Modal
+              title="Cập Nhật Người Dùng"
+              open={modals.update}
+              onOk={handleOkUpdate}
+              onCancel={() => toggleModal("update", false)}
+              width={800}
+            >
+              {selectedUser ? UpdateModal : <p>Đang tải...</p>}
+            </Modal>
+
+            <Snackbar
+              open={snackBar.open}
+              autoHideDuration={3000}
+              onClose={handleCloseSnackBar}
+            >
+              <Alert
+                onClose={handleCloseSnackBar}
+                severity={snackBar.severity}
+                sx={{ width: "100%" }}
+              >
+                {snackBar.message}
+              </Alert>
+            </Snackbar>
+          </Box>
+        );
+    }
   };
 
   return (
@@ -168,228 +735,10 @@ const AdminLayout = () => {
       <AdminSidebar activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
       <main className="ml-64 w-full bg-gray-50 min-h-screen">
         <AdminTopbar username={username} />
-
-        <div className="px-6 pt-6 pb-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Khách hàng</p>
-                <p className="text-2xl font-semibold">11</p>
-              </div>
-              <img
-                src="/images/customer.png"
-                alt="icon customer"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Tổng số xe</p>
-                <p className="text-2xl font-semibold">12</p>
-              </div>
-              <img
-                src="/images/bus.png"
-                alt="icon bus"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Số chuyến xe</p>
-                <p className="text-2xl font-semibold">10</p>
-              </div>
-              <img
-                src="/images/bus-route.png"
-                alt="icon bus-route"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Tổng doanh thu</p>
-                <p className="text-2xl font-semibold">0 đ</p>
-              </div>
-              <img
-                src="/images/admin_image/money.png"
-                alt="icon money"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-          </div>
-
-          <Box sx={{ padding: 0 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  Danh sách người dùng
-                </Typography>
-                <Table
-                  columns={getColumns()}
-                  dataSource={userList}
-                  rowKey="id"
-                  pagination={{ pageSize: 5 }}
-                />
-              </CardContent>
-            </Card>
-          </Box>
-          <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 500,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: 24,
-                p: 4,
-              }}
-            >
-              <Typography variant="h6" gutterBottom>
-                Cập nhật người dùng
-              </Typography>
-
-              {selectedUser && (
-                <>
-                  <TextField
-                    fullWidth
-                    label="Tên"
-                    value={selectedUser.name || ""}
-                    onChange={(e) =>
-                      setSelectedUser({ ...selectedUser, name: e.target.value })
-                    }
-                    margin="normal"
-                  />
-
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Giới tính</InputLabel>
-                    <Select
-                      value={selectedUser.gender}
-                      label="Giới tính"
-                      onChange={(e) =>
-                        setSelectedUser({
-                          ...selectedUser,
-                          gender: e.target.value,
-                        })
-                      }
-                    >
-                      <MenuItem value={1}>Nam</MenuItem>
-                      <MenuItem value={2}>Nữ</MenuItem>
-                      <MenuItem value={3}>Khác</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  <TextField
-                    fullWidth
-                    label="Ngày sinh"
-                    type="date"
-                    value={
-                      selectedUser.birthDate
-                        ? new Date(selectedUser.birthDate)
-                            .toISOString()
-                            .split("T")[0]
-                        : ""
-                    }
-                    onChange={(e) =>
-                      setSelectedUser({
-                        ...selectedUser,
-                        birthDate: e.target.value,
-                      })
-                    }
-                    margin="normal"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Số điện thoại"
-                    value={selectedUser.phone || ""}
-                    onChange={(e) =>
-                      setSelectedUser({
-                        ...selectedUser,
-                        phone: e.target.value,
-                      })
-                    }
-                    margin="normal"
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    value={selectedUser.account?.username || ""}
-                    margin="normal"
-                    disabled
-                  />
-
-                  <Box className="mt-4 flex justify-end gap-2">
-                    <Button
-                      onClick={() => setIsModalOpen(false)}
-                      variant="outlined"
-                    >
-                      Hủy
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSave}
-                    >
-                      Lưu
-                    </Button>
-                  </Box>
-                </>
-              )}
-            </Box>
-          </Modal>
-
-          <Modal
-            open={confirmDeleteOpen}
-            onClose={() => setConfirmDeleteOpen(false)}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 400,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: 24,
-                p: 4,
-              }}
-            >
-              <Typography variant="h6" gutterBottom>
-                Xác nhận xóa
-              </Typography>
-              <Typography>
-                Bạn có chắc chắn muốn xóa người dùng{" "}
-                <strong>{userToDelete?.name}</strong>?
-              </Typography>
-
-              <Box className="mt-4 flex justify-end gap-2">
-                <Button
-                  onClick={() => setConfirmDeleteOpen(false)}
-                  variant="outlined"
-                >
-                  Hủy
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={confirmDelete}
-                >
-                  Xóa
-                </Button>
-              </Box>
-            </Box>
-          </Modal>
-        </div>
+        {renderContent()}
       </main>
     </div>
   );
 };
 
-export default AdminLayout;
+export default UserManagement;
