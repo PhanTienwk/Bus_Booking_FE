@@ -19,19 +19,15 @@ import {
 import { PlusSquareOutlined, FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import "./Bus.css";
-// import {
-//   handleGetAllBuses,
-//   handleGetAllBusTypes,
-//   handleUpdateBus,
-//   handleAddBus,
-//   handleFilterBuses,
-//   handleUpdateBusStatus,
-// } from "../../services/BusService";
 import {
   handleGetAllBusApi,
   handleGetAllBusTypeApi,
+  handleAddBus,
+  handleUpdateBus,
+  handleUpdateBusStatus,
+  handleFilterBuses,
 } from "../../services/BusService";
-import FilterButtonBus from "../../components/Button/FilterButtonBusStation";
+import FilterButtonBus from "../../components/Button/FilterButtonBus";
 
 export default function BusManage() {
   const [data, setData] = useState([]);
@@ -69,8 +65,11 @@ export default function BusManage() {
           handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
         }
       } catch (error) {
-        console.error("Lỗi khi gọi API:", error);
-        handleOpenSnackBar("Lỗi khi tải dữ liệu!", "error");
+        console.error("Lỗi khi gọi API:", error.response?.data || error);
+        handleOpenSnackBar(
+          error.response?.data?.message || "Lỗi khi tải dữ liệu!",
+          "error"
+        );
       }
     };
 
@@ -138,34 +137,34 @@ export default function BusManage() {
 
   // Xử lý chuyển đổi trạng thái
   const handleToggleStatus = async (id, checked) => {
-    // try {
-    //   const status = checked ? 1 : 0;
-    //   const response = await handleUpdateBusStatus(id, status);
-    //   if (response.code === 1000) {
-    //     const busesRes = await handleGetAllBuses();
-    //     if (busesRes.code === 1000) {
-    //       setData(busesRes.result);
-    //       setFilteredData(busesRes.result);
-    //       handleOpenSnackBar("Cập nhật trạng thái xe thành công!", "success");
-    //     } else {
-    //       handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
-    //     }
-    //   } else {
-    //     handleOpenSnackBar(
-    //       response.message || "Cập nhật trạng thái thất bại!",
-    //       "error"
-    //     );
-    //   }
-    // } catch (error) {
-    //   console.error(
-    //     "Lỗi khi cập nhật trạng thái:",
-    //     error.response?.data || error
-    //   );
-    //   handleOpenSnackBar(
-    //     error.response?.data?.message || "Lỗi khi cập nhật trạng thái!",
-    //     "error"
-    //   );
-    // }
+    try {
+      const status = checked ? 1 : 0;
+      const response = await handleUpdateBusStatus(id, status);
+      if (response.code === 1000) {
+        const busesRes = await handleGetAllBusApi();
+        if (busesRes.code === 1000) {
+          setData(busesRes.result);
+          setFilteredData(busesRes.result);
+          handleOpenSnackBar("Cập nhật trạng thái xe thành công!", "success");
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
+        }
+      } else {
+        handleOpenSnackBar(
+          response.data.message || "Cập nhật trạng thái thất bại!",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Lỗi khi cập nhật trạng thái:",
+        error.response?.data || error
+      );
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi cập nhật trạng thái!",
+        "error"
+      );
+    }
   };
 
   // Xử lý mở modal cập nhật
@@ -174,7 +173,7 @@ export default function BusManage() {
     setSelectedBus({ ...record, busTypeId: record.busType?.id || "" });
   };
 
-  // Xử lý mở modal xóa
+  // Xử lý mở modal xóa (chưa triển khai)
   const handleDelete = (id) => {
     setModals({ ...modals, delete: true });
     setIdDelete(id);
@@ -209,93 +208,112 @@ export default function BusManage() {
 
   // Xử lý lọc
   const onSubmitPopover = async (filterData) => {
-    // try {
-    //   const response = await handleFilterBuses(filterData);
-    //   if (response.code === 1000) {
-    //     setFilteredData(response.result);
-    //     handleOpenSnackBar("Lọc xe thành công!", "success");
-    //   } else {
-    //     handleOpenSnackBar(response.message || "Lọc xe thất bại!", "error");
-    //   }
-    // } catch (error) {
-    //   console.error("Lỗi khi lọc xe:", error.response?.data || error);
-    //   handleOpenSnackBar(
-    //     error.response?.data?.message || "Lỗi khi lọc xe!",
-    //     "error"
-    //   );
-    // }
-    // setOpenFormFilter(false);
+    try {
+      const response = await handleFilterBuses(filterData);
+      if (response.code === 1000) {
+        setFilteredData(response.result);
+        handleOpenSnackBar("Lọc xe thành công!", "success");
+      } else {
+        handleOpenSnackBar(response.message || "Lọc xe thất bại!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lọc xe:", error.response?.data || error);
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi lọc xe!",
+        "error"
+      );
+    }
+    setOpenFormFilter(false);
   };
 
   // Xử lý thêm xe
   const handleOkAdd = async () => {
-    // try {
-    //   if (!dataAdd.busTypeIdAdd || !dataAdd.nameAdd) {
-    //     handleOpenSnackBar(
-    //       "Vui lòng điền đầy đủ các trường bắt buộc!",
-    //       "error"
-    //     );
-    //     return;
-    //   }
-    //   const payload = {
-    //     busTypeIdAdd: parseInt(dataAdd.busTypeIdAdd),
-    //     nameAdd: dataAdd.nameAdd,
-    //     statusAdd: dataAdd.statusAdd ? 1 : 0,
-    //   };
-    //   console.log("Payload for add:", payload);
-    //   const addRes = await handleAddBus(payload);
-    //   if (addRes.code === 1000) {
-    //     const busesRes = await handleGetAllBuses();
-    //     if (busesRes.code === 1000) {
-    //       setData(busesRes.result);
-    //       setFilteredData(busesRes.result);
-    //       handleOpenSnackBar("Thêm xe thành công!", "success");
-    //     } else {
-    //       handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
-    //     }
-    //   } else {
-    //     handleOpenSnackBar(addRes.message || "Thêm xe thất bại!", "error");
-    //   }
-    //   setModals({ ...modals, add: false });
-    //   setDataAdd({
-    //     busTypeIdAdd: "",
-    //     nameAdd: "",
-    //     statusAdd: true,
-    //   });
-    // } catch (error) {
-    //   console.error("Lỗi khi thêm xe:", error.response?.data || error);
-    //   handleOpenSnackBar(
-    //     error.response?.data?.message || "Lỗi khi thêm xe!",
-    //     "error"
-    //   );
-    //   setModals({ ...modals, add: false });
-    // }
+    try {
+      if (!dataAdd.busTypeIdAdd || !dataAdd.nameAdd) {
+        handleOpenSnackBar(
+          "Vui lòng điền đầy đủ các trường bắt buộc!",
+          "error"
+        );
+        return;
+      }
+      const payload = {
+        busTypeIdAdd: parseInt(dataAdd.busTypeIdAdd),
+        nameAdd: dataAdd.nameAdd,
+        statusAdd: selectedBus.status === 1 ? 1 : 0,
+      };
+      const addRes = await handleAddBus(payload);
+      if (addRes.code === 1000) {
+        const busesRes = await handleGetAllBusApi();
+        if (busesRes.code === 1000) {
+          setData(busesRes.result);
+          setFilteredData(busesRes.result);
+          handleOpenSnackBar("Thêm xe thành công!", "success");
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
+        }
+      } else {
+        handleOpenSnackBar(addRes.message || "Thêm xe thất bại!", "error");
+      }
+      setModals({ ...modals, add: false });
+      setDataAdd({
+        busTypeIdAdd: "",
+        nameAdd: "",
+        statusAdd: true,
+      });
+    } catch (error) {
+      console.error("Lỗi khi thêm xe:", error.response?.data || error);
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi thêm xe!",
+        "error"
+      );
+      setModals({ ...modals, add: false });
+    }
   };
 
   // Xử lý cập nhật xe
   const handleOkUpdate = async () => {
-    // try {
-    //   const updateRes = await handleUpdateBus(selectedBus);
-    //   if (updateRes.code === 1000) {
-    //     const busesRes = await handleGetAllBuses();
-    //     if (busesRes.code === 1000) {
-    //       setData(busesRes.result);
-    //       setFilteredData(busesRes.result);
-    //       handleOpenSnackBar("Cập nhật xe thành công!", "success");
-    //     } else {
-    //       handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
-    //     }
-    //   } else {
-    //     handleOpenSnackBar("Cập nhật xe thất bại!", "error");
-    //   }
-    //   setModals({ ...modals, update: false });
-    //   setSelectedBus(null);
-    // } catch (error) {
-    //   console.error("Lỗi khi cập nhật xe:", error);
-    //   handleOpenSnackBar("Lỗi khi cập nhật xe!", "error");
-    //   setModals({ ...modals, update: false });
-    //   setSelectedBus(null);
-    // }
+    try {
+      if (!selectedBus.busTypeId || !selectedBus.name) {
+        handleOpenSnackBar(
+          "Vui lòng điền đầy đủ các trường bắt buộc!",
+          "error"
+        );
+        return;
+      }
+      const payload = {
+        busTypeIdAdd: selectedBus.busTypeId || selectedBus.busType?.id,
+        nameAdd: selectedBus.name,
+        statusAdd: selectedBus.status === 1 ? 1 : 0,
+      };
+      console.log("select bus ", payload);
+
+      const updateRes = await handleUpdateBus(selectedBus.id, payload);
+      if (updateRes.code === 1000) {
+        const busesRes = await handleGetAllBusApi();
+        if (busesRes.code === 1000) {
+          setData(busesRes.result);
+          setFilteredData(busesRes.result);
+          handleOpenSnackBar("Cập nhật xe thành công!", "success");
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
+        }
+      } else {
+        handleOpenSnackBar(
+          updateRes.data.message || "Cập nhật xe thất bại!",
+          "error"
+        );
+      }
+      setModals({ ...modals, update: false });
+      setSelectedBus(null);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật xe:", error.response?.data || error);
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi cập nhật xe!",
+        "error"
+      );
+      setModals({ ...modals, update: false });
+      setSelectedBus(null);
+    }
   };
 
   // Modal thêm xe
