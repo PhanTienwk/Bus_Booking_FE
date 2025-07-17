@@ -18,7 +18,6 @@ import {
 } from "antd";
 import { PlusSquareOutlined, FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import "./BusStation.css";
 import {
   handleGetAllBusStation,
@@ -31,10 +30,9 @@ import {
 import FilterButtonBusStation from "../../components/Button/FilterButtonBusStation";
 
 export default function BusStationManage() {
-  const [data, setData] = useState([]);
+  const [, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedBusStation, setSelectedBusStation] = useState(null);
-  const [idDelete, setIdDelete] = useState(null);
   const [openFormFilter, setOpenFormFilter] = useState(false);
   const [provinces, setProvinces] = useState([]);
   const [dataAdd, setDataAdd] = useState({
@@ -181,10 +179,10 @@ export default function BusStationManage() {
   };
 
   // Xử lý mở modal xóa
-  const handleDelete = (id) => {
-    setModals({ ...modals, delete: true });
-    setIdDelete(id);
-  };
+  // const handleDelete = (id) => {
+  //   setModals({ ...modals, delete: true });
+  //   setIdDelete(id);
+  // };
 
   // Xử lý đóng/mở modal
   const toggleModal = (type, value) => {
@@ -619,6 +617,7 @@ export default function BusStationManage() {
         open={snackBar.open}
         autoHideDuration={3000}
         onClose={handleCloseSnackBar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackBar}

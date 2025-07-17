@@ -3,23 +3,32 @@ import { Button, Input, Select } from "antd";
 
 const { Option } = Select;
 
-const FilterButtonBusStation = ({ onClose, onSubmit, provinces }) => {
+const FilterButtonBus = ({ onClose, onSubmit, busTypes }) => {
   const [filterData, setFilterData] = useState({
     id: "",
     name: "",
-    address: "",
-    phone: "",
-    provinceId: undefined,
+    busTypeId: undefined,
     status: undefined,
   });
+
+  // Nếu busTypes không được truyền từ props, bạn có thể gọi API để lấy danh sách loại xe
+  // useEffect(() => {
+  //   const fetchBusTypes = async () => {
+  //     try {
+  //       const response = await handleGetAllBusTypeApi();
+  //       setBusTypes(response.data.result); // Giả sử API trả về { result: [...] }
+  //     } catch (error) {
+  //       console.error("Lỗi khi lấy danh sách loại xe:", error);
+  //     }
+  //   };
+  //   fetchBusTypes();
+  // }, []);
 
   const handleSubmit = () => {
     const formattedData = {
       id: filterData.id ? parseInt(filterData.id) : undefined,
       name: filterData.name || undefined,
-      address: filterData.address || undefined,
-      phone: filterData.phone || undefined,
-      provinceId: filterData.provinceId || undefined,
+      busTypeId: filterData.busTypeId || undefined,
       status:
         filterData.status !== undefined
           ? filterData.status
@@ -27,74 +36,52 @@ const FilterButtonBusStation = ({ onClose, onSubmit, provinces }) => {
             : 0
           : undefined,
     };
-    onSubmit(formattedData);
-    onClose();
+    onSubmit(formattedData); // Gửi dữ liệu đã chuẩn hóa tới hàm onSubmit
+    onClose(); // Đóng form sau khi submit
   };
 
   return (
     <div>
       <div className="mb-3">
-        <label htmlFor="id">ID Bến Xe</label>
+        <label htmlFor="id">ID Xe</label>
         <Input
           id="id"
           style={{ width: "100%" }}
           value={filterData.id}
           onChange={(e) => setFilterData({ ...filterData, id: e.target.value })}
-          placeholder="Nhập ID bến xe"
+          placeholder="Nhập ID xe"
         />
       </div>
       <div className="mb-3">
-        <label htmlFor="name">Tên Bến Xe</label>
+        <label htmlFor="name">Tên Xe</label>
         <Input
           id="name"
           value={filterData.name}
           onChange={(e) =>
             setFilterData({ ...filterData, name: e.target.value })
           }
-          placeholder="Nhập tên bến xe"
+          placeholder="Nhập tên xe"
         />
       </div>
       <div className="mb-3">
-        <label htmlFor="address">Địa chỉ</label>
-        <Input
-          id="address"
-          value={filterData.address}
-          onChange={(e) =>
-            setFilterData({ ...filterData, address: e.target.value })
-          }
-          placeholder="Nhập địa chỉ"
-        />
-      </div>
-      <div className="mb-3">
-        <label htmlFor="phone">Số điện thoại</label>
-        <Input
-          id="phone"
-          value={filterData.phone}
-          onChange={(e) =>
-            setFilterData({ ...filterData, phone: e.target.value })
-          }
-          placeholder="Nhập số điện thoại"
-        />
-      </div>
-      <div className="mb-3">
-        <label htmlFor="provinceId">Tỉnh/Thành phố</label>
+        <label htmlFor="busTypeId">Loại Xe</label>
         <Select
-          id="provinceId"
+          id="busTypeId"
           style={{ width: "100%" }}
-          value={filterData.provinceId}
+          value={filterData.busTypeId}
           onChange={(value) =>
-            setFilterData({ ...filterData, provinceId: value })
+            setFilterData({ ...filterData, busTypeId: value })
           }
-          placeholder="Chọn tỉnh/thành phố"
+          placeholder="Chọn loại xe"
           showSearch
           filterOption={(input, option) =>
             (option.children || "").toLowerCase().includes(input.toLowerCase())
           }
         >
           <Option value={undefined}>Tất cả</Option>
-          {provinces.map((province) => (
-            <Option key={province.id} value={province.id}>
-              {province.name}
+          {busTypes.map((busType) => (
+            <Option key={busType.id} value={busType.id}>
+              {busType.name}
             </Option>
           ))}
         </Select>
@@ -123,4 +110,4 @@ const FilterButtonBusStation = ({ onClose, onSubmit, provinces }) => {
   );
 };
 
-export default FilterButtonBusStation;
+export default FilterButtonBus;

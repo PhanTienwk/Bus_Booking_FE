@@ -1,4 +1,3 @@
-import AdminSidebar from "../../components/AdminSidebar";
 import AdminTopbar from "../../components/AdminTopbar";
 
 import { Table } from "antd";
@@ -36,8 +35,6 @@ const AdminLayout = () => {
 
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
-
-  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     fetchUsers();
@@ -165,7 +162,7 @@ const AdminLayout = () => {
 
   return (
     <div className="flex">
-      <AdminSidebar activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
+      {/* <AdminSidebar /> */}
       <main className="ml-64 w-full bg-gray-50 min-h-screen">
         <AdminTopbar username={username} />
 
@@ -221,7 +218,7 @@ const AdminLayout = () => {
             <Card>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
-                  Danh sách người dùng
+                  Thông tin người dùng
                 </Typography>
                 <Table
                   columns={getColumns()}
@@ -393,4 +390,3 @@ const AdminLayout = () => {
 };
 
 export default AdminLayout;
-
