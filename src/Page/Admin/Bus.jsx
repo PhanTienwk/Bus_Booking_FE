@@ -30,10 +30,9 @@ import {
 import FilterButtonBus from "../../components/Button/FilterButtonBus";
 
 export default function BusManage() {
-  const [data, setData] = useState([]);
+  const [, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [selectedBus, setSelectedBus] = useState(null);
-  const [idDelete, setIdDelete] = useState(null);
   const [openFormFilter, setOpenFormFilter] = useState(false);
   const [busTypes, setBusTypes] = useState([]);
   const [dataAdd, setDataAdd] = useState({
@@ -174,10 +173,10 @@ export default function BusManage() {
   };
 
   // Xử lý mở modal xóa (chưa triển khai)
-  const handleDelete = (id) => {
-    setModals({ ...modals, delete: true });
-    setIdDelete(id);
-  };
+  // const handleDelete = (id) => {
+  //   setModals({ ...modals, delete: true });
+  //   setIdDelete(id);
+  // };
 
   // Xử lý đóng/mở modal
   const toggleModal = (type, value) => {
