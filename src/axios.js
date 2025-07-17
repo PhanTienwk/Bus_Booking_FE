@@ -26,7 +26,7 @@ const createError = (
 export const isSuccessStatusCode = (s) => {
   const statusType = typeof s;
   return (
-    (statusType === 'number' && (s === 0 || s === 1000)) ||
+    (statusType === 'number' && (s === 0 || s === 1000 || s === 200)) ||
     (statusType === 'string' && s.toUpperCase() === 'OK')
   );
 };
@@ -44,11 +44,11 @@ instance.interceptors.response.use(
       );
     }
 
-    if (data.hasOwnProperty('code') && data.hasOwnProperty('result') && data['result'].hasOwnProperty('token')) {
-      return data['result'];
+    if (data?.result) {
+      return data.result;
     }
 
-    return response.data;
+    return data;
   },
   (error) => {
     const { response } = error;
