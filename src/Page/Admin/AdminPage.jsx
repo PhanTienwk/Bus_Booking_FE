@@ -3,12 +3,15 @@ import AdminSidebar from "../../components/AdminSidebar";
 import AdminTopbar from "../../components/AdminTopbar";
 import BusStationManage from "./BusStation";
 import BusManage from "./Bus";
+import BusTripManage from "./BusTrip";
 const AdminLayout = () => {
   const username = "Admin Dũng";
   const [activeIndex, setActiveIndex] = useState(0);
 
   const renderContent = () => {
     switch (activeIndex) {
+      case 4:
+        return <BusTripManage />;
       case 5: // Quản Lý Bến Xe
         return <BusStationManage />;
       case 6: // Quản Lý Bến Xe

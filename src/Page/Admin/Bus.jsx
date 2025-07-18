@@ -36,6 +36,7 @@ export default function BusManage() {
   const [idDelete, setIdDelete] = useState(null);
   const [openFormFilter, setOpenFormFilter] = useState(false);
   const [busTypes, setBusTypes] = useState([]);
+  const [filterParams, setFilterParams] = useState(null);
   const [dataAdd, setDataAdd] = useState({
     busTypeIdAdd: "",
     nameAdd: "",
@@ -135,23 +136,35 @@ export default function BusManage() {
     ];
   };
 
-  // Xử lý chuyển đổi trạng thái
   const handleToggleStatus = async (id, checked) => {
     try {
       const status = checked ? 1 : 0;
       const response = await handleUpdateBusStatus(id, status);
       if (response.code === 1000) {
-        const busesRes = await handleGetAllBusApi();
-        if (busesRes.code === 1000) {
-          setData(busesRes.result);
-          setFilteredData(busesRes.result);
-          handleOpenSnackBar("Cập nhật trạng thái xe thành công!", "success");
+        if (filterParams) {
+          const filterResponse = await handleFilterBuses(filterParams);
+          console.log("param", filterParams);
+          if (filterResponse.code === 1000) {
+            setFilteredData(filterResponse.result);
+            setData(filteredData); // Cập nhật cả data để đồng bộ
+            handleOpenSnackBar("Cập nhật trạng thái xe thành công!", "success");
+          } else {
+            handleOpenSnackBar("Lỗi khi tải danh sách xe đã lọc!", "error");
+          }
         } else {
-          handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
+          // Nếu không có bộ lọc, gọi handleGetAllBusApi
+          const busesRes = await handleGetAllBusApi();
+          if (busesRes.code === 1000) {
+            setData(busesRes.result);
+            setFilteredData(busesRes.result);
+            handleOpenSnackBar("Cập nhật trạng thái xe thành công!", "success");
+          } else {
+            handleOpenSnackBar("Lỗi khi tải danh sách xe!", "error");
+          }
         }
       } else {
         handleOpenSnackBar(
-          response.data.message || "Cập nhật trạng thái thất bại!",
+          response.data?.message || "Cập nhật trạng thái thất bại!",
           "error"
         );
       }
@@ -211,6 +224,7 @@ export default function BusManage() {
     try {
       const response = await handleFilterBuses(filterData);
       if (response.code === 1000) {
+        setFilterParams(filterData);
         setFilteredData(response.result);
         handleOpenSnackBar("Lọc xe thành công!", "success");
       } else {
