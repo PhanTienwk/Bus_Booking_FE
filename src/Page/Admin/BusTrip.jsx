@@ -28,8 +28,9 @@ import {
   handleUpdateBusTripStatus,
   handleAddBusTrip,
   handleUpdateBusTrip,
+  handleFilterBusTrips,
 } from "../../services/BusTripService";
-
+import FilterButtonBusTrip from "../../components/Button/FilterButtonTrip";
 export default function BusTripManage() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -392,6 +393,25 @@ export default function BusTripManage() {
   const handleOkDelete = () => {
     handleOpenSnackBar("Chức năng xóa chưa được triển khai!", "error");
     setModals({ ...modals, delete: false });
+  };
+
+  const handleFilter = async (filterData) => {
+    try {
+      const response = await handleFilterBusTrips(filterData);
+      if (response.code === 1000) {
+        setFilteredData(response.result);
+        handleOpenSnackBar("Lọc chuyến xe thành công!", "success");
+      } else {
+        handleOpenSnackBar("Lỗi khi lọc chuyến xe!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi lọc chuyến xe:", error);
+      handleOpenSnackBar(
+        error.response?.data?.message || "Lỗi khi lọc chuyến xe!",
+        "error"
+      );
+    }
+    setOpenFormFilter(false);
   };
 
   // Add Modal
@@ -797,10 +817,13 @@ export default function BusTripManage() {
             <Popover
               placement="bottomRight"
               content={
-                <div style={{ width: 400 }}>
-                  {/* Add FilterButtonBusTrip component if needed */}
-                  <p>Chức năng lọc đang được phát triển</p>
-                </div>
+                <FilterButtonBusTrip
+                  onClose={() => setOpenFormFilter(false)}
+                  onSubmit={handleFilter}
+                  busRoutes={busRoutes}
+                  buses={buses}
+                  drivers={drivers}
+                />
               }
               title="Lọc Chuyến Xe"
               trigger="click"

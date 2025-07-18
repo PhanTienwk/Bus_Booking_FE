@@ -28,6 +28,9 @@ const handleUpdateBusTrip = (id, payload) => {
   return axios.put(`/api/update-bus-trip/${id}`, payload);
 };
 
+const handleFilterBusTrips = (payload) => {
+  return axios.post(`/api/filter-bus-trips`, payload);
+};
 export {
   handleGetAllUserApi,
   handleGetAllBusTrip,
@@ -35,4 +38,5 @@ export {
   handleUpdateBusTripStatus,
   handleAddBusTrip,
   handleUpdateBusTrip,
+  handleFilterBusTrips,
 };
