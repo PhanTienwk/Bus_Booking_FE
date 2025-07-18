@@ -70,7 +70,7 @@ const UserManagement = () => {
     const fetchData = async () => {
       try {
         const usersRes = await getAllUsers();
-
+        console.log(usersRes)
         if (usersRes.code === 1000) {
           const filteredUsers = usersRes.result?.filter(
             (user) => user.account?.role?.id === 1 && user.account?.status === 1
