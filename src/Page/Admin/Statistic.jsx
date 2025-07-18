@@ -1,8 +1,5 @@
-import AdminSidebar from "../../components/AdminSidebar";
 import AdminTopbar from "../../components/AdminTopbar";
-import BusStationManage from "./BusStation";
-import BusManage from "./Bus";
-import BusTripManage from "./BusTrip";
+
 import { Table } from "antd";
 import { useEffect, useState } from "react";
 import {
@@ -27,7 +24,6 @@ import {
   CardContent,
 } from "@mui/material";
 
-
 const AdminLayout = () => {
   const username = "Admin Dũng";
 
@@ -40,72 +36,9 @@ const AdminLayout = () => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
 
-  const [activeIndex, setActiveIndex] = useState(0);
-
-
-  const renderContent = () => {
-    switch (activeIndex) {
-      case 4:
-        return <BusTripManage />;
-      case 5: // Quản Lý Bến Xe
-        return <BusStationManage />;
-      case 6: // Quản Lý Bến Xe
-        return <BusManage />;
-      case 0: // Quản lý Người Dùng (mặc định)
-      default:
-        return (
-          <div className="px-6 pt-6 pb-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500">Khách hàng</p>
-                  <p className="text-2xl font-semibold">11</p>
-                </div>
-                <img
-                  src="/images/customer.png"
-                  alt="icon customer"
-                  className="w-10 h-10 object-contain"
-                />
-              </div>
-              <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500">Tổng số xe</p>
-                  <p className="text-2xl font-semibold">12</p>
-                </div>
-                <img
-                  src="/images/bus.png"
-                  alt="icon bus"
-                  className="w-10 h-10 object-contain"
-                />
-              </div>
-              <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500">Số chuyến xe</p>
-                  <p className="text-2xl font-semibold">10</p>
-                </div>
-                <img
-                  src="/images/bus-route.png"
-                  alt="icon bus-route"
-                  className="w-10 h-10 object-contain"
-                />
-              </div>
-              <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500">Tổng doanh thu</p>
-                  <p className="text-2xl font-semibold">0 đ</p>
-                </div>
-                <img
-                  src="/images/admin_image/money.png"
-                  alt="icon money"
-                  className="w-10 h-10 object-contain"
-                />
-              </div>
-            </div>
-
   useEffect(() => {
     fetchUsers();
   }, []);
-
 
   const fetchUsers = async () => {
     try {
@@ -229,7 +162,7 @@ const AdminLayout = () => {
 
   return (
     <div className="flex">
-      <AdminSidebar activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
+      {/* <AdminSidebar /> */}
       <main className="ml-64 w-full bg-gray-50 min-h-screen">
         <AdminTopbar username={username} />
 
@@ -285,7 +218,7 @@ const AdminLayout = () => {
             <Card>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
-                  Danh sách người dùng
+                  Thống kê
                 </Typography>
                 <Table
                   columns={getColumns()}
@@ -457,4 +390,3 @@ const AdminLayout = () => {
 };
 
 export default AdminLayout;
-
