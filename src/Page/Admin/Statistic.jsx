@@ -20,7 +20,14 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 import { Bar } from "react-chartjs-2";
+import { DatePicker, ConfigProvider, Button } from "antd";
+import viVN from "antd/es/locale/vi_VN";
+import dayjs from "dayjs";
+import "dayjs/locale/vi";
+
+dayjs.locale("vi");
 
 const AdminLayout = () => {
   useEffect(() => {
@@ -70,8 +77,6 @@ const AdminLayout = () => {
     message: "",
     severity: "success",
   });
-
-  const today = new Date().toISOString().split("T")[0];
 
   ChartJS.register(
     CategoryScale,
@@ -216,7 +221,7 @@ const AdminLayout = () => {
                 >
                   <div>
                     <p className="text-sm text-gray-500">{item.label}</p>
-                    <p className="text-2xl font-bold">{item.value}</p>
+                    <p className="text-2xl font-bold text-gray-600">{item.value}</p>
                   </div>
                   <img
                     src={item.icon}
@@ -230,32 +235,38 @@ const AdminLayout = () => {
 
           <div className="bg-white p-4 rounded shadow">
             <div className="flex flex-wrap items-center gap-4">
-              <label className="text-sm text-gray-700">Từ ngày:</label>
-              <input
-                type="date"
-                className="border border-gray-300 rounded px-3 py-2 text-sm"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                max={today}
-              />
-              <label className="text-sm text-gray-700">Đến ngày:</label>
-              <input
-                type="date"
-                className="border border-gray-300 rounded px-3 py-2 text-sm"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                max={today}
-              />
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              <ConfigProvider locale={viVN}>
+                <label className="text-sm text-gray-700">Từ ngày:</label>
+                <DatePicker
+                  style={{ width: 200 }}
+                  value={startDate ? dayjs(startDate) : null}
+                  onChange={(date) =>
+                    setStartDate(date ? date.format("YYYY-MM-DD") : "")
+                  }
+                  disabledDate={(current) =>
+                    current && current > dayjs().endOf("day")
+                  }
+                />
+
+                <label className="text-sm text-gray-700">Đến ngày:</label>
+                <DatePicker
+                  style={{ width: 200 }}
+                  value={endDate ? dayjs(endDate) : null}
+                  onChange={(date) =>
+                    setEndDate(date ? date.format("YYYY-MM-DD") : "")
+                  }
+                  disabledDate={(current) =>
+                    current && current > dayjs().endOf("day")
+                  }
+                />
+              </ConfigProvider>
+              <Button
+                type="primary"
                 onClick={handleFilterRevenue}
+                style={{ padding: "0 24px" }}
               >
                 Lọc
-              </button>
-
-              <button className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
-                Làm mới
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -297,7 +308,7 @@ const AdminLayout = () => {
                 >
                   <div>
                     <p className="text-sm text-gray-500">{item.label}</p>
-                    <p className="text-2xl font-bold">{item.value}</p>
+                    <p className="text-2xl font-bold text-gray-600">{item.value}</p>
                   </div>
                   <img
                     src={item.icon}
