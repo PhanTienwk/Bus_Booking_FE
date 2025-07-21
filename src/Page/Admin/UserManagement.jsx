@@ -36,6 +36,7 @@ import {
   deleteUserById,
   restoreUserById,
   handleFilterUsers,
+  handleAddUser,
 } from "../../services/UserService";
 import FilterButtonUser from "../../components/Button/FilterButtonUser";
 
@@ -50,6 +51,7 @@ const UserManagement = () => {
   const [dataAdd, setDataAdd] = useState({
     nameAdd: "",
     genderAdd: "",
+    cccdAdd: "",
     birtdayAdd: "",
     phoneAdd: "",
     emailAdd: "",
@@ -281,12 +283,27 @@ const UserManagement = () => {
       if (
         !dataAdd.nameAdd ||
         !dataAdd.genderAdd ||
-        !dataAdd.dobAdd ||
+        !dataAdd.birtdayAdd ||
         !dataAdd.phoneAdd ||
-        !dataAdd.emailAdd
+        !dataAdd.emailAdd ||
+        !dataAdd.cccdAdd
       ) {
         handleOpenSnackBar(
           "Vui lòng điền đầy đủ các trường bắt buộc!",
+          "error"
+        );
+        return;
+      }
+      if (!/^\d{12}$/.test(dataAdd.cccdAdd)) {
+        handleOpenSnackBar(
+          "CCCD phải gồm 12 chữ số!",
+          "error"
+        );
+        return;
+      }
+      if (!/^\d{10}$/.test(dataAdd.phoneAdd)) {
+        handleOpenSnackBar(
+          "Số điện thoại phải gồm 10 chữ số!",
           "error"
         );
         return;
@@ -295,9 +312,11 @@ const UserManagement = () => {
       const payload = {
         name: dataAdd.nameAdd,
         gender: dataAdd.genderAdd,
-        dob: dataAdd.dobAdd,
+        cccd: dataAdd.cccdAdd,
+        birthDate: dataAdd.birtdayAdd,
         phone: dataAdd.phoneAdd,
         email: dataAdd.emailAdd,
+        password: dataAdd.passwordAdd,
       };
 
       console.log("Payload for add user:", payload);
@@ -327,6 +346,26 @@ const UserManagement = () => {
       //   phoneAdd: "",
       //   emailAdd: "",
       // });
+
+      const addresponse = await handleAddUser(payload);
+
+      if (addresponse.code === 200) {
+        const usersRes = await getAllUsers();
+        if (usersRes.code === 1000) {
+          const filteredUsers = usersRes.result?.filter(
+            (user) => user.account?.role?.id === 1 && user.account?.status === 1
+          );
+          setUserList(filteredUsers);
+          setFilteredData(usersRes.result);
+          handleOpenSnackBar("Thêm người dùng thành công!", "success");
+        } else {
+          handleOpenSnackBar("Lỗi khi tải danh sách người dùng!", "error");
+        }
+      } else {
+        handleOpenSnackBar("Thêm người dùng thất bại!", "error");
+      }
+
+
     } catch (error) {
       console.error("Lỗi khi thêm người dùng:", error.response?.data || error);
       handleOpenSnackBar(
@@ -445,10 +484,27 @@ const UserManagement = () => {
               value={dataAdd.genderAdd || undefined}
               onChange={(value) => handleSelectChange("genderAdd", value)}
               options={[
-                { label: "Nam", value: "Nam" },
-                { label: "Nữ", value: "Nữ" },
-                { label: "Khác", value: "Khác" },
+                { label: "Nam", value: "1" },
+                { label: "Nữ", value: "2" },
+                { label: "Khác", value: "3" },
               ]}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-12">
+          <div className="mb-3">
+            <label htmlFor="emailAdd" className="form-label">
+              CCCD: <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="cccdAdd"
+              placeholder="Nhập căn cước công dân"
+              value={dataAdd.cccdAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
             />
           </div>
         </div>
@@ -457,13 +513,13 @@ const UserManagement = () => {
       <div className="row">
         <div className="col-md-6">
           <div className="mb-3">
-            <label htmlFor="dobAdd" className="form-label">
+            <label htmlFor="birtdayAdd" className="form-label">
               Ngày sinh <span style={{ color: "red" }}>*</span>
             </label>
             <Input
-              id="dobAdd"
+              id="birtdayAdd"
               type="date"
-              value={dataAdd.dobAdd}
+              value={dataAdd.birtdayAdd}
               onChange={(event) =>
                 handleOnChangeInputAdd(event.target.id, event)
               }

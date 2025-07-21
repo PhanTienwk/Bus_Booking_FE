@@ -20,6 +20,43 @@ const restoreUserById = (id) => {
   return axios.put(`/api/restore-user/${id}`);
 };
 
+const handleAddUser = (data) => {
+  try {
+    const response = axios.post("/api/create-user", data);
+    return response;
+  } catch (error) {
+    throw new Error(error?.errorMessage ||
+      error?.response?.data?.message ||
+      error?.message || 'Thêm người dùng thất bại.');
+  }
+};
+
+const handleAddDriver = async (data) => {
+  try {
+    const formData = new FormData();
+    // formData.append("email", data.email);
+    // formData.append("name", data.name);
+    formData.append("file", data.avatar);
+    // formData.append("cccd", data.cccd);
+    // formData.append("phone", data.phone);
+    // formData.append("gender", data.gender);
+    // formData.append("birthDate", data.birthDate); 
+    // formData.append("password", data.password);
+    console.log(formData);
+    const response = await axios.post("/api/create-photo", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error)
+    throw new Error(
+      error?.response?.data?.message || error?.message || "Thêm tài xế thất bại."
+    );
+  }
+};
+
 const handleFilterUsers = (data) => {
   return axios.post("/api/filter-user", {
     name: data.name,
@@ -72,5 +109,7 @@ export {
   getAllBusTrips,
   getAllProvinces,
   handleFilterUsers,
-  handleFilterDrivers
+  handleFilterDrivers,
+  handleAddUser,
+  handleAddDriver
  };

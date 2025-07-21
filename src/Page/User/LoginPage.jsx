@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { login, register, verifyOTP } from "../../services/auth"; 
+import { login, register, verifyOTP, completeRegistration} from "../../services/auth"; 
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
@@ -119,16 +119,37 @@ const LoginPage = () => {
 
   const handleCompleteSubmit = async (e) => {
     e.preventDefault();
+    const { name, cccd, phone, gender, birthDate, password } = completeData;
+    if (!name || !cccd || !phone || !gender || !birthDate || !password) {
+      setMessage("Vui lòng điền đầy đủ tất cả các trường.");
+      return;
+    }
+    if (!/^\d{12}$/.test(cccd)) {
+      setMessage("CCCD phải gồm 12 chữ số.");
+      return;
+    }
+    if (!/^\d{10}$/.test(phone)) {
+      setMessage("Số điện thoại phải gồm 10 chữ số.");
+      return;
+    }
+
+    const requestData = {
+    email: registerEmail,
+    ...completeData,
+    };
+
+    // In ra request gửi đến backend
+    console.log("Request gửi đến backend (/api/complete-registration):", JSON.stringify(requestData, null, 2));
     try {
-      const response = await axiosInstance.post('/api/complete-registration', {
+      const response = await completeRegistration({
         email: registerEmail,
         ...completeData,
       });
-      if (response.status === 200) {
+      if (response.code === 200) {
         setMessage("Hoàn tất đăng ký thành công! Vui lòng đăng nhập.");
         setShowCompleteForm(false);
         setRegisterEmail("");
-        setCompleteData({ name: "", cccd: "", phone: "", gender: "", dob: "", password: "" });
+        setCompleteData({ name: "", cccd: "", phone: "", gender: "", birthDate: "", password: "" });
         setIsLogin(true);
       } else {
         setMessage("Hoàn tất đăng ký thất bại. Vui lòng thử lại.");
@@ -317,17 +338,17 @@ const LoginPage = () => {
                           aria-label="Gender"
                         >
                           <option value="">Chọn giới tính</option>
-                          <option value="male">Nam</option>
-                          <option value="female">Nữ</option>
-                          <option value="other">Khác</option>
+                          <option value="1">Nam</option>
+                          <option value="2">Nữ</option>
+                          <option value="3">Khác</option>
                         </select>
                       </div>
                       <div className="flex items-center border rounded-md px-3 py-2 bg-[#fff7f5]">
                         <input
                           type="date"
-                          name="dob"
+                          name="birthDate"
                           placeholder="Ngày sinh"
-                          value={completeData.dob}
+                          value={completeData.birthDate}
                           onChange={handleCompleteChange}
                           className="bg-transparent outline-none w-full"
                           aria-label="Date of birth"

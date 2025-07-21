@@ -34,6 +34,7 @@ import {
   deleteUserById,
   restoreUserById,
   handleFilterDrivers,
+  handleAddDriver,
 } from "../../services/UserService";
 import FilterButtonUser from "../../components/Button/FilterButtonUser";
 
@@ -48,9 +49,11 @@ const UserManagement = () => {
     nameAdd: "",
     genderAdd: "",
     birtdayAdd: "",
+    cccdAdd: "",
     phoneAdd: "",
     emailAdd: "",
     passwordAdd: "",
+    avatarAdd: null,
   });
   const [modals, setModals] = useState({
     update: false,
@@ -249,7 +252,7 @@ const UserManagement = () => {
   };
 
   const handleOnChangeInputAdd = (id, event) => {
-    const value = event.target.value;
+    const value = id === "avatarAdd" ? event.target.files[0] : event.target.value;
     setDataAdd({ ...dataAdd, [id]: value });
   };
 
@@ -280,10 +283,25 @@ const UserManagement = () => {
         !dataAdd.genderAdd ||
         !dataAdd.dobAdd ||
         !dataAdd.phoneAdd ||
-        !dataAdd.emailAdd
+        !dataAdd.emailAdd ||
+        !dataAdd.cccdAdd
       ) {
         handleOpenSnackBar(
           "Vui lòng điền đầy đủ các trường bắt buộc!",
+          "error"
+        );
+        return;
+      }
+      if (!/^\d{12}$/.test(dataAdd.cccdAdd)) {
+        handleOpenSnackBar(
+          "CCCD phải gồm 12 chữ số!",
+          "error"
+        );
+        return;
+      }
+      if (!/^\d{10}$/.test(dataAdd.phoneAdd)) {
+        handleOpenSnackBar(
+          "Số điện thoại phải gồm 10 chữ số!",
           "error"
         );
         return;
@@ -292,9 +310,12 @@ const UserManagement = () => {
       const payload = {
         name: dataAdd.nameAdd,
         gender: dataAdd.genderAdd,
-        dob: dataAdd.dobAdd,
+        birthDate: dataAdd.dobAdd,
+        cccd: dataAdd.cccdAdd,
         phone: dataAdd.phoneAdd,
         email: dataAdd.emailAdd,
+        avatar: dataAdd.avatarAdd ? dataAdd.avatarAdd.name : null,
+        password: dataAdd.passwordAdd,
       };
 
       console.log("Payload for add user:", payload);
@@ -324,10 +345,43 @@ const UserManagement = () => {
       //   phoneAdd: "",
       //   emailAdd: "",
       // });
+
+      // const formData = new FormData();
+      // formData.append("name", dataAdd.nameAdd);
+      // formData.append("gender", dataAdd.genderAdd);
+      // formData.append("birthDate", dataAdd.dobAdd);
+      // formData.append("cccd", dataAdd.cccdAdd);
+      // formData.append("phone", dataAdd.phoneAdd);
+      // formData.append("email", dataAdd.emailAdd);
+      // formData.append("password", dataAdd.passwordAdd);
+      // if (dataAdd.avatarAdd) {
+      //    formData.append("file", dataAdd.avatarAdd); // File ảnh được thêm vào FormData
+      // }
+
+    console.log("Payload for add user:", payload);
+      const addresponse = await handleAddDriver(payload);
+            if (addresponse.code === 200) {
+              const usersRes = await getAllDrivers();
+              if (usersRes.code === 1000) {
+                const filteredUsers = usersRes.result?.filter(
+                (user) => user.account?.role?.id === 2 && user.account?.status === 1
+                );
+                setUserList(filteredUsers);
+                setFilteredData(usersRes.result);
+                handleOpenSnackBar("Thêm tài xế thành công!", "success");
+              } else {
+                handleOpenSnackBar("Lỗi khi tải danh sách tài xế!", "error");
+              }
+            } else {
+              handleOpenSnackBar("Thêm tài xế thất bại!", "error");
+            }
+
     } catch (error) {
       console.error("Lỗi khi thêm tài xế:", error.response?.data || error);
       handleOpenSnackBar(
-        error.response?.data?.message || "Lỗi khi thêm tài xế",
+        error?.errorMessage ||
+        error?.response?.data?.message ||
+        error?.message  || "Lỗi khi thêm tài xế",
         "error"
       );
       setModals({ ...modals, add: false });
@@ -442,10 +496,27 @@ const UserManagement = () => {
               value={dataAdd.genderAdd || undefined}
               onChange={(value) => handleSelectChange("genderAdd", value)}
               options={[
-                { label: "Nam", value: "Nam" },
-                { label: "Nữ", value: "Nữ" },
-                { label: "Khác", value: "Khác" },
+                { label: "Nam", value: "1" },
+                { label: "Nữ", value: "2" },
+                { label: "Khác", value: "3" },
               ]}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-12">
+          <div className="mb-3">
+            <label htmlFor="cccdAdd" className="form-label">
+              CCCD: <span style={{ color: "red" }}>*</span>
+            </label>
+            <Input
+              id="cccdAdd"
+              placeholder="Nhập căn cước công dân"
+              value={dataAdd.cccdAdd}
+              onChange={(event) =>
+                handleOnChangeInputAdd(event.target.id, event)
+              }
             />
           </div>
         </div>
@@ -519,6 +590,26 @@ const UserManagement = () => {
           </div>
         </div>
       </div>
+      <div className="row">
+      <div className="col-md-12">
+        <div className="mb-3">
+          <label htmlFor="avatarAdd" className="form-label">
+            Ảnh đại diện
+          </label>
+          <Input
+            id="avatarAdd"
+            type="file"
+            accept="image/*"
+            onChange={(event) =>
+              handleOnChangeInputAdd(event.target.id, event)
+            }
+          />
+          {dataAdd.avatarAdd && (
+            <p>Đã chọn: {dataAdd.avatarAdd.name}</p>
+          )}
+        </div>
+      </div>
+    </div>
     </div>
   );
 
@@ -608,6 +699,26 @@ const UserManagement = () => {
           </div>
         </div>
       </div>
+      <div className="row">
+      <div className="col-md-12">
+        <div className="mb-3">
+          <label htmlFor="avatarAdd" className="form-label">
+            Ảnh đại diện
+          </label>
+          <Input
+            id="avatarAdd"
+            type="file"
+            accept="image/*"
+            onChange={(event) =>
+              handleOnChangeInputAdd(event.target.id, event)
+            }
+          />
+          {dataAdd.avatarAdd && (
+            <p>Đã chọn: {dataAdd.avatarAdd.name}</p>
+          )}
+        </div>
+      </div>
+    </div>
     </div>
   );
 

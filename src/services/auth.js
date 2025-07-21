@@ -29,7 +29,9 @@ export const register = async (email) => {
       throw new Error(response.data.message || 'Đăng ký thất bại');
     }
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Không thể kết nối đến server.');
+    throw new Error(error?.errorMessage ||
+      error?.response?.data?.message ||
+      error?.message || 'Không thể kết nối đến server.');
   }
 };
 export const verifyOTP = async ({ email, otp }) => {
