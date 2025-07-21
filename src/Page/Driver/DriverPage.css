@@ -1,0 +1,19 @@
+.empty-cell {
+  height: 48px;
+}
+
+.trip-cell {
+  background-color: #cfe2ff !important;
+  white-space: pre-line;
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px;
+  font-weight: 500;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #2fa4e7 !important;
+  color: white !important;
+  text-align: center;
+}
+
