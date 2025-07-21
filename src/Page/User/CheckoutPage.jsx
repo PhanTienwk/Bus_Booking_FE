@@ -1,8 +1,51 @@
-import React from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import React, { useEffect, useState } from "react";
 
 const CheckoutPage = () => {
+  const [qrUrl, setQrUrl] = useState("");
+
+  useEffect(() => {
+    const BANK_ID = "MBBank";
+    const ACCOUNT_NO = "0916430832";
+    const AMOUNT = 10000;
+    const DESCRIPTION = "Dat ve xe cho Dung nha mn oi";
+
+    const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-qr_only.png?amount=${AMOUNT}&addInfo=${DESCRIPTION}`;
+    setQrUrl(qrUrl);
+
+    let interval;
+    let hasPaid = false;
+
+    const checkPayment = async () => {
+      try {
+        const res = await fetch(
+          "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgYRqPXF7Po2jCahf1gVNkF3UZ1AJixRmUGFoHSdWPNRaswT-hJSnZ7lYhn5hkMEKZR-u8dcsdjlnjEQLGYdfJ1ryD26oUbPZZZiYCMRNhl4HZqeEefTgDfI4BPVqQiyGItS48-MIKHIscVsogFxq-iiXFUkC9CvykZ_z7Qw51JMT0fsfUMxMoMB6Jcs0qpvskS1nFXr3iYoDb6KcU9Gp1oB6ZIO_7S-jrUOv_QbdNbyMtjCRzl_k4VruRC5FsLeYKsHvxXCHuTwXxPxAiTqQDs38n01w&lib=MCc3iB5ALg69Lw4T0CX1P96Tx4pJUxSTV"
+        );
+        const resJson = await res.json();
+        const data = resJson.data;
+
+        const matched = data
+          .slice(0, 2)
+          .find(
+            (item) =>
+              parseInt(item["Giá trị"]) >= AMOUNT &&
+              item["Mô tả"]?.includes(DESCRIPTION)
+          );
+
+        if (matched && !hasPaid) {
+          hasPaid = true;
+          alert("✅ Thanh toán thành công");
+          clearInterval(interval);
+        }
+      } catch (error) {
+        console.error("Lỗi khi kiểm tra thanh toán:", error);
+      }
+    };
+
+    interval = setInterval(checkPayment, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div>
@@ -17,7 +60,11 @@ const CheckoutPage = () => {
             <div className="flex flex-col gap-4 text-sm">
               {[
                 { name: "Thanh toán tiền mặt", img: "/images/money.png" },
-                { name: "Thanh toán Momo", img: "/images/agribank.png", selected: true },
+                {
+                  name: "Thanh toán Momo",
+                  img: "/images/agribank.png",
+                  selected: true,
+                },
               ].map((method, idx) => (
                 <label key={idx} className="flex items-center gap-3">
                   <input
@@ -46,11 +93,14 @@ const CheckoutPage = () => {
               Thời gian giữ chỗ còn lại:{" "}
               <span className="font-medium">18 : 34</span>
             </div>
-            <img
-              src="/images/checkout.png"
-              alt="QR Code"
-              className="w-48 h-48 mb-4"
-            />
+            {qrUrl ? (
+              <img src={qrUrl} alt="QR thanh toán" className="w-48 h-48 mb-4" />
+            ) : (
+              <div className="w-48 h-48 mb-4 flex items-center justify-center bg-gray-100 text-sm text-gray-500 rounded-lg">
+                Đang tạo mã QR...
+              </div>
+            )}
+
             <div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-700 w-full">
               <p className="font-semibold mb-2">
                 Hướng dẫn thanh toán bằng FUTAPay
@@ -85,9 +135,7 @@ const CheckoutPage = () => {
             </div>
 
             <div className="bg-white p-[20px] rounded-xl shadow-sm">
-              <h3 className="text-lg font-semibold mb-4">
-                Thông tin lượt đi
-              </h3>
+              <h3 className="text-lg font-semibold mb-4">Thông tin lượt đi</h3>
               <div className="text-sm text-gray-700">
                 <div className="flex justify-between mb-2">
                   <span>Tuyến xe</span>
@@ -129,7 +177,9 @@ const CheckoutPage = () => {
               <div className="text-sm text-gray-700">
                 <div className="flex justify-between mb-2">
                   <span>Giá vé lượt đi</span>
-                  <span className="text-red-500 font-medium text-[16px]">290.000đ</span>
+                  <span className="text-red-500 font-medium text-[16px]">
+                    290.000đ
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Phí thanh toán</span>

@@ -1,390 +1,437 @@
-import AdminTopbar from "../../components/AdminTopbar";
-
-import { Table } from "antd";
 import { useEffect, useState } from "react";
-import {
-  getAllUsers,
-  updateUserById,
-  deleteUserById,
-} from "../../services/UserService";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { Box, Card, CardContent, Snackbar, Alert } from "@mui/material";
+
 import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Typography,
-  Modal,
-  Box,
-  Button,
-  Card,
-  CardContent,
-} from "@mui/material";
+  getStatistics,
+  getRevenueStatistics,
+  getMonthlyRevenueStatistics,
+  getCostSummary,
+  getMonthlyFinance,
+} from "../../services/StatisticService";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+import { Bar } from "react-chartjs-2";
+import { DatePicker, ConfigProvider, Button } from "antd";
+import viVN from "antd/es/locale/vi_VN";
+import dayjs from "dayjs";
+import "dayjs/locale/vi";
+
+dayjs.locale("vi");
 
 const AdminLayout = () => {
-  const username = "Admin Dũng";
-
-  const [user] = useState({ roles: [{ role: "ADMIN" }] });
-
-  const [userList, setUserList] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
-
   useEffect(() => {
-    fetchUsers();
+    const fetchStats = async () => {
+      try {
+        const res = await getStatistics();
+        if (res.code === 1000) {
+          setStats(res.result);
+        } else {
+          console.error("Lỗi lấy thống kê", res.message);
+        }
+      } catch (err) {
+        console.error("Lỗi khi gọi API thống kê", err);
+      }
+    };
+
+    fetchStats();
   }, []);
 
-  const fetchUsers = async () => {
+  const [stats, setStats] = useState({
+    totalBus: 0,
+    totalBusRoute: 0,
+    totalBusTrip: 0,
+    totalInvoiceAmount: 0,
+  });
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [revenueStats, setRevenueStats] = useState({
+    revenue: 0,
+    cost: 0,
+    profit: 0,
+  });
+
+  const [monthlyRevenueData, setMonthlyRevenueData] = useState([]);
+
+  const [costSummary, setCostSummary] = useState({
+    costOperating: 0,
+    costIncurred: 0,
+    totalCost: 0,
+  });
+
+  const [monthlyFinance, setMonthlyFinance] = useState([]);
+
+  const [snackBar, setSnackBar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+  );
+
+  const realRevenueData = {
+    labels: monthlyRevenueData.map((item) => item.month),
+    datasets: [
+      {
+        label: "Doanh thu (VNĐ)",
+        data: monthlyRevenueData.map((item) => item.totalRevenue),
+        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  const revenueOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "📊 Doanh thu theo tháng",
+        font: {
+          size: 16,
+        },
+      },
+    },
+    scales: {
+      y: {
+        ticks: {
+          callback: function (value) {
+            return value.toLocaleString("vi-VN") + " đ";
+          },
+        },
+      },
+    },
+  };
+
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackBar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackBar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackBar({ ...snackBar, open: false });
+  };
+
+  const handleFilterRevenue = async () => {
+    if (!startDate || !endDate) {
+      handleOpenSnackBar("Vui lòng chọn đầy đủ thời gian!", "error");
+      return;
+    }
+
+    if (new Date(endDate) < new Date(startDate)) {
+      handleOpenSnackBar("Khoảng thời gian không hợp lệ!", "error");
+      return;
+    }
+
+    const fromDateTime = `${startDate}T00:00:00`;
+    const toDateTime = `${endDate}T23:59:59`;
+
     try {
-      const response = await getAllUsers();
-      const filteredUsers = response.result?.filter(
-        (user) => user.account?.role?.id === 1 && user.account?.status === 1
+      const res = await getRevenueStatistics(fromDateTime, toDateTime);
+      if (res.code === 1000) {
+        setRevenueStats({
+          revenue: res.result?.totalRevenue || 0,
+          cost: res.result?.totalCost || 0,
+          profit: res.result?.profit || 0,
+        });
+      }
+
+      const monthlyRes = await getMonthlyRevenueStatistics(
+        fromDateTime,
+        toDateTime
       );
-      setUserList(filteredUsers);
-    } catch (error) {
-      console.error("Lỗi khi tải danh sách người dùng:", error);
+      if (monthlyRes.code === 1000) {
+        setMonthlyRevenueData(monthlyRes.result);
+      }
+
+      const costRes = await getCostSummary(fromDateTime, toDateTime);
+      if (costRes.code === 1000) {
+        setCostSummary(costRes.result);
+      }
+
+      const monthlyFinanceRes = await getMonthlyFinance(
+        fromDateTime,
+        toDateTime
+      );
+      if (monthlyFinanceRes.code === 1000) {
+        setMonthlyFinance(monthlyFinanceRes.result);
+      }
+    } catch (err) {
+      console.error("Lỗi khi gọi API doanh thu:", err);
     }
-  };
-
-  const handleUpdate = (record) => {
-    setSelectedUser(record);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = async () => {
-    try {
-      const formattedBirthDate = selectedUser.birthDate
-        ? selectedUser.birthDate.includes("T")
-          ? selectedUser.birthDate
-          : `${selectedUser.birthDate}T00:00:00`
-        : null;
-
-      const payload = {
-        name: selectedUser.name,
-        phone: selectedUser.phone,
-        gender: selectedUser.gender,
-        birthDate: formattedBirthDate,
-      };
-
-      await updateUserById(selectedUser.id, payload);
-      await fetchUsers();
-      toast.success("Cập nhật thành công");
-      setIsModalOpen(false);
-    } catch (error) {
-      toast.error("Cập nhật thất bại");
-      console.error("Lỗi cập nhật:", error);
-    }
-  };
-
-  const handleDelete = (user) => {
-    setUserToDelete(user);
-    setConfirmDeleteOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!userToDelete) return;
-
-    try {
-      await deleteUserById(userToDelete.id);
-      toast.success("Xóa người dùng thành công");
-      await fetchUsers();
-      setConfirmDeleteOpen(false);
-    } catch (error) {
-      toast.error("Xóa thất bại");
-      console.error("Lỗi xóa:", error);
-    } finally {
-      setConfirmDeleteOpen(false);
-      setUserToDelete(null);
-    }
-  };
-
-  const getColumns = () => {
-    const role = user.roles?.[0]?.role || -1;
-
-    const columns = [
-      { title: "ID", dataIndex: "id", key: "id" },
-      { title: "Tên", dataIndex: "name", key: "name" },
-      {
-        title: "Giới tính",
-        dataIndex: "gender",
-        key: "gender",
-        render: (g) => {
-          if (g === 1) return "Nam";
-          if (g === 2) return "Nữ";
-          if (g === 3) return "Khác";
-          return "Không rõ";
-        },
-      },
-      {
-        title: "Ngày sinh",
-        dataIndex: "birthDate",
-        key: "birthDate",
-        render: (date) => {
-          if (!date) return "Không có";
-          const d = new Date(date);
-          return d.toLocaleDateString("vi-VN");
-        },
-      },
-      { title: "SĐT", dataIndex: "phone", key: "phone" },
-      {
-        title: "Email",
-        dataIndex: ["account", "username"],
-        key: "username",
-      },
-    ];
-
-    if (role !== "CUSTOMER") {
-      columns.push({
-        title: "Hành động",
-        key: "action",
-        render: (_, record) => (
-          <div>
-            <Button
-              onClick={() => handleUpdate(record)}
-              style={{ marginRight: "10px" }}
-            >
-              Cập nhật
-            </Button>
-            <Button onClick={() => handleDelete(record)}>Xóa</Button>
-          </div>
-        ),
-      });
-    }
-
-    return columns;
   };
 
   return (
-    <div className="flex">
-      {/* <AdminSidebar /> */}
-      <main className="ml-64 w-full bg-gray-50 min-h-screen">
-        <AdminTopbar username={username} />
-
-        <div className="px-6 pt-6 pb-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Khách hàng</p>
-                <p className="text-2xl font-semibold">11</p>
-              </div>
-              <img
-                src="/images/customer.png"
-                alt="icon customer"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Tổng số xe</p>
-                <p className="text-2xl font-semibold">12</p>
-              </div>
-              <img
-                src="/images/bus.png"
-                alt="icon bus"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Số chuyến xe</p>
-                <p className="text-2xl font-semibold">10</p>
-              </div>
-              <img
-                src="/images/bus-route.png"
-                alt="icon bus-route"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Tổng doanh thu</p>
-                <p className="text-2xl font-semibold">0 đ</p>
-              </div>
-              <img
-                src="/images/admin_image/money.png"
-                alt="icon money"
-                className="w-10 h-10 object-contain"
-              />
+    <div className="flex w-full">
+      <div className="w-full max-w-screen-xl mx-auto pt-6 pb-2 px-6">
+        <div className="mb-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">
+              📊 Tổng quan hệ thống
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  label: "Số lượng xe",
+                  value: stats.totalBus,
+                  icon: "/images/bus.png",
+                },
+                {
+                  label: "Số lượng tuyến xe",
+                  value: stats.totalBusRoute,
+                  icon: "/images/bus-route-bus.png",
+                },
+                {
+                  label: "Số lượng chuyến xe",
+                  value: stats.totalBusTrip,
+                  icon: "/images/bus-route.png",
+                },
+                {
+                  label: "Doanh thu",
+                  value:
+                    stats.totalInvoiceAmount.toLocaleString("vi-VN") + " đ",
+                  icon: "/images/ticket.png",
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white px-5 py-4 rounded shadow flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-sm text-gray-500">{item.label}</p>
+                    <p className="text-2xl font-bold text-gray-600">{item.value}</p>
+                  </div>
+                  <img
+                    src={item.icon}
+                    alt={`icon ${item.label}`}
+                    className="w-8 h-8 object-contain"
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
+          <div className="bg-white p-4 rounded shadow">
+            <div className="flex flex-wrap items-center gap-4">
+              <ConfigProvider locale={viVN}>
+                <label className="text-sm text-gray-700">Từ ngày:</label>
+                <DatePicker
+                  style={{ width: 200 }}
+                  value={startDate ? dayjs(startDate) : null}
+                  onChange={(date) =>
+                    setStartDate(date ? date.format("YYYY-MM-DD") : "")
+                  }
+                  disabledDate={(current) =>
+                    current && current > dayjs().endOf("day")
+                  }
+                />
+
+                <label className="text-sm text-gray-700">Đến ngày:</label>
+                <DatePicker
+                  style={{ width: 200 }}
+                  value={endDate ? dayjs(endDate) : null}
+                  onChange={(date) =>
+                    setEndDate(date ? date.format("YYYY-MM-DD") : "")
+                  }
+                  disabledDate={(current) =>
+                    current && current > dayjs().endOf("day")
+                  }
+                />
+              </ConfigProvider>
+              <Button
+                type="primary"
+                onClick={handleFilterRevenue}
+                style={{ padding: "0 24px" }}
+              >
+                Lọc
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold text-gray-700 mb-3">
+              💰 Tài chính
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  label: "Doanh thu",
+                  value:
+                    revenueStats.revenue != null
+                      ? revenueStats.revenue.toLocaleString("vi-VN") + " đ"
+                      : "0 đ",
+
+                  icon: "/images/admin_image/money.png",
+                },
+                {
+                  label: "Chi phí",
+                  value:
+                    revenueStats.cost != null
+                      ? revenueStats.cost.toLocaleString("vi-VN") + " đ"
+                      : "0 đ",
+                  icon: "/images/budget.png",
+                },
+                {
+                  label: "Lợi nhuận",
+                  value:
+                    revenueStats.profit != null
+                      ? revenueStats.profit.toLocaleString("vi-VN") + " đ"
+                      : "0 đ",
+                  icon: "/images/financial-profit.png",
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white px-5 py-4 rounded shadow flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-sm text-gray-500">{item.label}</p>
+                    <p className="text-2xl font-bold text-gray-600">{item.value}</p>
+                  </div>
+                  <img
+                    src={item.icon}
+                    alt={`icon ${item.label}`}
+                    className="w-8 h-8 object-contain"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full max-w-screen-xl mx-auto">
           <Box sx={{ padding: 0 }}>
             <Card>
               <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  Thống kê
-                </Typography>
-                <Table
-                  columns={getColumns()}
-                  dataSource={userList}
-                  rowKey="id"
-                  pagination={{ pageSize: 5 }}
-                />
+                <Bar data={realRevenueData} options={revenueOptions} />
               </CardContent>
             </Card>
           </Box>
-          <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 500,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: 24,
-                p: 4,
-              }}
-            >
-              <Typography variant="h6" gutterBottom>
-                Cập nhật người dùng
-              </Typography>
 
-              {selectedUser && (
-                <>
-                  <TextField
-                    fullWidth
-                    label="Tên"
-                    value={selectedUser.name || ""}
-                    onChange={(e) =>
-                      setSelectedUser({ ...selectedUser, name: e.target.value })
-                    }
-                    margin="normal"
-                  />
+          <div className="bg-white mt-6 rounded shadow">
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">📋 Chi tiết chi phí</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead>
+                  <tr className="bg-gray-100 text-left">
+                    <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                      Loại chi phí
+                    </th>
+                    <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                      Tổng tiền
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t">
+                    <td className="px-6 py-3">Chi phí chuyến xe</td>
+                    <td className="px-6 py-3">
+                      {costSummary.costOperating.toLocaleString("vi-VN")} đ
+                    </td>
+                  </tr>
+                  <tr className="border-t">
+                    <td className="px-6 py-3">Chi phí phát sinh</td>
+                    <td className="px-6 py-3">
+                      {costSummary.costIncurred.toLocaleString("vi-VN")} đ
+                    </td>
+                  </tr>
+                  <tr className="border-t">
+                    <td className="px-6 py-3">Tổng cộng</td>
+                    <td className="px-6 py-3">
+                      {costSummary.totalCost.toLocaleString("vi-VN")} đ
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Giới tính</InputLabel>
-                    <Select
-                      value={selectedUser.gender}
-                      label="Giới tính"
-                      onChange={(e) =>
-                        setSelectedUser({
-                          ...selectedUser,
-                          gender: e.target.value,
-                        })
-                      }
-                    >
-                      <MenuItem value={1}>Nam</MenuItem>
-                      <MenuItem value={2}>Nữ</MenuItem>
-                      <MenuItem value={3}>Khác</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  <TextField
-                    fullWidth
-                    label="Ngày sinh"
-                    type="date"
-                    value={
-                      selectedUser.birthDate
-                        ? new Date(selectedUser.birthDate)
-                            .toISOString()
-                            .split("T")[0]
-                        : ""
-                    }
-                    onChange={(e) =>
-                      setSelectedUser({
-                        ...selectedUser,
-                        birthDate: e.target.value,
-                      })
-                    }
-                    margin="normal"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Số điện thoại"
-                    value={selectedUser.phone || ""}
-                    onChange={(e) =>
-                      setSelectedUser({
-                        ...selectedUser,
-                        phone: e.target.value,
-                      })
-                    }
-                    margin="normal"
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    value={selectedUser.account?.username || ""}
-                    margin="normal"
-                    disabled
-                  />
-
-                  <Box className="mt-4 flex justify-end gap-2">
-                    <Button
-                      onClick={() => setIsModalOpen(false)}
-                      variant="outlined"
-                    >
-                      Hủy
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSave}
-                    >
-                      Lưu
-                    </Button>
-                  </Box>
-                </>
-              )}
-            </Box>
-          </Modal>
-
-          <Modal
-            open={confirmDeleteOpen}
-            onClose={() => setConfirmDeleteOpen(false)}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 400,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: 24,
-                p: 4,
-              }}
-            >
-              <Typography variant="h6" gutterBottom>
-                Xác nhận xóa
-              </Typography>
-              <Typography>
-                Bạn có chắc chắn muốn xóa người dùng{" "}
-                <strong>{userToDelete?.name}</strong>?
-              </Typography>
-
-              <Box className="mt-4 flex justify-end gap-2">
-                <Button
-                  onClick={() => setConfirmDeleteOpen(false)}
-                  variant="outlined"
-                >
-                  Hủy
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={confirmDelete}
-                >
-                  Xóa
-                </Button>
-              </Box>
-            </Box>
-          </Modal>
+          <div className="bg-white mt-6 rounded shadow mb-6">
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">
+                🧾 Bảng chi tiết chuyến đi và doanh thu từng chuyến
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead>
+                  <tr className="bg-gray-100 text-left">
+                    <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                      Tháng/Năm
+                    </th>
+                    <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                      Tổng chuyến
+                    </th>
+                    <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                      Doanh thu
+                    </th>
+                    <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                      Chi phí
+                    </th>
+                    <th className="px-6 py-3 text-sm font-medium text-gray-600">
+                      Lợi nhuận
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {monthlyFinance.map((item, idx) => (
+                    <tr key={idx} className="border-t">
+                      <td className="px-6 py-3">{item.month}</td>
+                      <td className="px-6 py-3">{item.totalTrips} chuyến</td>
+                      <td className="px-6 py-3">
+                        {item.revenue.toLocaleString("vi-VN")} đ
+                      </td>
+                      <td className="px-6 py-3">
+                        {item.cost.toLocaleString("vi-VN")} đ
+                      </td>
+                      <td className="px-6 py-3">
+                        {item.profit.toLocaleString("vi-VN")} đ
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
+      <Snackbar
+        open={snackBar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackBar}
+      >
+        <Alert
+          onClose={handleCloseSnackBar}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

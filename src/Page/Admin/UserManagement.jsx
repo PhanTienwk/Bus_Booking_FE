@@ -6,6 +6,7 @@ import InvoiceManage from "./InvoiceManagement";
 import RouteManage from "./RouteManagement";
 import TripManage from "./TripManagement";
 import LocationManage from "./LocationManagement";
+import Statistic from "./Statistic";
 import UserInformation from "./UserInformation";
 import BusManage from "./Bus";
 import {
@@ -687,6 +688,8 @@ const UserManagement = () => {
       case 7:
         return <LocationManage />;
       case 8:
+        return <Statistic />;
+      case 9:
         return <UserInformation />;
       case 0:
       default:
