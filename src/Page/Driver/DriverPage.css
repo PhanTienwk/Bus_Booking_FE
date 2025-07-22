@@ -3,7 +3,7 @@
 }
 
 .trip-cell {
-  background-color: #cfe2ff !important;
+  background-color: #e0ecef !important;
   white-space: pre-line;
   text-align: center;
   vertical-align: middle;
@@ -11,9 +11,9 @@
   font-weight: 500;
 }
 
-.ant-table-thead > tr > th {
+/* .ant-table-thead > tr > th {
   background-color: #2fa4e7 !important;
   color: white !important;
   text-align: center;
-}
+} */
 
