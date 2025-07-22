@@ -34,21 +34,24 @@ const handleAddUser = (data) => {
 const handleAddDriver = async (data) => {
   try {
     const formData = new FormData();
-    // formData.append("email", data.email);
-    // formData.append("name", data.name);
-    formData.append("file", data.avatar);
-    // formData.append("cccd", data.cccd);
-    // formData.append("phone", data.phone);
-    // formData.append("gender", data.gender);
-    // formData.append("birthDate", data.birthDate); 
-    // formData.append("password", data.password);
-    console.log(formData);
-    const response = await axios.post("/api/create-photo", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data"
-      },
+    formData.append("email", data.email);
+    formData.append("name", data.name);
+    if (data.avatar && data.avatar instanceof File) {
+      formData.append("file", data.avatar);
+    }
+    formData.append("cccd", data.cccd);
+    formData.append("phone", data.phone);
+    formData.append("gender", data.gender);
+    formData.append("birthDate", data.birthDate); 
+    formData.append("password", data.password);
+    console.log("FormData contents:");
+    for (let pair of formData.entries()) {
+       console.log(`${pair[0]}:`, pair[1]);
+    }
+    const response = await axios.post("/api/create-driver", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data;
+    return response;
   } catch (error) {
     console.log(error)
     throw new Error(

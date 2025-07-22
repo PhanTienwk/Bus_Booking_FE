@@ -314,7 +314,7 @@ const UserManagement = () => {
         cccd: dataAdd.cccdAdd,
         phone: dataAdd.phoneAdd,
         email: dataAdd.emailAdd,
-        avatar: dataAdd.avatarAdd ? dataAdd.avatarAdd.name : null,
+        avatar: dataAdd.avatarAdd,
         password: dataAdd.passwordAdd,
       };
 
@@ -361,6 +361,7 @@ const UserManagement = () => {
     console.log("Payload for add user:", payload);
       const addresponse = await handleAddDriver(payload);
             if (addresponse.code === 200) {
+      
               const usersRes = await getAllDrivers();
               if (usersRes.code === 1000) {
                 const filteredUsers = usersRes.result?.filter(
