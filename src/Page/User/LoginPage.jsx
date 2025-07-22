@@ -4,7 +4,6 @@ import Footer from "../../components/Footer";
 import { login, register, verifyOTP, completeRegistration} from "../../services/auth"; 
 import { useNavigate } from "react-router-dom";
 // import { jwtDecode } from "jwt-decode";
-import axiosInstance from '../../axios';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
