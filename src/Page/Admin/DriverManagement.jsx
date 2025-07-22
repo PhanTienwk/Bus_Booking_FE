@@ -44,6 +44,7 @@ const UserManagement = () => {
 
   const [filteredData, setFilteredData] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [openFormFilter, setOpenFormFilter] = useState(false);
   const [dataAdd, setDataAdd] = useState({
     nameAdd: "",
@@ -65,6 +66,7 @@ const UserManagement = () => {
     message: "",
     severity: "success",
   });
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -252,9 +254,27 @@ const UserManagement = () => {
   };
 
   const handleOnChangeInputAdd = (id, event) => {
-    const value = id === "avatarAdd" ? event.target.files[0] : event.target.value;
+  if (id === "avatarAdd") {
+    const file = event.target.files[0];
+    if (file) {
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage);
+      }
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewImage(imageUrl);
+      setDataAdd({ ...dataAdd, [id]: file });
+    } else {
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage);
+        setPreviewImage(null);
+      }
+      setDataAdd({ ...dataAdd, [id]: null });
+    }
+  } else {
+    const value = event.target.value;
     setDataAdd({ ...dataAdd, [id]: value });
-  };
+  }
+};
 
   const handleSelectChange = (id, value) => {
     setDataAdd({ ...dataAdd, [id]: value });
@@ -314,7 +334,7 @@ const UserManagement = () => {
         cccd: dataAdd.cccdAdd,
         phone: dataAdd.phoneAdd,
         email: dataAdd.emailAdd,
-        avatar: dataAdd.avatarAdd ? dataAdd.avatarAdd.name : null,
+        avatar: dataAdd.avatarAdd,
         password: dataAdd.passwordAdd,
       };
 
@@ -361,6 +381,7 @@ const UserManagement = () => {
     console.log("Payload for add user:", payload);
       const addresponse = await handleAddDriver(payload);
             if (addresponse.code === 200) {
+      
               const usersRes = await getAllDrivers();
               if (usersRes.code === 1000) {
                 const filteredUsers = usersRes.result?.filter(
@@ -467,130 +488,115 @@ const UserManagement = () => {
   };
 
   const AddModal = (
-    <div className="container">
-      <div className="row">
-        <div className="col-md-6">
-          <div className="mb-3">
-            <label htmlFor="nameAdd" className="form-label">
-              Họ và tên <span style={{ color: "red" }}>*</span>
-            </label>
-            <Input
-              id="nameAdd"
-              placeholder="Nhập họ và tên"
-              value={dataAdd.nameAdd}
-              onChange={(event) =>
-                handleOnChangeInputAdd(event.target.id, event)
-              }
-            />
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-3">
-            <label htmlFor="genderAdd" className="form-label">
-              Giới tính <span style={{ color: "red" }}>*</span>
-            </label>
-            <Select
-              id="genderAdd"
-              className="w-100"
-              placeholder="Chọn giới tính"
-              value={dataAdd.genderAdd || undefined}
-              onChange={(value) => handleSelectChange("genderAdd", value)}
-              options={[
-                { label: "Nam", value: "1" },
-                { label: "Nữ", value: "2" },
-                { label: "Khác", value: "3" },
-              ]}
-            />
-          </div>
+  <div className="container">
+    <div className="row">
+      <div className="col-md-6">
+        <div className="mb-3">
+          <label htmlFor="nameAdd" className="form-label">
+            Họ và tên <span style={{ color: "red" }}>*</span>
+          </label>
+          <Input
+            id="nameAdd"
+            placeholder="Nhập họ và tên"
+            value={dataAdd.nameAdd}
+            onChange={(event) => handleOnChangeInputAdd(event.target.id, event)}
+          />
         </div>
       </div>
-      <div className="row">
-        <div className="col-md-12">
-          <div className="mb-3">
-            <label htmlFor="cccdAdd" className="form-label">
-              CCCD: <span style={{ color: "red" }}>*</span>
-            </label>
-            <Input
-              id="cccdAdd"
-              placeholder="Nhập căn cước công dân"
-              value={dataAdd.cccdAdd}
-              onChange={(event) =>
-                handleOnChangeInputAdd(event.target.id, event)
-              }
-            />
-          </div>
+      <div className="col-md-6">
+        <div className="mb-3">
+          <label htmlFor="genderAdd" className="form-label">
+            Giới tính <span style={{ color: "red" }}>*</span>
+          </label>
+          <Select
+            id="genderAdd"
+            className="w-100"
+            placeholder="Chọn giới tính"
+            value={dataAdd.genderAdd || undefined}
+            onChange={(value) => handleSelectChange("genderAdd", value)}
+            options={[
+              { label: "Nam", value: "1" },
+              { label: "Nữ", value: "2" },
+              { label: "Khác", value: "3" },
+            ]}
+          />
         </div>
       </div>
-
-      <div className="row">
-        <div className="col-md-6">
-          <div className="mb-3">
-            <label htmlFor="dobAdd" className="form-label">
-              Ngày sinh <span style={{ color: "red" }}>*</span>
-            </label>
-            <Input
-              id="dobAdd"
-              type="date"
-              value={dataAdd.dobAdd}
-              onChange={(event) =>
-                handleOnChangeInputAdd(event.target.id, event)
-              }
-            />
-          </div>
-        </div>
-        <div className="col-md-6">
-          <div className="mb-3">
-            <label htmlFor="phoneAdd" className="form-label">
-              Số điện thoại <span style={{ color: "red" }}>*</span>
-            </label>
-            <Input
-              id="phoneAdd"
-              placeholder="Nhập số điện thoại"
-              value={dataAdd.phoneAdd}
-              onChange={(event) =>
-                handleOnChangeInputAdd(event.target.id, event)
-              }
-            />
-          </div>
+    </div>
+    <div className="row">
+      <div className="col-md-12">
+        <div className="mb-3">
+          <label htmlFor="cccdAdd" className="form-label">
+            CCCD: <span style={{ color: "red" }}>*</span>
+          </label>
+          <Input
+            id="cccdAdd"
+            placeholder="Nhập căn cước công dân"
+            value={dataAdd.cccdAdd}
+            onChange={(event) => handleOnChangeInputAdd(event.target.id, event)}
+          />
         </div>
       </div>
-
-      <div className="row">
-        <div className="col-md-12">
-          <div className="mb-3">
-            <label htmlFor="emailAdd" className="form-label">
-              Email <span style={{ color: "red" }}>*</span>
-            </label>
-            <Input
-              id="emailAdd"
-              placeholder="Nhập email"
-              value={dataAdd.emailAdd}
-              onChange={(event) =>
-                handleOnChangeInputAdd(event.target.id, event)
-              }
-            />
-          </div>
+    </div>
+    <div className="row">
+      <div className="col-md-6">
+        <div className="mb-3">
+          <label htmlFor="dobAdd" className="form-label">
+            Ngày sinh <span style={{ color: "red" }}>*</span>
+          </label>
+          <Input
+            id="dobAdd"
+            type="date"
+            value={dataAdd.dobAdd}
+            onChange={(event) => handleOnChangeInputAdd(event.target.id, event)}
+          />
         </div>
       </div>
-
-      <div className="row">
-        <div className="col-md-12">
-          <div className="mb-3">
-            <label htmlFor="passwordAdd" className="form-label">
-              Mật khẩu <span style={{ color: "red" }}>*</span>
-            </label>
-            <Input.Password
-              id="passwordAdd"
-              placeholder="Nhập mật khẩu"
-              value={dataAdd.passwordAdd}
-              onChange={(event) =>
-                handleOnChangeInputAdd(event.target.id, event)
-              }
-            />
-          </div>
+      <div className="col-md-6">
+        <div className="mb-3">
+          <label htmlFor="phoneAdd" className="form-label">
+            Số điện thoại <span style={{ color: "red" }}>*</span>
+          </label>
+          <Input
+            id="phoneAdd"
+            placeholder="Nhập số điện thoại"
+            value={dataAdd.phoneAdd}
+            onChange={(event) => handleOnChangeInputAdd(event.target.id, event)}
+          />
         </div>
       </div>
-      <div className="row">
+    </div>
+    <div className="row">
+      <div className="col-md-12">
+        <div className="mb-3">
+          <label htmlFor="emailAdd" className="form-label">
+            Email <span style={{ color: "red" }}>*</span>
+          </label>
+          <Input
+            id="emailAdd"
+            placeholder="Nhập email"
+            value={dataAdd.emailAdd}
+            onChange={(event) => handleOnChangeInputAdd(event.target.id, event)}
+          />
+        </div>
+      </div>
+    </div>
+    <div className="row">
+      <div className="col-md-12">
+        <div className="mb-3">
+          <label htmlFor="passwordAdd" className="form-label">
+            Mật khẩu <span style={{ color: "red" }}>*</span>
+          </label>
+          <Input.Password
+            id="passwordAdd"
+            placeholder="Nhập mật khẩu"
+            value={dataAdd.passwordAdd}
+            onChange={(event) => handleOnChangeInputAdd(event.target.id, event)}
+          />
+        </div>
+      </div>
+    </div>
+    <div className="row">
       <div className="col-md-12">
         <div className="mb-3">
           <label htmlFor="avatarAdd" className="form-label">
@@ -600,18 +606,32 @@ const UserManagement = () => {
             id="avatarAdd"
             type="file"
             accept="image/*"
-            onChange={(event) =>
-              handleOnChangeInputAdd(event.target.id, event)
-            }
+            onChange={(event) => handleOnChangeInputAdd(event.target.id, event)}
           />
           {dataAdd.avatarAdd && (
-            <p>Đã chọn: {dataAdd.avatarAdd.name}</p>
+            <p className="mt-2">Đã chọn: {dataAdd.avatarAdd.name}</p>
+          )}
+          {previewImage && (
+            <div className="mt-3">
+              <p>Xem trước ảnh:</p>
+              <img
+                src={previewImage}
+                alt="Avatar Preview"
+                style={{
+                  maxWidth: "200px",
+                  maxHeight: "200px",
+                  objectFit: "contain",
+                  border: "1px solid #d9d9d9",
+                  borderRadius: "4px",
+                }}
+              />
+            </div>
           )}
         </div>
       </div>
     </div>
-    </div>
-  );
+  </div>
+);
 
   const UpdateModal = (
     <div className="container">
