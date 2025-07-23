@@ -842,7 +842,7 @@ export default function BusTripManage() {
               columns={getColumns()}
               dataSource={filteredData}
               rowKey="id"
-              pagination={{ pageSize: 5 }}
+              pagination={{ pageSize: 10 }}
             />
           )}
         </CardContent>
