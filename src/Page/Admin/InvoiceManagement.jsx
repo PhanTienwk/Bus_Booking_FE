@@ -1,4 +1,3 @@
-import AdminTopbar from "../../components/AdminTopbar";
 import { Table } from "antd";
 import { useEffect, useState } from "react";
 import { getAllInvoices, getAllInvoicesId } from "../../services/InvoiceService"; 
@@ -15,8 +14,6 @@ import {
 } from "@mui/material";
 
 const AdminLayout = () => {
-  const username = "Admin Dũng";
-
   const [invoiceList, setInvoiceList] = useState([]);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
@@ -49,10 +46,10 @@ const AdminLayout = () => {
     }
   };
 
-  const handleDelete = (invoice) => {
-    setInvoiceToDelete(invoice);
-    setConfirmDeleteOpen(true);
-  };
+  // const handleDelete = (invoice) => {
+  //   setInvoiceToDelete(invoice);
+  //   setConfirmDeleteOpen(true);
+  // };
 
   const confirmDelete = async () => {
     toast.success("Đã xóa hóa đơn (mô phỏng)");

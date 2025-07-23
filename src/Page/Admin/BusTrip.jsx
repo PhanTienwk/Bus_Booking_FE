@@ -32,13 +32,12 @@ import {
 } from "../../services/BusTripService";
 import FilterButtonBusTrip from "../../components/Button/FilterButtonTrip";
 export default function BusTripManage() {
-  const [data, setData] = useState([]);
+  const [, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [busRoutes, setBusRoutes] = useState([]);
   const [buses, setBuses] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [selectedBusTrip, setSelectedBusTrip] = useState(null);
-  const [idDelete, setIdDelete] = useState(null);
   const [openFormFilter, setOpenFormFilter] = useState(false);
   const [dataAdd, setDataAdd] = useState({
     busRouteId: "",
@@ -210,10 +209,10 @@ export default function BusTripManage() {
   };
 
   // Handle delete modal
-  const handleDelete = (id) => {
-    setModals({ ...modals, delete: true });
-    setIdDelete(id);
-  };
+  // const handleDelete = (id) => {
+  //   setModals({ ...modals, delete: true });
+  //   setIdDelete(id);
+  // };
 
   // Toggle modal
   const toggleModal = (type, value) => {

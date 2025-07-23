@@ -4,7 +4,7 @@ import BusStationManage from "./BusStation";
 import DriverManage from "./DriverManagement";
 import InvoiceManage from "./InvoiceManagement";
 import RouteManage from "./RouteManagement";
-import TripManage from "./TripManagement";
+import BusTrip from "./BusTrip";
 import LocationManage from "./LocationManagement";
 import Statistic from "./Statistic";
 import UserInformation from "./UserInformation";
@@ -680,7 +680,7 @@ const UserManagement = () => {
       case 3:
         return <RouteManage />;
       case 4:
-        return <TripManage />;
+        return <BusTrip />;
       case 5:
         return <BusStationManage />;
       case 6:

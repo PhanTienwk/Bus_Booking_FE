@@ -9,6 +9,11 @@ const getScheduleByDriverAndDateRange = (driverId, startDate, endDate) => {
   });
 };
 
+const getMyInfo = () => {
+  return axios.get("/api/myinfo");
+};
+ 
 export { 
   getScheduleByDriverAndDateRange,
+  getMyInfo,
  };
