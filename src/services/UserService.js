@@ -31,6 +31,37 @@ const handleAddUser = (data) => {
   }
 };
 
+const getUserInfor = () => {
+  return axios.get("/api/myinfouser");
+}
+
+const updateUserInfor = async (formData) => {
+  try {
+    const response = await axios.post("/api/update-user-info", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+    throw new Error(
+      error?.response?.data?.message || error?.message || "Cập nhật thông tin thất bại."
+    );
+  }
+};
+
+const updatePassword = async (formData) => {
+  try {
+    const response = await axios.post("/api/reset-pass", formData);
+    return response;
+  } catch (error) {
+    console.log(error);
+    throw new Error(
+      error?.response?.message || error?.message || "Cập nhật thông tin thất bại."
+    );
+  }
+};
+
+
 const handleAddDriver = async (data) => {
   try {
     const formData = new FormData();
@@ -114,5 +145,8 @@ export {
   handleFilterUsers,
   handleFilterDrivers,
   handleAddUser,
-  handleAddDriver
+  handleAddDriver,
+  getUserInfor,
+  updateUserInfor,
+  updatePassword
  };

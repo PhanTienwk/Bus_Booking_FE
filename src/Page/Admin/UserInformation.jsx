@@ -1,392 +1,493 @@
-import AdminTopbar from "../../components/AdminTopbar";
+import React, { useState, useEffect } from "react";
+import { getUserInfor, updateUserInfor,updatePassword } from "../../services/UserService";
+import { Snackbar, Alert } from "@mui/material";
 
-import { Table } from "antd";
-import { useEffect, useState } from "react";
-import {
-  getAllUsers,
-  updateUserById,
-  deleteUserById,
-} from "../../services/UserService";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+const InforUserPage = () => {
+  const [activeSection, setActiveSection] = useState("account");
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    gender: "1",
+    birthDate: "",
+    phone: "",
+    email: "",
+    cccd: "",
+    avatar: "",
+  });
+  const [passwordData, setPasswordData] = useState({
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+  });
+  const [avatar, setAvatar] = useState("/images/avatar.jpg");
+  const [snackBar, setSnackBar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Typography,
-  Modal,
-  Box,
-  Button,
-  Card,
-  CardContent,
-} from "@mui/material";
-
-const AdminLayout = () => {
-  const username = "Admin Dũng";
-
-  const [user] = useState({ roles: [{ role: "ADMIN" }] });
-
-  const [userList, setUserList] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState(null);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUserData = async () => {
     try {
-      const response = await getAllUsers();
-      const filteredUsers = response.result?.filter(
-        (user) => user.account?.role?.id === 1 && user.account?.status === 1
-      );
-      setUserList(filteredUsers);
+      setIsLoading(true);
+      const response = await getUserInfor(); // Gọi API
+      console.log(response)
+
+      if (response?.code === 1000) {
+        const result = response.result;
+        setUserInfo({
+          name: result.name || "",
+          gender: String(result.gender || "1"),
+          birthDate: result.birthDate || "",
+          phone: result.phone || "",
+          email: result.email || "",
+          cccd: result.cccd || "",
+          avatar: result.avatar || "",
+        });
+        setAvatar(result.avatar || "/images/avatar.jpg");
+      } else {
+        handleOpenSnackBar("Lấy thông tin người dùng thất bại!", "error");
+      }
     } catch (error) {
-      console.error("Lỗi khi tải danh sách người dùng:", error);
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+      handleOpenSnackBar(
+        error?.response?.data?.message || "Lỗi khi lấy thông tin người dùng!",
+        "error"
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleUpdate = (record) => {
-    setSelectedUser(record);
-    setIsModalOpen(true);
+  fetchUserData();
+}, []);
+  const handlePasswordChange = (e) => {
+  const { name, value } = e.target;
+  setPasswordData({ ...passwordData, [name]: value });
+  };
+
+
+  const handleLogout = () => {
+    console.log("Đăng xuất thành công");
+    setShowLogoutConfirm(false);
+  };
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUserInfo({ ...userInfo, [name]: value });
+  };
+
+  const handleAvatarChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAvatar(reader.result); 
+    };
+    reader.readAsDataURL(file);
+    setUserInfo({ ...userInfo, avatar: file });
+  }
+  };
+  const handlePasswordSave = async () => {
+  const { currentPassword, newPassword, confirmPassword } = passwordData;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    handleOpenSnackBar("Vui lòng điền đầy đủ thông tin!", "error");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    handleOpenSnackBar("Mật khẩu mới không khớp!", "error");
+    return;
+  }
+
+  try {
+    const res = await updatePassword({
+      currentPassword,
+      newPassword,
+    });
+
+    if (res.code === 1000) {
+      handleOpenSnackBar("Cập nhật mật khẩu thành công!", "success");
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } else {
+      handleOpenSnackBar(res.message || "Cập nhật mật khẩu thất bại!", "error");
+    }
+  } catch (error) {
+    console.error("Lỗi khi cập nhật mật khẩu:", error);
+    handleOpenSnackBar(
+      error?.response?.data?.message || "Lỗi khi cập nhật mật khẩu!",
+      "error"
+    );
+  }
   };
 
   const handleSave = async () => {
+    if (!userInfo.name || userInfo.name.trim() === "") {
+      handleOpenSnackBar("Tên không được để trống!", "error");
+      return;
+    }
+    if (!userInfo.birthDate) {
+      handleOpenSnackBar("Ngày sinh không được để trống!", "error");
+      return;
+    }
+    if (!/^\d{10}$/.test(userInfo.phone)) {
+      handleOpenSnackBar("Số điện thoại phải gồm 10 chữ số!", "error");
+      return;
+    }
+    if (!/^\d{12}$/.test(userInfo.cccd)) {
+      handleOpenSnackBar("CCCD phải gồm 12 chữ số!", "error");
+      return;
+    }
+
     try {
-      const formattedBirthDate = selectedUser.birthDate
-        ? selectedUser.birthDate.includes("T")
-          ? selectedUser.birthDate
-          : `${selectedUser.birthDate}T00:00:00`
-        : null;
-
-      const payload = {
-        name: selectedUser.name,
-        phone: selectedUser.phone,
-        gender: selectedUser.gender,
-        birthDate: formattedBirthDate,
-      };
-
-      await updateUserById(selectedUser.id, payload);
-      await fetchUsers();
-      toast.success("Cập nhật thành công");
-      setIsModalOpen(false);
+      const formData = new FormData();
+      formData.append("name", userInfo.name);
+      formData.append("gender", userInfo.gender);
+      formData.append("birthDate", userInfo.birthDate);
+      formData.append("phone", userInfo.phone);
+      formData.append("cccd", userInfo.cccd);
+      if (userInfo.avatar instanceof File) {
+        formData.append("file", userInfo.avatar); 
+      }
+      for (let pair of formData.entries()) {
+       console.log(`${pair[0]}:`, pair[1]);
+      }
+      const updateRes = await updateUserInfor(formData);
+      console.log(updateRes)
+      if (updateRes.code === 1000) {
+        handleOpenSnackBar("Cập nhật thông tin thành công!", "success");
+        setIsEditing(false);
+      } else {
+        handleOpenSnackBar(
+          updateRes.message || "Cập nhật thông tin thất bại!",
+          "error"
+        );
+      }
     } catch (error) {
-      toast.error("Cập nhật thất bại");
-      console.error("Lỗi cập nhật:", error);
+      console.error("Lỗi khi cập nhật thông tin:", error);
+      handleOpenSnackBar(
+        error?.response?.message || "Lỗi khi cập nhật thông tin!",
+        "error"
+      );
     }
   };
 
-  const handleDelete = (user) => {
-    setUserToDelete(user);
-    setConfirmDeleteOpen(true);
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackBar({ open: true, message, severity });
   };
 
-  const confirmDelete = async () => {
-    if (!userToDelete) return;
+  const handleCloseSnackBar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackBar({ ...snackBar, open: false });
+  };
 
-    try {
-      await deleteUserById(userToDelete.id);
-      toast.success("Xóa người dùng thành công");
-      await fetchUsers();
-      setConfirmDeleteOpen(false);
-    } catch (error) {
-      toast.error("Xóa thất bại");
-      console.error("Lỗi xóa:", error);
-    } finally {
-      setConfirmDeleteOpen(false);
-      setUserToDelete(null);
+  const renderSection = () => {
+    if (isLoading) {
+      return <div className="md:col-span-5">Đang tải...</div>;
     }
-  };
 
-  const getColumns = () => {
-    const role = user.roles?.[0]?.role || -1;
-
-    const columns = [
-      { title: "ID", dataIndex: "id", key: "id" },
-      { title: "Tên", dataIndex: "name", key: "name" },
-      {
-        title: "Giới tính",
-        dataIndex: "gender",
-        key: "gender",
-        render: (g) => {
-          if (g === 1) return "Nam";
-          if (g === 2) return "Nữ";
-          if (g === 3) return "Khác";
-          return "Không rõ";
-        },
-      },
-      {
-        title: "Ngày sinh",
-        dataIndex: "birthDate",
-        key: "birthDate",
-        render: (date) => {
-          if (!date) return "Không có";
-          const d = new Date(date);
-          return d.toLocaleDateString("vi-VN");
-        },
-      },
-      { title: "SĐT", dataIndex: "phone", key: "phone" },
-      {
-        title: "Email",
-        dataIndex: ["account", "username"],
-        key: "username",
-      },
-    ];
-
-    if (role !== "CUSTOMER") {
-      columns.push({
-        title: "Hành động",
-        key: "action",
-        render: (_, record) => (
-          <div>
-            <Button
-              onClick={() => handleUpdate(record)}
-              style={{ marginRight: "10px" }}
-            >
-              Cập nhật
-            </Button>
-            <Button onClick={() => handleDelete(record)}>Xóa</Button>
+    if (activeSection === "account") {
+      return (
+        <div className="md:col-span-5">
+          <h2 className="text-xl font-bold text-gray-800 mb-1">
+            Thông tin tài khoản
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Quản lý thông tin hồ sơ để bảo mật tài khoản
+          </p>
+          <div className="bg-white rounded-xl p-6 border">
+            <div className="flex justify-center mb-6 relative">
+              <img
+                src={avatar}
+                alt="Avatar"
+                className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
+              />
+              {isEditing && (
+                <label className="absolute bottom-0 right-0 bg-[#ef5222] text-white p-2 rounded-full cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                </label>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-800">
+              <div>
+                <label className="block text-gray-500 mb-1">Họ và tên:</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={userInfo.name}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 mb-1">Giới tính:</label>
+                <select
+                  name="gender"
+                  value={userInfo.gender}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 text-gray-500"
+                  disabled={!isEditing}
+                >
+                  <option value="1">Nam</option>
+                  <option value="2">Nữ</option>
+                  <option value="3">Khác</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-500 mb-1">Ngày sinh:</label>
+                <input
+                  type="date"
+                  name="birthDate"
+                  value={userInfo.birthDate}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 mb-1">Số điện thoại:</label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={userInfo.phone}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  disabled={!isEditing}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-gray-500 mb-1">CCCD:</label>
+                <input
+                  type="text"
+                  name="cccd"
+                  value={userInfo.cccd}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+            <div className="flex justify-center mt-8">
+              {isEditing ? (
+                <div className="flex gap-4">
+                  <button
+                    onClick={handleSave}
+                    className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition"
+                  >
+                    Lưu
+                  </button>
+                  <button
+                    onClick={handleEditToggle}
+                    className="bg-gray-300 text-gray-800 px-6 py-2 rounded-full font-medium hover:bg-gray-400 transition"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleEditToggle}
+                  className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition"
+                >
+                  Chỉnh sửa
+                </button>
+              )}
+            </div>
           </div>
-        ),
-      });
+        </div>
+      );
+    } else if (activeSection === "reset-password") {
+      return (
+        <div className="md:col-span-5">
+          <h2 className="text-xl font-bold text-gray-800 mb-1">
+            Đặt lại mật khẩu
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Thay đổi mật khẩu để tăng cường bảo mật tài khoản
+          </p>
+          <div className="bg-white rounded-xl p-6 border">
+            <div className="grid grid-cols-1 gap-4 text-sm text-gray-800">
+              <div>
+                <label className="block text-gray-500 mb-1">
+                  Mật khẩu hiện tại:
+                </label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  placeholder="Nhập mật khẩu hiện tại"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 mb-1">
+                  Mật khẩu mới:
+                </label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  placeholder="Nhập mật khẩu mới"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-500 mb-1">
+                  Xác nhận mật khẩu mới:
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  placeholder="Xác nhận mật khẩu mới"
+                />
+              </div>
+            </div>
+            <div className="flex justify-center mt-8">
+              <button onClick={handlePasswordSave} className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition">
+                Lưu thay đổi
+              </button>
+            </div>
+          </div>
+        </div>
+      );
     }
-
-    return columns;
+    return null;
   };
 
   return (
-    <div className="flex">
-      {/* <AdminSidebar /> */}
-      <main className="ml-64 w-full bg-gray-50 min-h-screen">
-        <AdminTopbar username={username} />
-
-        <div className="px-6 pt-6 pb-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Khách hàng</p>
-                <p className="text-2xl font-semibold">11</p>
-              </div>
+    <div>
+      <section className="bg-[#f7f7f7] py-6 px-4 bg-white">
+        <div className="max-w-6xl mx-auto bg-white rounded-xl p-6 grid grid-cols-1 md:grid-cols-7 gap-8">
+          <div className="md:col-span-2 flex flex-col gap-3 bg-white rounded-xl p-6 border">
+            <button
+              onClick={() => setActiveSection("account")}
+              className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition ${
+                activeSection === "account"
+                  ? "text-orange-600 bg-[#FFF3E0] hover:bg-[#FFE0B2]"
+                  : "text-gray-600 bg-white hover:text-orange-500"
+              }`}
+            >
               <img
-                src="/images/customer.png"
-                alt="icon customer"
-                className="w-10 h-10 object-contain"
+                src="/images/infor_user.svg"
+                className="w-7 h-7"
+                alt="Thông tin"
               />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Tổng số xe</p>
-                <p className="text-2xl font-semibold">12</p>
-              </div>
+              Thông tin tài khoản
+            </button>
+            <button
+              onClick={() => setActiveSection("reset-password")}
+              className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition ${
+                activeSection === "reset-password"
+                  ? "text-orange-600 bg-[#FFF3E0] hover:bg-[#FFE0B2]"
+                  : "text-gray-600 bg-white hover:text-orange-500"
+              }`}
+            >
               <img
-                src="/images/bus.png"
-                alt="icon bus"
-                className="w-10 h-10 object-contain"
+                src="/images/change_password.svg"
+                className="w-7 h-7"
+                alt="Mật khẩu"
               />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Số chuyến xe</p>
-                <p className="text-2xl font-semibold">10</p>
-              </div>
-              <img
-                src="/images/bus-route.png"
-                alt="icon bus-route"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
-            <div className="bg-white px-6 py-4 rounded shadow flex items-center justify-between">
-              <div>
-                <p className="text-gray-500">Tổng doanh thu</p>
-                <p className="text-2xl font-semibold">0 đ</p>
-              </div>
-              <img
-                src="/images/admin_image/money.png"
-                alt="icon money"
-                className="w-10 h-10 object-contain"
-              />
-            </div>
+              Đặt lại mật khẩu
+            </button>
           </div>
-
-          <Box sx={{ padding: 0 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  Thông tin người dùng
-                </Typography>
-                <Table
-                  columns={getColumns()}
-                  dataSource={userList}
-                  rowKey="id"
-                  pagination={{ pageSize: 5 }}
-                />
-              </CardContent>
-            </Card>
-          </Box>
-          <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 500,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: 24,
-                p: 4,
-              }}
-            >
-              <Typography variant="h6" gutterBottom>
-                Cập nhật người dùng
-              </Typography>
-
-              {selectedUser && (
-                <>
-                  <TextField
-                    fullWidth
-                    label="Tên"
-                    value={selectedUser.name || ""}
-                    onChange={(e) =>
-                      setSelectedUser({ ...selectedUser, name: e.target.value })
-                    }
-                    margin="normal"
-                  />
-
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Giới tính</InputLabel>
-                    <Select
-                      value={selectedUser.gender}
-                      label="Giới tính"
-                      onChange={(e) =>
-                        setSelectedUser({
-                          ...selectedUser,
-                          gender: e.target.value,
-                        })
-                      }
-                    >
-                      <MenuItem value={1}>Nam</MenuItem>
-                      <MenuItem value={2}>Nữ</MenuItem>
-                      <MenuItem value={3}>Khác</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  <TextField
-                    fullWidth
-                    label="Ngày sinh"
-                    type="date"
-                    value={
-                      selectedUser.birthDate
-                        ? new Date(selectedUser.birthDate)
-                            .toISOString()
-                            .split("T")[0]
-                        : ""
-                    }
-                    onChange={(e) =>
-                      setSelectedUser({
-                        ...selectedUser,
-                        birthDate: e.target.value,
-                      })
-                    }
-                    margin="normal"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Số điện thoại"
-                    value={selectedUser.phone || ""}
-                    onChange={(e) =>
-                      setSelectedUser({
-                        ...selectedUser,
-                        phone: e.target.value,
-                      })
-                    }
-                    margin="normal"
-                  />
-
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    value={selectedUser.account?.username || ""}
-                    margin="normal"
-                    disabled
-                  />
-
-                  <Box className="mt-4 flex justify-end gap-2">
-                    <Button
-                      onClick={() => setIsModalOpen(false)}
-                      variant="outlined"
-                    >
-                      Hủy
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSave}
-                    >
-                      Lưu
-                    </Button>
-                  </Box>
-                </>
-              )}
-            </Box>
-          </Modal>
-
-          <Modal
-            open={confirmDeleteOpen}
-            onClose={() => setConfirmDeleteOpen(false)}
+          {renderSection()}
+        </div>
+        {showLogoutConfirm && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
+            onClick={() => setShowLogoutConfirm(false)}
           >
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: 400,
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: 24,
-                p: 4,
-              }}
+            <div
+              className="bg-white rounded-xl p-6 shadow-xl max-w-md text-center transform -translate-y-20"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Typography variant="h6" gutterBottom>
-                Xác nhận xóa
-              </Typography>
-              <Typography>
-                Bạn có chắc chắn muốn xóa người dùng{" "}
-                <strong>{userToDelete?.name}</strong>?
-              </Typography>
-
-              <Box className="mt-4 flex justify-end gap-2">
-                <Button
-                  onClick={() => setConfirmDeleteOpen(false)}
-                  variant="outlined"
+              <div className="flex justify-center mb-4">
+                <div className="bg-green-100 rounded-full p-3">
+                  <svg
+                    className="w-6 h-6 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                Bạn có chắc muốn đăng xuất?
+              </h3>
+              <p className="text-gray-500 text-sm mb-6">
+                Nếu bạn đăng xuất, phiên làm việc hiện tại sẽ kết thúc.
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="px-5 py-1 rounded-md border border-gray-300 hover:bg-gray-100 transition font-medium"
                 >
                   Hủy
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={confirmDelete}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-5 py-1 rounded-md bg-[#6366f1] text-white hover:bg-indigo-600 transition font-medium"
                 >
-                  Xóa
-                </Button>
-              </Box>
-            </Box>
-          </Modal>
-        </div>
-      </main>
+                  Đăng xuất
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+      <Snackbar
+        open={snackBar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackBar}
+      >
+        <Alert
+          onClose={handleCloseSnackBar}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
 
-export default AdminLayout;
+export default InforUserPage;
