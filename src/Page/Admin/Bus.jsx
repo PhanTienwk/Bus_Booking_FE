@@ -252,7 +252,7 @@ export default function BusManage() {
       const payload = {
         busTypeIdAdd: parseInt(dataAdd.busTypeIdAdd),
         nameAdd: dataAdd.nameAdd,
-        statusAdd: selectedBus.status === 1 ? 1 : 0,
+        statusAdd: dataAdd.statusAdd ? 1 : 0,
       };
       const addRes = await handleAddBus(payload);
       if (addRes.code === 1000) {
@@ -525,7 +525,7 @@ export default function BusManage() {
               columns={getColumns()}
               dataSource={filteredData}
               rowKey="id"
-              pagination={{ pageSize: 5 }}
+              pagination={{ pageSize: 10 }}
             />
           )}
         </CardContent>

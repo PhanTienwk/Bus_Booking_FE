@@ -4,7 +4,7 @@ import BusStationManage from "./BusStation";
 import DriverManage from "./DriverManagement";
 import InvoiceManage from "./InvoiceManagement";
 import RouteManage from "./RouteManagement";
-import TripManage from "./TripManagement";
+import BusTrip from "./BusTrip";
 import LocationManage from "./LocationManagement";
 import Statistic from "./Statistic";
 import UserInformation from "./UserInformation";
@@ -73,7 +73,7 @@ const UserManagement = () => {
     const fetchData = async () => {
       try {
         const usersRes = await getAllUsers();
-        console.log(usersRes)
+        console.log(usersRes);
         if (usersRes.code === 1000) {
           const filteredUsers = usersRes.result?.filter(
             (user) => user.account?.role?.id === 1 && user.account?.status === 1
@@ -296,17 +296,11 @@ const UserManagement = () => {
         return;
       }
       if (!/^\d{12}$/.test(dataAdd.cccdAdd)) {
-        handleOpenSnackBar(
-          "CCCD phải gồm 12 chữ số!",
-          "error"
-        );
+        handleOpenSnackBar("CCCD phải gồm 12 chữ số!", "error");
         return;
       }
       if (!/^\d{10}$/.test(dataAdd.phoneAdd)) {
-        handleOpenSnackBar(
-          "Số điện thoại phải gồm 10 chữ số!",
-          "error"
-        );
+        handleOpenSnackBar("Số điện thoại phải gồm 10 chữ số!", "error");
         return;
       }
 
@@ -365,8 +359,6 @@ const UserManagement = () => {
       } else {
         handleOpenSnackBar("Thêm người dùng thất bại!", "error");
       }
-
-
     } catch (error) {
       console.error("Lỗi khi thêm người dùng:", error.response?.data || error);
       handleOpenSnackBar(
@@ -680,7 +672,7 @@ const UserManagement = () => {
       case 3:
         return <RouteManage />;
       case 4:
-        return <TripManage />;
+        return <BusTrip />;
       case 5:
         return <BusStationManage />;
       case 6:
