@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button, Input, Select, DatePicker } from "antd";
-import moment from "moment";
 
 const { Option } = Select;
 

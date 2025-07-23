@@ -10,10 +10,14 @@ import "dayjs/locale/vi";
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import { Table, Typography as AntTypography, DatePicker, Select } from "antd";
 
-import { getScheduleByDriverAndDateRange } from "../../services/DriverService";
+import {
+  getMyInfo,
+  getScheduleByDriverAndDateRange,
+} from "../../services/DriverService";
 
 const UserManagement = () => {
   const username = "Tài xế Dũng";
+  const [userInfo, setUserInfo] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const { Text } = AntTypography;
 
@@ -27,6 +31,19 @@ const UserManagement = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
+    getMyInfo()
+      .then((res) => {
+        console.log("Thông tin người dùng:", res.result);
+        setUserInfo(res.result);
+      })
+      .catch((err) => {
+        console.error("Lỗi lấy thông tin người dùng:", err);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!userInfo) return;
+
     const startOfMonth = selectedMonth.startOf("month");
     const endOfMonth = selectedMonth.endOf("month");
 
@@ -50,37 +67,88 @@ const UserManagement = () => {
     }
 
     setWeeks(result);
-    setSelectedWeek(null);
 
-    const driverId = 1;
-    const startDate = "2025-06-29T23:59:59";
-    const endDate = "2025-07-27T23:59:59";
+    if (result.length > 0) {
+      setSelectedWeek(result[0].value);
+    }
+  }, [selectedMonth, userInfo]);
+  
+  useEffect(() => {
+    if (!userInfo || !selectedWeek) return;
 
-    getScheduleByDriverAndDateRange(driverId, startDate, endDate)
+    const [startDateStr, endDateStr] = selectedWeek.split("_");
+    const startDate = dayjs(startDateStr).startOf("day").toISOString();
+    const endDate = dayjs(endDateStr).endOf("day").toISOString();
+
+    console.log("StartDate:", startDate);
+    console.log("EndDate:", endDate);
+
+    getScheduleByDriverAndDateRange(userInfo.id, startDate, endDate)
       .then((response) => {
-        console.log("Lịch làm việc của tài xế:", response.data);
+        const trips = response.result;
+
+        if (Array.isArray(trips)) {
+          setScheduleData(generateEmptySchedule());
+
+          trips.forEach((trip) => {
+            const startDateTime = dayjs(trip.departureTime);
+            const endDateTime = startDateTime.add(trip.estimatedHours, "hour");
+
+            const dayKeys = [
+              "sunday",
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday",
+            ];
+            const day = dayKeys[startDateTime.day()];
+            const start = Number(startDateTime.format("HH"));
+
+            const hour = endDateTime.hour();
+            const minute = endDateTime.minute();
+            const end = minute === 0 ? hour : hour + 1;
+
+            const startTime = startDateTime.format("HH:mm");
+            const endTime = endDateTime.format("HH:mm");
+
+            addTrip(
+              day,
+              start,
+              end,
+              trip.routeName,
+              trip.departureStationAddress,
+              trip.arrivalStationAddress,
+              trip.licensePlate,
+              startTime,
+              endTime
+            );
+          });
+        }
       })
       .catch((error) => {
         console.error("Lỗi không thể lấy lịch làm việc:", error);
       });
-  }, [selectedMonth]);
+  }, [selectedWeek, userInfo]);
 
-  const hours = Array.from({ length: 24 }, (_, i) => ({
-    key: `${i}`,
-    time: `${String(i).padStart(2, "0")}:00 - ${String(i + 1).padStart(
-      2,
-      "0"
-    )}:00`,
-    monday: "",
-    tuesday: "",
-    wednesday: "",
-    thursday: "",
-    friday: "",
-    saturday: "",
-    sunday: "",
-  }));
+  const generateEmptySchedule = () =>
+    Array.from({ length: 24 }, (_, i) => ({
+      key: `${i}`,
+      time: `${String(i).padStart(2, "0")}:00 - ${String(i + 1).padStart(
+        2,
+        "0"
+      )}:00`,
+      monday: "",
+      tuesday: "",
+      wednesday: "",
+      thursday: "",
+      friday: "",
+      saturday: "",
+      sunday: "",
+    }));
 
-  const scheduleData = [...hours];
+  const [scheduleData, setScheduleData] = useState(generateEmptySchedule());
 
   const addTrip = (
     day,
@@ -101,126 +169,48 @@ const UserManagement = () => {
       timeRange: `${startTime} - ${endTime}`,
     };
 
-    if (startHour <= endHour) {
-      const tripInfo = { ...baseTripInfo, daySplit: "full" };
-      for (let i = startHour; i < endHour; i++) {
-        scheduleData[i][day] = tripInfo;
-      }
-    } else {
-      const firstPart = 24 - startHour;
-      const secondPart = endHour;
-      const isFirstLonger = firstPart >= secondPart;
+    setScheduleData((prevData) => {
+      const updated = [...prevData.map((row) => ({ ...row }))];
 
-      const nextDayMap = {
-        monday: "tuesday",
-        tuesday: "wednesday",
-        wednesday: "thursday",
-        thursday: "friday",
-        friday: "saturday",
-        saturday: "sunday",
-        sunday: "monday",
-      };
-      const nextDay = nextDayMap[day];
+      if (startHour <= endHour) {
+        const tripInfo = { ...baseTripInfo, daySplit: "full" };
+        for (let i = startHour; i < endHour; i++) {
+          updated[i][day] = tripInfo;
+        }
+      } else {
+        const firstPart = 24 - startHour;
+        const secondPart = endHour;
+        const isFirstLonger = firstPart >= secondPart;
 
-      for (let i = startHour; i < 24; i++) {
-        scheduleData[i][day] = {
-          ...baseTripInfo,
-          daySplit: isFirstLonger ? "primary" : "secondary",
+        const nextDayMap = {
+          monday: "tuesday",
+          tuesday: "wednesday",
+          wednesday: "thursday",
+          thursday: "friday",
+          friday: "saturday",
+          saturday: "sunday",
+          sunday: "monday",
         };
+        const nextDay = nextDayMap[day];
+
+        for (let i = startHour; i < 24; i++) {
+          updated[i][day] = {
+            ...baseTripInfo,
+            daySplit: isFirstLonger ? "primary" : "secondary",
+          };
+        }
+
+        for (let i = 0; i < endHour; i++) {
+          updated[i][nextDay] = {
+            ...baseTripInfo,
+            daySplit: isFirstLonger ? "secondary" : "primary",
+          };
+        }
       }
 
-      for (let i = 0; i < endHour; i++) {
-        scheduleData[i][nextDay] = {
-          ...baseTripInfo,
-          daySplit: isFirstLonger ? "secondary" : "primary",
-        };
-      }
-    }
+      return updated;
+    });
   };
-
-  addTrip(
-    "monday",
-    9,
-    18,
-    "BX Miền Đông - BX Cần Thơ",
-    "286 Đinh Bộ Lĩnh, Bình Thạnh",
-    "KDC Hưng Phú, Q.Cái Răng",
-    "51B-123.45",
-    "09:00",
-    "17:30"
-  );
-
-  addTrip(
-    "tuesday",
-    11,
-    20,
-    "BX An Sương - BX Vũng Tàu",
-    "QL22, Hóc Môn",
-    "15 Lê Hồng Phong, Vũng Tàu",
-    "51B-456.78",
-    "11:00",
-    "20:00"
-  );
-
-  addTrip(
-    "wednesday",
-    7,
-    16,
-    "BX Chợ Lớn - BX Long Khánh",
-    "209 Hồng Bàng, Q.5",
-    "QL1A, Long Khánh, Đồng Nai",
-    "51B-789.00",
-    "07:00",
-    "16:00"
-  );
-
-  addTrip(
-    "thursday",
-    13,
-    21,
-    "BX Miền Tây - BX Bến Tre",
-    "395 Kinh Dương Vương, Q.Bình Tân",
-    "QL60, TP. Bến Tre",
-    "51B-234.56",
-    "13:00",
-    "21:00"
-  );
-
-  addTrip(
-    "friday",
-    6,
-    13,
-    "BX An Sương - BX Biên Hòa",
-    "QL22, Hóc Môn",
-    "Ngã 4 Vũng Tàu, Biên Hòa",
-    "51B-678.90",
-    "06:00",
-    "13:00"
-  );
-
-  addTrip(
-    "saturday",
-    14,
-    2,
-    "BX Miền Đông - BX Tây Ninh",
-    "286 Đinh Bộ Lĩnh, Bình Thạnh",
-    "Khu phố 4, P.3, TP. Tây Ninh",
-    "51B-111.22",
-    "14:00",
-    "2:00"
-  );
-
-  addTrip(
-    "sunday",
-    8,
-    19,
-    "BX Cần Thơ - BX Sài Gòn",
-    "KDC Hưng Phú, Q.Cái Răng",
-    "Bến xe Miền Đông mới",
-    "51B-333.44",
-    "08:00",
-    "19:00"
-  );
 
   const handleViewPassengers = (trip) => {
     setSelectedTrip(trip);
