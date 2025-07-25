@@ -15,6 +15,8 @@ import {
   getScheduleByDriverAndDateRange,
 } from "../../services/DriverService";
 
+import { handleGetPassengerTripInfo } from "../../services/BusTripService";
+
 const UserManagement = () => {
   const username = "Tài xế Dũng";
   const [userInfo, setUserInfo] = useState(null);
@@ -29,6 +31,8 @@ const UserManagement = () => {
 
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const [seatList, setSeatList] = useState([]);
 
   useEffect(() => {
     getMyInfo()
@@ -72,7 +76,7 @@ const UserManagement = () => {
       setSelectedWeek(result[0].value);
     }
   }, [selectedMonth, userInfo]);
-  
+
   useEffect(() => {
     if (!userInfo || !selectedWeek) return;
 
@@ -114,6 +118,8 @@ const UserManagement = () => {
             const endTime = endDateTime.format("HH:mm");
 
             addTrip(
+              trip.busType.id,
+              trip.tripId,
               day,
               start,
               end,
@@ -151,6 +157,8 @@ const UserManagement = () => {
   const [scheduleData, setScheduleData] = useState(generateEmptySchedule());
 
   const addTrip = (
+    busType,
+    tripId,
     day,
     startHour,
     endHour,
@@ -162,6 +170,8 @@ const UserManagement = () => {
     endTime
   ) => {
     const baseTripInfo = {
+      busType,
+      tripId,
       routeName,
       fromAddress,
       toAddress,
@@ -212,9 +222,35 @@ const UserManagement = () => {
     });
   };
 
-  const handleViewPassengers = (trip) => {
+  const handleViewPassengers = async (trip) => {
+    console.log("Thông tin chuyến xe được click:", trip);
+
     setSelectedTrip(trip);
     setShowModal(true);
+
+    try {
+      const res = await handleGetPassengerTripInfo(trip.tripId);
+      setSeatList(res.result);
+    } catch (err) {
+      console.error("Lỗi khi lấy danh sách ghế:", err);
+      setSeatList([]);
+    }
+  };
+
+  const upperSeats = seatList.filter((seat) => seat.seatName.startsWith("A"));
+  const lowerSeats = seatList.filter((seat) => seat.seatName.startsWith("B"));
+
+  const renderSeat = (seat) => {
+    const seatImage = seat.booked
+      ? "/images/seat_active.svg"
+      : "/images/seat_disabled.svg";
+
+    return (
+      <div key={seat.seatName} className="flex flex-col items-center">
+        <img src={seatImage} alt={seat.seatName} className="w-8 h-8" />
+        <span className="text-[13px] mt-1">{seat.seatName}</span>
+      </div>
+    );
   };
 
   function renderMergedColumn(dayKey) {
@@ -454,6 +490,8 @@ const UserManagement = () => {
         open={showModal}
         onCancel={() => setShowModal(false)}
         footer={null}
+        width={900}
+        style={{ top: 20 }}
       >
         {selectedTrip && (
           <div>
@@ -466,8 +504,90 @@ const UserManagement = () => {
             <p>
               <strong>Thời gian:</strong> {selectedTrip.timeRange}
             </p>
-            <hr />
-            <p>→ (Dữ liệu hành khách sẽ hiển thị tại đây sau)</p>
+            <hr className="my-4" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-6 ml-2">
+              <div>
+                <h4 className="text-sm font-semibold mb-4 text-center">
+                  Tầng trên
+                </h4>
+                <div
+                  className={`grid ${
+                    selectedTrip?.busType === 2 ? "grid-cols-2" : "grid-cols-3"
+                  } gap-2`}
+                >
+                  {upperSeats.map(renderSeat)}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold mb-4 text-center">
+                  Tầng dưới
+                </h4>
+                <div
+                  className={`grid ${
+                    selectedTrip?.busType === 2 ? "grid-cols-2" : "grid-cols-3"
+                  } gap-2`}
+                >
+                  {lowerSeats.map(renderSeat)}
+                </div>
+              </div>
+
+              <div className="ml-6">
+                <h4 className="text-sm font-semibold mb-4">Ghi chú</h4>
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-gray-300 rounded"></div>
+                    <span>Ghế trống</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-blue-100 rounded"></div>
+                    <span>Có khách</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr className="my-4" />
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm text-left border border-gray-200">
+                <thead className="bg-gray-100 text-gray-700 font-semibold">
+                  <tr>
+                    <th className="px-4 py-2 border">STT</th>
+                    <th className="px-4 py-2 border">Số ghế</th>
+                    <th className="px-4 py-2 border">Họ tên</th>
+                    <th className="px-4 py-2 border">SĐT</th>
+                    <th className="px-4 py-2 border">Điểm lên</th>
+                    <th className="px-4 py-2 border">Điểm xuống</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {seatList
+                    .filter((seat) => seat.booked)
+                    .map((seat, index) => (
+                      <tr key={seat.seatName} className="border-t">
+                        <td className="px-4 py-2 border">{index + 1}</td>
+                        <td className="px-4 py-2 border font-semibold">
+                          {seat.seatName}
+                        </td>
+                        <td className="px-4 py-2 border">{seat.name}</td>
+                        <td className="px-4 py-2 border">{seat.phone}</td>
+                        <td className="px-4 py-2 border">{seat.pickupPoint}</td>
+                        <td className="px-4 py-2 border">
+                          {seat.dropOffPoint}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+            <hr className="my-4" />
+            <div className="flex justify-end">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={() => window.print()}
+              >
+                In danh sách
+              </button>
+            </div>
           </div>
         )}
       </Modal>

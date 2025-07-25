@@ -17,3 +17,22 @@
   text-align: center;
 }
 
+@media print {
+
+  #printable-area, #printable-area * {
+    visibility: visible;
+  }
+
+  #printable-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto !important;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
