@@ -15,8 +15,9 @@ import {
   Empty,
   Popover,
   Select,
+  List,
 } from "antd";
-import { PlusSquareOutlined, FilterOutlined } from "@ant-design/icons";
+import { PlusSquareOutlined, FilterOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import {
   getAllBusRoutes,
@@ -26,7 +27,6 @@ import {
   enableBusRouteById,
   handleFilterBusRoutes,
 } from "../../services/RouteService";
-
 import { handleGetAllBusStation } from "../../services/BusStationService";
 import FilterButtonBusRoute from "../../components/Button/FilterButtonBusRoute";
 
@@ -42,6 +42,7 @@ const BusRoutePage = () => {
     busStationToId: null,
     distance: "",
     travelTime: "",
+    stopPoints: [], // Mảng lưu các điểm dừng
   });
 
   const [filterData, setFilterData] = useState({
@@ -78,7 +79,7 @@ const BusRoutePage = () => {
         }
 
         if (stationRes.code === 1000) {
-          setAllBusStations(stationRes.result); 
+          setAllBusStations(stationRes.result);
           const activeStations = stationRes.result.filter(
             (bs) => bs.status === 1
           );
@@ -165,7 +166,6 @@ const BusRoutePage = () => {
   const fetchBusStations = async () => {
     try {
       const res = await handleGetAllBusStation();
-      console.log("Bus station response:", res);
       if (res.code === 1000) {
         setAllBusStations(res.result);
         const activeStations = res.result?.filter((bs) => bs.status === 1);
@@ -201,11 +201,11 @@ const BusRoutePage = () => {
           );
           setFilteredData(activeRoutes);
         }
+        toggleModal("update", false);
+        setSelectedRoute(null);
       } else {
         handleOpenSnackBar(res.message || "Cập nhật thất bại!", "error");
       }
-      toggleModal("update", false);
-      setSelectedRoute(null);
     } catch (error) {
       console.error(error);
       handleOpenSnackBar("Lỗi khi cập nhật!", "error");
@@ -246,6 +246,7 @@ const BusRoutePage = () => {
         busStationToId: dataAdd.busStationToId,
         distance: parseFloat(dataAdd.distance),
         travelTime: parseFloat(dataAdd.travelTime),
+        stopPoints: dataAdd.stopPoints.map((stop) => stop.id), 
       };
 
       const res = await addBusRoute(payload);
@@ -264,6 +265,7 @@ const BusRoutePage = () => {
           busStationToId: null,
           distance: "",
           travelTime: "",
+          stopPoints: [],
         });
       } else {
         handleOpenSnackBar(res.message || "Thêm thất bại!", "error");
@@ -336,14 +338,21 @@ const BusRoutePage = () => {
   const AddModal = (
     <div className="container">
       <div className="row">
+        {/* Bến đi */}
         <div className="col-md-6 mb-3">
           <label className="form-label">Bến đi</label>
           <Select
             style={{ width: "100%" }}
             value={dataAdd.busStationFromId}
-            onChange={(value) =>
-              setDataAdd({ ...dataAdd, busStationFromId: value })
-            }
+            onChange={(value) => {
+              // Loại bỏ điểm dừng trùng với bến đi mới
+              setDataAdd({
+                ...dataAdd,
+                busStationFromId: value,
+                stopPoints: dataAdd.stopPoints.filter((sp) => sp.id !== value),
+              });
+            }}
+            placeholder="Chọn bến đi"
           >
             {busStations.map((bs) => (
               <Select.Option key={bs.id} value={bs.id}>
@@ -352,14 +361,21 @@ const BusRoutePage = () => {
             ))}
           </Select>
         </div>
+        {/* Bến đến */}
         <div className="col-md-6 mb-3">
           <label className="form-label">Bến đến</label>
           <Select
             style={{ width: "100%" }}
             value={dataAdd.busStationToId}
-            onChange={(value) =>
-              setDataAdd({ ...dataAdd, busStationToId: value })
-            }
+            onChange={(value) => {
+              // Loại bỏ điểm dừng trùng với bến đến mới
+              setDataAdd({
+                ...dataAdd,
+                busStationToId: value,
+                stopPoints: dataAdd.stopPoints.filter((sp) => sp.id !== value),
+              });
+            }}
+            placeholder="Chọn bến đến"
           >
             {busStations.map((bs) => (
               <Select.Option key={bs.id} value={bs.id}>
@@ -368,14 +384,17 @@ const BusRoutePage = () => {
             ))}
           </Select>
         </div>
+        {/* Khoảng cách */}
         <div className="col-md-6 mb-3">
           <label className="form-label">Khoảng cách (km)</label>
           <Input
             type="number"
             value={dataAdd.distance}
             onChange={(e) => handleOnChangeInputAdd("distance", e.target.value)}
+            placeholder="Nhập khoảng cách"
           />
         </div>
+        {/* Thời gian */}
         <div className="col-md-6 mb-3">
           <label className="form-label">Thời gian (giờ)</label>
           <Input
@@ -384,7 +403,88 @@ const BusRoutePage = () => {
             onChange={(e) =>
               handleOnChangeInputAdd("travelTime", e.target.value)
             }
+            placeholder="Nhập thời gian"
           />
+        </div>
+        {/* Chọn điểm dừng */}
+        <div className="col-md-12 mb-3">
+          <label className="form-label">Điểm dừng</label>
+          <Select
+            style={{ width: "100%" }}
+            placeholder="Chọn điểm dừng"
+            onChange={(value) => {
+              const selectedStation = busStations.find((bs) => bs.id === value);
+              if (
+                selectedStation &&
+                !dataAdd.stopPoints.find((sp) => sp.id === value) &&
+                value !== dataAdd.busStationFromId &&
+                value !== dataAdd.busStationToId
+              ) {
+                setDataAdd({
+                  ...dataAdd,
+                  stopPoints: [...dataAdd.stopPoints, selectedStation],
+                });
+              } else {
+                handleOpenSnackBar(
+                  "Điểm dừng đã được chọn hoặc trùng với bến đi/đến!",
+                  "error"
+                );
+              }
+            }}
+            showSearch
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().includes(input.toLowerCase())
+            }
+          >
+            {busStations
+              .filter(
+                (bs) =>
+                  bs.id !== dataAdd.busStationFromId &&
+                  bs.id !== dataAdd.busStationToId &&
+                  !dataAdd.stopPoints.find((sp) => sp.id === bs.id)
+              )
+              .map((bs) => (
+                <Select.Option key={bs.id} value={bs.id}>
+                  {bs.name}
+                </Select.Option>
+              ))}
+          </Select>
+        </div>
+        {/* Danh sách điểm dừng */}
+        <div className="col-md-12 mb-3">
+          <label className="form-label">Danh sách điểm dừng</label>
+          {dataAdd.stopPoints.length === 0 ? (
+            <Empty description="Chưa có điểm dừng nào được thêm" />
+          ) : (
+            <List
+              bordered
+              dataSource={dataAdd.stopPoints}
+              renderItem={(stop, index) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => {
+                        setDataAdd({
+                          ...dataAdd,
+                          stopPoints: dataAdd.stopPoints.filter(
+                            (_, i) => i !== index
+                          ),
+                        });
+                      }}
+                    >
+                      Xóa
+                    </Button>,
+                  ]}
+                >
+                  {stop.name}
+                </List.Item>
+              )}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -405,6 +505,7 @@ const BusRoutePage = () => {
                 busStationFrom: selectedStation,
               });
             }}
+            placeholder="Chọn bến đi"
           >
             {busStations.map((bs) => (
               <Select.Option key={bs.id} value={bs.id}>
@@ -413,7 +514,6 @@ const BusRoutePage = () => {
             ))}
           </Select>
         </div>
-
         <div className="col-md-6 mb-3">
           <label className="form-label">Bến đến</label>
           <Select
@@ -426,6 +526,7 @@ const BusRoutePage = () => {
                 busStationTo: selectedStation,
               });
             }}
+            placeholder="Chọn bến đến"
           >
             {busStations.map((bs) => (
               <Select.Option key={bs.id} value={bs.id}>
@@ -434,7 +535,6 @@ const BusRoutePage = () => {
             ))}
           </Select>
         </div>
-
         <div className="col-md-6 mb-3">
           <label className="form-label">Khoảng cách (km)</label>
           <Input
@@ -443,9 +543,9 @@ const BusRoutePage = () => {
             onChange={(e) =>
               handleOnChangeInput("distance", parseFloat(e.target.value))
             }
+            placeholder="Nhập khoảng cách"
           />
         </div>
-
         <div className="col-md-6 mb-3">
           <label className="form-label">Thời gian (giờ)</label>
           <Input
@@ -454,6 +554,7 @@ const BusRoutePage = () => {
             onChange={(e) =>
               handleOnChangeInput("travelTime", parseFloat(e.target.value))
             }
+            placeholder="Nhập thời gian"
           />
         </div>
       </div>
@@ -470,6 +571,7 @@ const BusRoutePage = () => {
             onChange={(e) =>
               setFilterData({ ...filterData, from: e.target.value })
             }
+            placeholder="Nhập bến đi"
           />
         </div>
         <div className="col-md-6 mb-3">
@@ -479,6 +581,7 @@ const BusRoutePage = () => {
             onChange={(e) =>
               setFilterData({ ...filterData, to: e.target.value })
             }
+            placeholder="Nhập bến đến"
           />
         </div>
       </div>
@@ -515,7 +618,7 @@ const BusRoutePage = () => {
                   />
                 </div>
               }
-              title="Lọc Tài Xế"
+              title="Lọc Tuyến Xe"
               trigger="click"
               open={openFormFilter}
               onOpenChange={setOpenFormFilter}
@@ -544,6 +647,8 @@ const BusRoutePage = () => {
         open={modals.add}
         onOk={handleOkAdd}
         onCancel={() => toggleModal("add", false)}
+        okText="Thêm"
+        cancelText="Hủy"
         width={600}
       >
         {AddModal}
@@ -554,6 +659,8 @@ const BusRoutePage = () => {
         open={modals.update}
         onOk={handleOkUpdate}
         onCancel={() => toggleModal("update", false)}
+        okText="Cập nhật"
+        cancelText="Hủy"
         width={600}
       >
         {UpdateModal}
@@ -564,6 +671,8 @@ const BusRoutePage = () => {
         open={modals.filter}
         onOk={handleOkFilter}
         onCancel={() => toggleModal("filter", false)}
+        okText="Lọc"
+        cancelText="Hủy"
         width={500}
       >
         {FilterModal}
@@ -582,6 +691,28 @@ const BusRoutePage = () => {
           {snackBar.message}
         </Alert>
       </Snackbar>
+
+      <style>{`
+        .ant-list-bordered {
+          border: 1px solid #d9d9d9;
+          border-radius: 4px;
+        }
+        .ant-list-item {
+          padding: 8px 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .ant-btn-primary.ant-btn-danger {
+          background-color: #ff4d4f;
+          border-color: #ff4d4f;
+          color: #fff;
+        }
+        .ant-btn-primary.ant-btn-danger:hover {
+          background-color: #ff7875;
+          border-color: #ff7875;
+        }
+      `}</style>
     </Box>
   );
 };

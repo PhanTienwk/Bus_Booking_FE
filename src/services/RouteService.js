@@ -5,11 +5,13 @@ const getAllBusRoutes = () => {
 };
 
 const addBusRoute = (data) => {
+  console.log(data)
   return axios.post("/api/add-new-route", {
     busStationFromId: data.busStationFromId,
     busStationToId: data.busStationToId,
     distance: data.distance,
     travelTime: data.travelTime,
+    listRoute: data.stopPoints,
   });
 };
 
