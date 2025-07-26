@@ -16,6 +16,7 @@ import {
 } from "../../services/DriverService";
 
 import { handleGetPassengerTripInfo } from "../../services/BusTripService";
+import DriverInformation from "./DriverInformation";
 
 const UserManagement = () => {
   const username = "Tài xế Dũng";
@@ -429,51 +430,59 @@ const UserManagement = () => {
     },
   ];
 
-  const renderContent = () => (
-    <Box sx={{ padding: 3 }}>
-      <ConfigProvider locale={viVN}>
-        <div className="flex gap-4 items-center mb-4">
-          <DatePicker
-            picker="month"
-            onChange={(value) => setSelectedMonth(value)}
-            value={selectedMonth}
-            format="MM/YYYY"
-            allowClear={false}
-            placeholder="Chọn tháng"
-          />
+  const renderContent = () => {
+    switch (activeIndex) {
+      case 1:
+        return <DriverInformation />;
+      case 0:
+      default:
+        return (
+          <Box sx={{ padding: 3 }}>
+            <ConfigProvider locale={viVN}>
+              <div className="flex gap-4 items-center mb-4">
+                <DatePicker
+                  picker="month"
+                  onChange={(value) => setSelectedMonth(value)}
+                  value={selectedMonth}
+                  format="MM/YYYY"
+                  allowClear={false}
+                  placeholder="Chọn tháng"
+                />
 
-          <Select
-            style={{ minWidth: 250 }}
-            placeholder="Chọn tuần"
-            value={selectedWeek}
-            onChange={(value) => setSelectedWeek(value)}
-          >
-            {weeks.map((week) => (
-              <Option key={week.value} value={week.value}>
-                {week.label}
-              </Option>
-            ))}
-          </Select>
-        </div>
-      </ConfigProvider>
-      <Card>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            LỊCH CHẠY XE CỦA TÀI XẾ
-          </Typography>
-          <div style={{ overflowX: "auto" }}>
-            <Table
-              columns={columns}
-              dataSource={scheduleData}
-              pagination={false}
-              bordered
-              scroll={{ x: true }}
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </Box>
-  );
+                <Select
+                  style={{ minWidth: 250 }}
+                  placeholder="Chọn tuần"
+                  value={selectedWeek}
+                  onChange={(value) => setSelectedWeek(value)}
+                >
+                  {weeks.map((week) => (
+                    <Option key={week.value} value={week.value}>
+                      {week.label}
+                    </Option>
+                  ))}
+                </Select>
+              </div>
+            </ConfigProvider>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  LỊCH CHẠY XE CỦA TÀI XẾ
+                </Typography>
+                <div style={{ overflowX: "auto" }}>
+                  <Table
+                    columns={columns}
+                    dataSource={scheduleData}
+                    pagination={false}
+                    bordered
+                    scroll={{ x: true }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </Box>
+        );
+    }
+  };
 
   return (
     <div className="flex">
