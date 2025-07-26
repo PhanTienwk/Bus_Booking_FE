@@ -35,6 +35,7 @@ const AppRoutes = () => {
         <Route path="/infor-user" element={<InforUserPage />} />
         <Route path="/history-ticket" element={<HistoryTicketPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/user" element={<HomePage />} />
 
         <Route path="/admin" element={<UserManagement />} />
         <Route path="/admin/driver" element={<DriverManagement />} />
