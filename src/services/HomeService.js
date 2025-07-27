@@ -1,11 +1,12 @@
 import axios from "../axios";
 
-export const searchTripsByProvinces = async (fromProvinceId, toProvinceId) => {
+export const searchTripsByProvinces = async (fromProvinceId, toProvinceId,date) => {
   try {
     const response = await axios.get(`/api/search`, {
       params: {
         fromProvinceId,
         toProvinceId,
+        date,
       },
     });
     return response; 

@@ -13,6 +13,7 @@ const HomePage = () => {
   const [provinces, setProvinces] = useState([]);
   const [departure, setDeparture] = useState(null);
   const [destination, setDestination] = useState(null);
+  const [departureDate, setDepartureDate] = useState(""); // State mới cho ngày
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [trips, setTrips] = useState([]);
   const [routeTitle, setRouteTitle] = useState("");
@@ -42,8 +43,8 @@ const HomePage = () => {
   );
 
   const handleSearch = async () => {
-    if (!departure || !destination) {
-      alert("Vui lòng chọn điểm đi và điểm đến!");
+    if (!departure || !destination || !departureDate) {
+      console.error("Vui lòng chọn điểm đi, điểm đến và ngày đi!");
       return;
     }
 
@@ -51,11 +52,12 @@ const HomePage = () => {
       const response = await searchTripsByProvinces(
         departure.value,
         destination.value,
+        departureDate // Truyền ngày đã chọn vào API
       );
       setTrips(response.result); // Lưu danh sách chuyến xe từ API
       setShowSearchResults(true); // Hiển thị section kết quả tìm kiếm
       setRouteTitle(`${departure.label} - ${destination.label} (${response.result.length})`);
-      console.log(response.result)
+      console.log(response.result);
     } catch (error) {
       console.error("Lỗi khi tìm kiếm chuyến xe:", error);
       alert("Không tìm thấy chuyến xe. Vui lòng thử lại!");
@@ -137,7 +139,14 @@ const HomePage = () => {
                 classNamePrefix="select"
                 isSearchable
               />
-              <input type="date" className="p-3 rounded-lg border w-full" aria-label="Chọn ngày đi" />
+              <input
+                type="date"
+                value={departureDate}
+                onChange={(e) => setDepartureDate(e.target.value)} // Cập nhật state ngày
+                className="p-3 rounded-lg border w-full"
+                aria-label="Chọn ngày đi"
+                min={new Date().toISOString().split("T")[0]} // Giới hạn không chọn ngày quá khứ
+              />
               <select className="p-3 rounded-lg border w-full">
                 <option value="1">1 vé</option>
                 <option value="2">2 vé</option>
@@ -223,10 +232,6 @@ const HomePage = () => {
 
                 <hr className="my-4 border-t border-gray-300" />
 
-                
-
-                <hr className="my-4 border-t border-gray-300" />
-
                 <div>
                   <p className="font-medium mb-2">Tầng</p>
                   <div className="flex gap-2 flex-wrap">
@@ -239,8 +244,6 @@ const HomePage = () => {
                   </div>
                 </div>
               </div>
-
-              <hr className="my-4 border-t border-gray-300" />
 
               <div className="w-full md:w-2/3">
                 <div className="bg-white">
