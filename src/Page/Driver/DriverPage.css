@@ -18,21 +18,50 @@
 }
 
 @media print {
-
-  #printable-area, #printable-area * {
-    visibility: visible;
+  body * {
+    visibility: hidden !important;
   }
 
-  #printable-area {
+  #print-area,
+  #print-area * {
+    visibility: visible !important;
+  }
+
+  #print-area {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: auto !important;
+    background: white;
+    z-index: 9999;
+  }
+
+  .ant-modal-content {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .ant-modal-header,
+  .ant-modal-footer,
+  .ant-modal-close {
+    display: none !important;
   }
 
   ::-webkit-scrollbar {
     display: none;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
