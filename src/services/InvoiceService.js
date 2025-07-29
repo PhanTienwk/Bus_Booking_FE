@@ -12,4 +12,8 @@ const handleGetInvoiceByUserId = (id) => {
   return axios.get(`/api/admin/get-invoice-by-userid?phone=${id}`);
 };
 
-export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId };
+const updateInvoiceStatus = (id) => {
+  return axios.put(`/api/admin/update-invoice-status/${id}`);
+};
+
+export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId, updateInvoiceStatus };

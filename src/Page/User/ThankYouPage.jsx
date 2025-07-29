@@ -1,8 +1,16 @@
 import React from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { useLocation } from "react-router-dom";
 
 const ThankYouPage = () => {
+  const location = useLocation();
+  const {
+    tripDetails,
+    selectedSeats,
+    totalAmount,
+  } = location.state || {};
+
   return (
     <div>
       <Header />
@@ -34,12 +42,16 @@ const ThankYouPage = () => {
                 </thead>
                 <tbody>
                   <tr className="text-gray-800">
-                    <td className="py-2 px-4 border">12:00 20/06/2025</td>
+                    <td className="py-2 px-4 border">{tripDetails?.departureTime
+                      ? new Date(tripDetails.departureTime).toLocaleString(
+                          "vi-VN"
+                        )
+                      : ""}</td>
                     <td className="py-2 px-4 border">
-                      Bến xe Mỹ Đình - Bến xe Miền Đông
+                      {tripDetails.busRoute.busStationFrom.name} - {tripDetails.busRoute.busStationTo.name}
                     </td>
-                    <td className="py-2 px-4 border">1</td>
-                    <td className="py-2 px-4 border font-semibold">500.000đ</td>
+                    <td className="py-2 px-4 border">{selectedSeats?.length || 0} Ghế</td>
+                    <td className="py-2 px-4 border font-semibold">{(totalAmount)?.toLocaleString("vi-VN")}đ</td>
                   </tr>
                 </tbody>
               </table>

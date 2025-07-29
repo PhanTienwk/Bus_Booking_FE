@@ -2,8 +2,11 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { updateInvoiceStatus } from "../../services/InvoiceService";
 
 const CheckoutPage = () => {
+  const navigate = useNavigate();
   const [qrUrl, setQrUrl] = useState("");
 
   const location = useLocation();
@@ -13,7 +16,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     const BANK_ID = "MBBank";
     const ACCOUNT_NO = "0916430832";
-    const AMOUNT = totalAmount/10;
+    const AMOUNT = totalAmount / 10;
     const DESCRIPTION = `Thanh toan hoa don ${invoiceCode}`;
     console.log("DESCRIPTION: ", DESCRIPTION);
 
@@ -41,8 +44,23 @@ const CheckoutPage = () => {
 
         if (matched && !hasPaid) {
           hasPaid = true;
-          alert("✅ Thanh toán thành công");
           clearInterval(interval);
+
+          updateInvoiceStatus(invoiceCode)
+            .then(() => {
+              navigate("/thankyou", {
+                state: {
+                  tripDetails,
+                  selectedSeats,
+                  customerInfo,
+                  invoiceCode,
+                  totalAmount,
+                },
+              });
+            })
+            .catch((error) => {
+              console.error("Lỗi cập nhật trạng thái hóa đơn:", error);
+            });
         }
       } catch (error) {
         console.error("Lỗi khi kiểm tra thanh toán:", error);
@@ -51,7 +69,14 @@ const CheckoutPage = () => {
 
     interval = setInterval(checkPayment, 5000);
     return () => clearInterval(interval);
-  }, [totalAmount, customerInfo, invoiceCode]);
+  }, [
+    totalAmount,
+    customerInfo,
+    invoiceCode,
+    tripDetails,
+    selectedSeats,
+    navigate,
+  ]);
 
   return (
     <div>
@@ -180,7 +205,9 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Điểm lên xe</span>
-                  <span className="font-medium">{tripDetails.busRoute.busStationFrom.name}</span>
+                  <span className="font-medium">
+                    {tripDetails.busRoute.busStationFrom.name}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Thời gian tới điểm lên xe</span>
@@ -196,7 +223,9 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Điểm trả khách</span>
-                  <span className="font-medium">{tripDetails.busRoute.busStationTo.name}</span>
+                  <span className="font-medium">
+                    {tripDetails.busRoute.busStationTo.name}
+                  </span>
                 </div>
                 <div className="flex justify-between text-green-600 font-bold">
                   <span>Tổng tiền lượt đi</span>
@@ -222,7 +251,9 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex justify-between font-bold text-red-500">
                   <span>Tổng tiền</span>
-                  <span className="text-[16px]">{totalAmount?.toLocaleString("vi-VN")}đ</span>
+                  <span className="text-[16px]">
+                    {totalAmount?.toLocaleString("vi-VN")}đ
+                  </span>
                 </div>
               </div>
             </div>
