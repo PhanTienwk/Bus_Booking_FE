@@ -22,3 +22,22 @@ export const handleSeatSelection = (seat, selectedSeats, setSelectedSeats) => {
     setSelectedSeats([...selectedSeats, seat]);
   }
 };
+
+export const createInvoice = async (invoiceData) => {
+  console.log(invoiceData.listidseatposition)
+  console.log(invoiceData.idbustrip)
+  try {
+    return axios.post("/api/admin/create-invoice", {
+    id: invoiceData.id,
+    email: invoiceData.email,
+    name: invoiceData.name,
+    phone: invoiceData.phone,
+    number_of_tickets: invoiceData.number_of_tickets,
+    payment_method: invoiceData.payment_method,
+    listidseatposition: invoiceData.listidseatposition,
+    idbustrip: invoiceData.idbustrip,
+    });
+  } catch (error) {
+    throw error;
+  }
+};

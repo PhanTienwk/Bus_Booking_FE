@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "../../components/Header";
+import { Snackbar, Alert } from "@mui/material";
 import Footer from "../../components/Footer";
-import { fetchSeatLayout, handleSeatSelection } from "../../services/SeatSelectionService";
+import { fetchSeatLayout, handleSeatSelection, createInvoice } from "../../services/SeatSelectionService";
 
 const SeatSelectionPage = () => {
   const { state } = useLocation();
@@ -11,6 +12,17 @@ const SeatSelectionPage = () => {
   const [upperSeats, setUpperSeats] = useState([]);
   const [lowerSeats, setLowerSeats] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
+  const [snackBar, setSnackBar] = useState({
+      open: false,
+      message: "",
+      severity: "info",
+    });
+  const [customerInfo, setCustomerInfo] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    paymentMethod:"0" 
+  });
 
   useEffect(() => {
     const getSeatLayout = async () => {
@@ -20,7 +32,6 @@ const SeatSelectionPage = () => {
         setLowerSeats(lowerSeats);
         setBookedSeats(bookedSeats);
       } catch (error) {
-        // Xử lý lỗi (ví dụ: hiển thị thông báo)
         console.error("Không thể tải sơ đồ ghế");
       }
     };
@@ -30,19 +41,56 @@ const SeatSelectionPage = () => {
     }
   }, [tripDetails?.bus?.id]);
 
-  // // Tính giờ đến
-  // const calculateArrivalTime = (departureTime, travelTime) => {
-  //   const departure = new Date(departureTime);
-  //   const arrival = new Date(departure);
-  //   const hours = Math.floor(travelTime);
-  //   const minutes = Math.round((travelTime % 1) * 60);
-  //   arrival.setHours(departure.getHours() + hours);
-  //   arrival.setMinutes(departure.getMinutes() + minutes);
-  //   return arrival.toLocaleTimeString("vi-VN", {
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //   });
-  // };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCustomerInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePaymentMethodChange = (e) => {
+    setCustomerInfo((prev) => ({ ...prev, paymentMethod: e.target.value }));
+  };
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackBar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackBar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackBar({ ...snackBar, open: false });
+  };
+
+  const handlePayment = async () => {
+    if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
+      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng","error");
+      return;
+    }
+
+    if (selectedSeats.length === 0) {
+      handleOpenSnackBar("Vui lòng chọn ít nhất một ghế","error");
+      return;
+    }
+
+    const invoiceData = {
+      id: tripDetails.id,
+      email: customerInfo.email,
+      name: customerInfo.name,
+      number_of_tickets: selectedSeats.length,
+      payment_method: customerInfo.paymentMethod,
+      phone: customerInfo.phone,
+      idbustrip: tripDetails.bus.id,
+      listidseatposition: selectedSeats
+    };
+
+    try {
+      const response = await createInvoice(invoiceData);
+      if(response===1000){
+        handleOpenSnackBar("Tạo hóa đơn thành công!","infor")
+      }
+      console.log("Invoice response:", response);
+    } catch (error) {
+      console.error("Lỗi khi tạo hóa đơn:", error);
+      alert("Không thể tạo hóa đơn. Vui lòng thử lại.");
+    }
+  };
 
   if (!tripDetails) {
     return <div>Không tìm thấy thông tin chuyến xe.</div>;
@@ -141,19 +189,37 @@ const SeatSelectionPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <input
                   type="text"
+                  name="name"
                   placeholder="Họ và tên *"
                   className="py-2 px-4 border rounded-md w-full"
+                  value={customerInfo.name}
+                  onChange={handleInputChange}
                 />
                 <input
                   type="text"
+                  name="phone"
                   placeholder="Số điện thoại *"
                   className="py-2 px-4 border rounded-md w-full"
+                  value={customerInfo.phone}
+                  onChange={handleInputChange}
                 />
                 <input
                   type="email"
+                  name="email"
                   placeholder="Email *"
                   className="py-2 px-4 border rounded-md w-full"
+                  value={customerInfo.email}
+                  onChange={handleInputChange}
                 />
+                <select
+                  name="paymentMethod"
+                  className="py-2 px-4 border rounded-md w-full"
+                  value={customerInfo.paymentMethod}
+                  onChange={handlePaymentMethodChange}
+                >
+                  <option value="0">Tiền mặt</option>
+                  <option value="1">Chuyển khoản</option>
+                </select>
               </div>
               <label className="text-sm text-red-500 flex items-center gap-2 leading-tight">
                 <input type="checkbox" className="mt-0.5" />
@@ -255,6 +321,7 @@ const SeatSelectionPage = () => {
               className="bg-orange-500 text-white px-6 py-3 font-semibold hover:bg-orange-600 transition duration-200"
               style={{ borderRadius: "0.75rem" }}
               disabled={selectedSeats.length === 0}
+              onClick={handlePayment}
             >
               Thanh toán
             </button>
@@ -262,6 +329,19 @@ const SeatSelectionPage = () => {
         </div>
       </section>
 
+      <Snackbar
+              open={snackBar.open}
+              autoHideDuration={3000}
+              onClose={handleCloseSnackBar}
+            >
+              <Alert
+                onClose={handleCloseSnackBar}
+                severity={snackBar.severity}
+                sx={{ width: "100%" }}
+              >
+                {snackBar.message}
+              </Alert>
+            </Snackbar>
       <Footer />
     </div>
   );
