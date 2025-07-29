@@ -8,7 +8,8 @@ const getAllInvoicesId = (id) => {
   return axios.get(`/api/admin/list-ticket/${id}`);
 };
 
-export { 
-  getAllInvoices,
-  getAllInvoicesId,
- };
+const handleGetInvoiceByUserId = (id) => {
+  return axios.get(`/api/admin/get-invoice-by-userid?phone=${id}`);
+};
+
+export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId };
