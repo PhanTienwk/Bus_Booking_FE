@@ -17,7 +17,7 @@ import {
   handleFilterProvinces,
 } from "../../services/ProvinceService";
 import { handleGetAllProvince } from "../../services/BusStationService";
-import FilterButtonProvince from "../../components/Button/FilterButtonBus";
+import FilterButtonProvince from "../../components/Button/FilterButtonProvince";
 
 export default function ProvinceManage() {
   const [data, setData] = useState([]);
