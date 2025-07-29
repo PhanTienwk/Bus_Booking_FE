@@ -92,7 +92,9 @@ nav ul li a:hover {
   background-color: #ff4500;
 }
 
-
+.image-user-infor{
+  border-radius:15px;
+}
 .avatar-user {
   margin-left: 15px;
 }

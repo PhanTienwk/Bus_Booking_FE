@@ -29,10 +29,10 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/bus-routes" element={<BusRoutePage />} />
-        <Route path="/seat-selection" element={<SeatSelectionPage />} />
+        <Route path="/seat-selection/:tripId" element={<SeatSelectionPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/thankyou" element={<ThankYouPage />} />
-        <Route path="/infor-user" element={<InforUserPage />} />
+        <Route path="/profile" element={<InforUserPage />} />
         <Route path="/history-ticket" element={<HistoryTicketPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/user" element={<HomePage />} />
@@ -44,8 +44,8 @@ const AppRoutes = () => {
         <Route path="/admin/trip" element={<TripManagement />} />
         <Route path="/admin/bus-station" element={<BusStaion />} />
         <Route path="/admin/location" element={<LocationManagement />} />
-        <Route path="/admin/statistic" element={<Statistic />} />    
-        <Route path="/admin/information" element={<UserInformation />} />  
+        <Route path="/admin/statistic" element={<Statistic />} />
+        <Route path="/admin/information" element={<UserInformation />} />
 
         <Route path="/driver" element={<DriverPage />} />
       </Routes>

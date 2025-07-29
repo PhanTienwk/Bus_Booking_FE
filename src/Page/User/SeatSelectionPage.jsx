@@ -1,8 +1,101 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "../../components/Header";
+import { Snackbar, Alert } from "@mui/material";
 import Footer from "../../components/Footer";
+import { fetchSeatLayout, handleSeatSelection, createInvoice } from "../../services/SeatSelectionService";
 
 const SeatSelectionPage = () => {
+  const { state } = useLocation();
+  const tripDetails = state?.tripDetails;
+  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [upperSeats, setUpperSeats] = useState([]);
+  const [lowerSeats, setLowerSeats] = useState([]);
+  const [bookedSeats, setBookedSeats] = useState([]);
+  const [snackBar, setSnackBar] = useState({
+      open: false,
+      message: "",
+      severity: "info",
+    });
+  const [customerInfo, setCustomerInfo] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    paymentMethod:"0" 
+  });
+
+  useEffect(() => {
+    const getSeatLayout = async () => {
+      try {
+        const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(tripDetails.bus.id);
+        setUpperSeats(upperSeats);
+        setLowerSeats(lowerSeats);
+        setBookedSeats(bookedSeats);
+      } catch (error) {
+        console.error("Không thể tải sơ đồ ghế");
+      }
+    };
+
+    if (tripDetails?.bus?.id) {
+      getSeatLayout();
+    }
+  }, [tripDetails?.bus?.id]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCustomerInfo((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePaymentMethodChange = (e) => {
+    setCustomerInfo((prev) => ({ ...prev, paymentMethod: e.target.value }));
+  };
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackBar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackBar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackBar({ ...snackBar, open: false });
+  };
+
+  const handlePayment = async () => {
+    if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
+      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng","error");
+      return;
+    }
+
+    if (selectedSeats.length === 0) {
+      handleOpenSnackBar("Vui lòng chọn ít nhất một ghế","error");
+      return;
+    }
+
+    const invoiceData = {
+      id: tripDetails.id,
+      email: customerInfo.email,
+      name: customerInfo.name,
+      number_of_tickets: selectedSeats.length,
+      payment_method: customerInfo.paymentMethod,
+      phone: customerInfo.phone,
+      idbustrip: tripDetails.bus.id,
+      listidseatposition: selectedSeats
+    };
+
+    try {
+      const response = await createInvoice(invoiceData);
+      if(response===1000){
+        handleOpenSnackBar("Tạo hóa đơn thành công!","infor")
+      }
+      console.log("Invoice response:", response);
+    } catch (error) {
+      console.error("Lỗi khi tạo hóa đơn:", error);
+      alert("Không thể tạo hóa đơn. Vui lòng thử lại.");
+    }
+  };
+
+  if (!tripDetails) {
+    return <div>Không tìm thấy thông tin chuyến xe.</div>;
+  }
+
   return (
     <div>
       <Header />
@@ -24,71 +117,23 @@ const SeatSelectionPage = () => {
                     Tầng trên
                   </h4>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B07"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B07</span>
-                    </div>
-                    <div></div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B08"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B08</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
+                    {upperSeats.map((seat) => (
+                      <div key={seat} className="flex flex-col items-center">
+                        <img
+                          src={
+                            bookedSeats.includes(seat)
+                              ? "/images/seat_disabled.svg"
+                              : selectedSeats.includes(seat)
+                              ? "/images/seat_selecting.svg"
+                              : "/images/seat_active.svg"
+                          }
+                          alt={seat}
+                          className="w-8 h-8 cursor-pointer"
+                          onClick={() => !bookedSeats.includes(seat) && handleSeatSelection(seat, selectedSeats, setSelectedSeats)}
+                        />
+                        <span className="text-[13px] mt-1">{seat}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -97,71 +142,23 @@ const SeatSelectionPage = () => {
                     Tầng dưới
                   </h4>
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B07"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B07</span>
-                    </div>
-                    <div></div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B08"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B08</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <img
-                        src="/images/seat_active.svg"
-                        alt="B04"
-                        className="w-8 h-8"
-                      />
-                      <span className="text-[13px] mt-1">B04</span>
-                    </div>
+                    {lowerSeats.map((seat) => (
+                      <div key={seat} className="flex flex-col items-center">
+                        <img
+                          src={
+                            bookedSeats.includes(seat)
+                              ? "/images/seat_disabled.svg"
+                              : selectedSeats.includes(seat)
+                              ? "/images/seat_selecting.svg"
+                              : "/images/seat_active.svg"
+                          }
+                          alt={seat}
+                          className="w-8 h-8 cursor-pointer"
+                          onClick={() => !bookedSeats.includes(seat) && handleSeatSelection(seat, selectedSeats, setSelectedSeats)}
+                        />
+                        <span className="text-[13px] mt-1">{seat}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -192,19 +189,37 @@ const SeatSelectionPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <input
                   type="text"
+                  name="name"
                   placeholder="Họ và tên *"
                   className="py-2 px-4 border rounded-md w-full"
+                  value={customerInfo.name}
+                  onChange={handleInputChange}
                 />
                 <input
                   type="text"
+                  name="phone"
                   placeholder="Số điện thoại *"
                   className="py-2 px-4 border rounded-md w-full"
+                  value={customerInfo.phone}
+                  onChange={handleInputChange}
                 />
                 <input
                   type="email"
+                  name="email"
                   placeholder="Email *"
                   className="py-2 px-4 border rounded-md w-full"
+                  value={customerInfo.email}
+                  onChange={handleInputChange}
                 />
+                <select
+                  name="paymentMethod"
+                  className="py-2 px-4 border rounded-md w-full"
+                  value={customerInfo.paymentMethod}
+                  onChange={handlePaymentMethodChange}
+                >
+                  <option value="0">Tiền mặt</option>
+                  <option value="1">Chuyển khoản</option>
+                </select>
               </div>
               <label className="text-sm text-red-500 flex items-center gap-2 leading-tight">
                 <input type="checkbox" className="mt-0.5" />
@@ -242,19 +257,30 @@ const SeatSelectionPage = () => {
               <div className="text-sm text-gray-700">
                 <div className="flex justify-between mb-2">
                   <span>Tuyến xe</span>
-                  <span className="font-medium">Mien Tay - Da Lat</span>
+                  <span className="font-medium">
+                    {tripDetails.busRoute.busStationFrom.name} -{" "}
+                    {tripDetails.busRoute.busStationTo.name}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Thời gian xuất bến</span>
-                  <span className="font-medium">23:15 06/07/2025</span>
+                  <span className="font-medium">
+                    {new Date(tripDetails.departureTime).toLocaleString("vi-VN", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Số lượng ghế</span>
-                  <span className="font-medium">2 Ghế</span>
+                  <span className="font-medium">{selectedSeats.length} Ghế</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Số ghế</span>
-                  <span className="font-medium">B08, B11</span>
+                  <span className="font-medium">{selectedSeats.join(", ") || "-"}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Điểm trả khách</span>
@@ -262,7 +288,9 @@ const SeatSelectionPage = () => {
                 </div>
                 <div className="flex justify-between text-green-600 font-bold">
                   <span>Tổng tiền lượt đi</span>
-                  <span className="text-[16px]">580.000đ</span>
+                  <span className="text-[16px]">
+                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                  </span>
                 </div>
               </div>
             </div>
@@ -272,7 +300,9 @@ const SeatSelectionPage = () => {
               <div className="text-sm text-gray-700">
                 <div className="flex justify-between mb-2">
                   <span>Giá vé lượt đi</span>
-                  <span className="text-red-500 font-medium text-[16px]">580.000đ</span>
+                  <span className="text-red-500 font-medium text-[16px]">
+                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Phí thanh toán</span>
@@ -280,7 +310,9 @@ const SeatSelectionPage = () => {
                 </div>
                 <div className="flex justify-between font-bold text-red-500">
                   <span>Tổng tiền</span>
-                  <span className="text-[16px]">580.000đ</span>
+                  <span className="text-[16px]">
+                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                  </span>
                 </div>
               </div>
             </div>
@@ -288,6 +320,8 @@ const SeatSelectionPage = () => {
             <button
               className="bg-orange-500 text-white px-6 py-3 font-semibold hover:bg-orange-600 transition duration-200"
               style={{ borderRadius: "0.75rem" }}
+              disabled={selectedSeats.length === 0}
+              onClick={handlePayment}
             >
               Thanh toán
             </button>
@@ -295,6 +329,19 @@ const SeatSelectionPage = () => {
         </div>
       </section>
 
+      <Snackbar
+              open={snackBar.open}
+              autoHideDuration={3000}
+              onClose={handleCloseSnackBar}
+            >
+              <Alert
+                onClose={handleCloseSnackBar}
+                severity={snackBar.severity}
+                sx={{ width: "100%" }}
+              >
+                {snackBar.message}
+              </Alert>
+            </Snackbar>
       <Footer />
     </div>
   );

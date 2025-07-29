@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dropdown, Space } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom"; // Để điều hướng
-
+import { getUserInfor } from "../services/UserService";
+import "./Header2.css";
 const HomePage = () => {
   const [avatar, setAvatar] = useState("/images/avatar.jpg");
   const [userInfo, setUserInfo] = useState({
@@ -14,6 +15,33 @@ const HomePage = () => {
     cccd: "",
     avatar: "",
   });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getUserInfor(); // Gọi API
+
+        console.log("respon", response);
+        if (response?.code === 1000) {
+          const result = response.result;
+          setUserInfo({
+            name: result.name || "",
+            gender: String(result.gender || "1"),
+            birthDate: result.birthDate || "",
+            phone: result.phone || "",
+            email: result.email || "",
+            cccd: result.cccd || "",
+            avatar: result.avatar || "",
+          });
+          setAvatar(result.avatar || "/images/avatar.jpg");
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const navigate = useNavigate(); // Để điều hướng
 

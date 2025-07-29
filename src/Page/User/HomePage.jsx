@@ -2,30 +2,32 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { Snackbar, Alert } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { handleGetAllProvince } from "../../services/BusStationService";
 import { searchTripsByProvinces } from "../../services/HomeService";
-import { getUserInfor } from "../../services/UserService";
 
-import { Dropdown, Space } from "antd";
-import { DownOutlined } from "@ant-design/icons";
 const HomePage = () => {
   const [provinces, setProvinces] = useState([]);
   const [departure, setDeparture] = useState(null);
   const [destination, setDestination] = useState(null);
-  const [departureDate, setDepartureDate] = useState(""); // State mới cho ngày
+  const [departureDate, setDepartureDate] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [trips, setTrips] = useState([]);
+  const [ticketCount, setTicketCount] = useState("1");
   const [routeTitle, setRouteTitle] = useState("");
-  const [avatar, setAvatar] = useState("/images/avatar.jpg");
-  const [userInfo, setUserInfo] = useState({
-    name: "",
-    gender: "1",
-    birthDate: "",
-    phone: "",
-    email: "",
-    cccd: "",
-    avatar: "",
+  const [filters, setFilters] = useState({
+    timeRanges: [],
+    busTypes: [],
+    floors: [],
   });
+  const [snackBar, setSnackBar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
@@ -37,6 +39,7 @@ const HomePage = () => {
         setProvinces(formattedProvinces);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách tỉnh thành:", error);
+        handleOpenSnackBar("Lỗi khi lấy danh sách tỉnh thành!", "error");
       }
     };
     fetchProvinces();
@@ -50,9 +53,21 @@ const HomePage = () => {
     (province) => province.value !== (destination?.value || "")
   );
 
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackBar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackBar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackBar({ ...snackBar, open: false });
+  };
+
   const handleSearch = async () => {
     if (!departure || !destination || !departureDate) {
-      console.error("Vui lòng chọn điểm đi, điểm đến và ngày đi!");
+      handleOpenSnackBar(
+        "Vui lòng chọn điểm đi, điểm đến và ngày đi!",
+        "error"
+      );
       return;
     }
 
@@ -60,26 +75,28 @@ const HomePage = () => {
       const response = await searchTripsByProvinces(
         departure.value,
         destination.value,
-        departureDate // Truyền ngày đã chọn vào API
+        departureDate,
+        ticketCount
       );
-      setTrips(response.result); // Lưu danh sách chuyến xe từ API
-      setShowSearchResults(true); // Hiển thị section kết quả tìm kiếm
+      setTrips(response.result);
+      setShowSearchResults(true);
       setRouteTitle(
         `${departure.label} - ${destination.label} (${response.result.length})`
       );
-      console.log(response.result);
     } catch (error) {
       console.error("Lỗi khi tìm kiếm chuyến xe:", error);
-      alert("Không tìm thấy chuyến xe. Vui lòng thử lại!");
+      handleOpenSnackBar(
+        "Không tìm thấy chuyến xe. Vui lòng thử lại!",
+        "error"
+      );
     }
   };
 
-  // Hàm tính giờ đến
   const calculateArrivalTime = (departureTime, travelTime) => {
     const departure = new Date(departureTime);
     const arrival = new Date(departure);
     const hours = Math.floor(travelTime);
-    const minutes = Math.round((travelTime % 1) * 60); // Chuyển phần thập phân thành phút
+    const minutes = Math.round((travelTime % 1) * 60);
     arrival.setHours(departure.getHours() + hours);
     arrival.setMinutes(departure.getMinutes() + minutes);
     return arrival.toLocaleTimeString("vi-VN", {
@@ -88,29 +105,131 @@ const HomePage = () => {
     });
   };
 
-  const App = () => (
-    <Dropdown
-      menu={{
-        items: this.items,
-      }}
-    >
-      <a onClick={(e) => e.preventDefault()}>
-        <Space>
-          <img
-            className="image-user-infor"
-            src={
-              "https://res.cloudinary.com/dxxswaeor/image/upload/v1753078869/file_afjup6.jpg"
-            }
-            alt=""
-            width="35"
-            height="35"
-          />
-          <DownOutlined />
-          {userInfo.name}
-        </Space>
-      </a>
-    </Dropdown>
-  );
+  const handleTimeRangeFilter = (range) => {
+    setFilters((prev) => ({
+      ...prev,
+      timeRanges: prev.timeRanges.includes(range)
+        ? prev.timeRanges.filter((r) => r !== range)
+        : [...prev.timeRanges, range],
+    }));
+  };
+
+  const handleBusTypeFilter = (type) => {
+    setFilters((prev) => ({
+      ...prev,
+      busTypes: prev.busTypes.includes(type)
+        ? prev.busTypes.filter((t) => t !== type)
+        : [...prev.busTypes, type],
+    }));
+  };
+
+  const handleFloorFilter = (floor) => {
+    setFilters((prev) => ({
+      ...prev,
+      floors: prev.floors.includes(floor)
+        ? prev.floors.filter((f) => f !== floor)
+        : [...prev.floors, floor],
+    }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      timeRanges: [],
+      busTypes: [],
+      floors: [],
+    });
+    handleOpenSnackBar("Đã xóa tất cả bộ lọc", "success");
+  };
+
+  const getTripCountByTimeRange = (range) => {
+    return trips.filter((trip) => {
+      const departureHour = new Date(trip.departureTime).getHours();
+      if (range === "earlyMorning" && departureHour >= 0 && departureHour < 6)
+        return true;
+      if (range === "morning" && departureHour >= 6 && departureHour < 12)
+        return true;
+      if (range === "afternoon" && departureHour >= 12 && departureHour < 18)
+        return true;
+      if (range === "evening" && departureHour >= 18 && departureHour <= 23)
+        return true;
+      return false;
+    }).length;
+  };
+
+  const getTripCountByFloor = (floor) => {
+    return trips.filter((trip) => {
+      if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount))
+        return true;
+      if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount))
+        return true;
+      return false;
+    }).length;
+  };
+
+  const filterTrips = (trips) => {
+    return trips.filter((trip) => {
+      let passTimeFilter = true;
+      if (filters.timeRanges.length > 0) {
+        const departureHour = new Date(trip.departureTime).getHours();
+        passTimeFilter = filters.timeRanges.some((range) => {
+          if (
+            range === "earlyMorning" &&
+            departureHour >= 0 &&
+            departureHour < 6
+          )
+            return true;
+          if (range === "morning" && departureHour >= 6 && departureHour < 12)
+            return true;
+          if (
+            range === "afternoon" &&
+            departureHour >= 12 &&
+            departureHour < 18
+          )
+            return true;
+          if (range === "evening" && departureHour >= 18 && departureHour <= 23)
+            return true;
+          return false;
+        });
+      }
+
+      const passBusTypeFilter =
+        filters.busTypes.length === 0 ||
+        filters.busTypes.includes(trip.bus.busType.name);
+
+      let passFloorFilter = true;
+      if (filters.floors.length > 0) {
+        if (
+          filters.floors.includes("Tầng trên") &&
+          filters.floors.includes("Tầng dưới")
+        ) {
+          passFloorFilter = trip.countA + trip.countB >= parseInt(ticketCount);
+        } else {
+          passFloorFilter = filters.floors.some((floor) => {
+            if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount))
+              return true;
+            if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount))
+              return true;
+            return false;
+          });
+        }
+      } else {
+        // Nếu không chọn tầng, kiểm tra tổng ghế trống
+        passFloorFilter = trip.countA + trip.countB >= parseInt(ticketCount);
+      }
+
+      return passTimeFilter && passBusTypeFilter && passFloorFilter;
+    });
+  };
+
+  const filteredTrips = filterTrips(trips);
+
+  useEffect(() => {
+    if (showSearchResults && departure && destination) {
+      setRouteTitle(
+        `${departure.label} - ${destination.label} (${filteredTrips.length})`
+      );
+    }
+  }, [filteredTrips, departure, destination, showSearchResults]);
 
   return (
     <div>
@@ -176,12 +295,17 @@ const HomePage = () => {
               <input
                 type="date"
                 value={departureDate}
-                onChange={(e) => setDepartureDate(e.target.value)} // Cập nhật state ngày
+                onChange={(e) => setDepartureDate(e.target.value)}
                 className="p-3 rounded-lg border w-full"
                 aria-label="Chọn ngày đi"
-                min={new Date().toISOString().split("T")[0]} // Giới hạn không chọn ngày quá khứ
+                min={new Date().toISOString().split("T")[0]}
               />
-              <select className="p-3 rounded-lg border w-full">
+              <select
+                value={ticketCount}
+                onChange={(e) => setTicketCount(e.target.value)}
+                className="p-3 rounded-lg border w-full"
+                aria-label="Chọn số lượng vé"
+              >
                 <option value="1">1 vé</option>
                 <option value="2">2 vé</option>
                 <option value="3">3 vé</option>
@@ -210,7 +334,10 @@ const HomePage = () => {
               <div className="w-full md:w-1/3 bg-white rounded-xl shadow p-4 border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">BỘ LỌC TÌM KIẾM</h3>
-                  <button className="flex items-center text-red-500 text-base font-medium">
+                  <button
+                    className="flex items-center text-red-500 text-base font-medium"
+                    onClick={handleClearFilters}
+                  >
                     Bỏ lọc
                     <img
                       src="/images/delete.svg"
@@ -226,37 +353,49 @@ const HomePage = () => {
                     <li>
                       <input
                         type="checkbox"
+                        checked={filters.timeRanges.includes("earlyMorning")}
+                        onChange={() => handleTimeRangeFilter("earlyMorning")}
                         aria-label="Sáng sớm 00:00 - 06:00"
-                      />{" "}
+                      />
                       <span className="ml-2 text-[15px]">
-                        Sáng sớm 00:00 - 06:00 (0)
+                        Sáng sớm 00:00 - 06:00 (
+                        {getTripCountByTimeRange("earlyMorning")})
                       </span>
                     </li>
                     <li>
                       <input
                         type="checkbox"
+                        checked={filters.timeRanges.includes("morning")}
+                        onChange={() => handleTimeRangeFilter("morning")}
                         aria-label="Buổi sáng 06:00 - 12:00"
-                      />{" "}
+                      />
                       <span className="ml-2 text-[15px]">
-                        Buổi sáng 06:00 - 12:00 (0)
+                        Buổi sáng 06:00 - 12:00 (
+                        {getTripCountByTimeRange("morning")})
                       </span>
                     </li>
                     <li>
                       <input
                         type="checkbox"
+                        checked={filters.timeRanges.includes("afternoon")}
+                        onChange={() => handleTimeRangeFilter("afternoon")}
                         aria-label="Buổi chiều 12:00 - 18:00"
-                      />{" "}
+                      />
                       <span className="ml-2 text-[15px]">
-                        Buổi chiều 12:00 - 18:00 (3)
+                        Buổi chiều 12:00 - 18:00 (
+                        {getTripCountByTimeRange("afternoon")})
                       </span>
                     </li>
                     <li>
                       <input
                         type="checkbox"
+                        checked={filters.timeRanges.includes("evening")}
+                        onChange={() => handleTimeRangeFilter("evening")}
                         aria-label="Buổi tối 18:00 - 24:00"
-                      />{" "}
+                      />
                       <span className="ml-2 text-[15px]">
-                        Buổi tối 18:00 - 24:00 (46)
+                        Buổi tối 18:00 - 24:00 (
+                        {getTripCountByTimeRange("evening")})
                       </span>
                     </li>
                   </ul>
@@ -267,10 +406,24 @@ const HomePage = () => {
                 <div className="mb-4">
                   <p className="font-medium mb-2">Loại xe</p>
                   <div className="flex gap-2 flex-wrap">
-                    <button className="px-3 py-1 border rounded text-[15px]">
+                    <button
+                      className={`px-3 py-1 border rounded text-[15px] ${
+                        filters.busTypes.includes("Xe thường")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
+                      }`}
+                      onClick={() => handleBusTypeFilter("Xe thường")}
+                    >
                       Thường
                     </button>
-                    <button className="px-3 py-1 border rounded text-[15px]">
+                    <button
+                      className={`px-3 py-1 border rounded text-[15px] ${
+                        filters.busTypes.includes("Limousine")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
+                      }`}
+                      onClick={() => handleBusTypeFilter("Limousine")}
+                    >
                       Limousine
                     </button>
                   </div>
@@ -281,11 +434,25 @@ const HomePage = () => {
                 <div>
                   <p className="font-medium mb-2">Tầng</p>
                   <div className="flex gap-2 flex-wrap">
-                    <button className="px-3 py-1 border rounded text-[15px]">
-                      Tầng trên
+                    <button
+                      className={`px-3 py-1 border rounded text-[15px] ${
+                        filters.floors.includes("Tầng trên")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
+                      }`}
+                      onClick={() => handleFloorFilter("Tầng trên")}
+                    >
+                      Tầng trên ({getTripCountByFloor("Tầng trên")})
                     </button>
-                    <button className="px-3 py-1 border rounded text-[15px]">
-                      Tầng dưới
+                    <button
+                      className={`px-3 py-1 border rounded text-[15px] ${
+                        filters.floors.includes("Tầng dưới")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
+                      }`}
+                      onClick={() => handleFloorFilter("Tầng dưới")}
+                    >
+                      Tầng dưới ({getTripCountByFloor("Tầng dưới")})
                     </button>
                   </div>
                 </div>
@@ -325,12 +492,12 @@ const HomePage = () => {
                     </div>
                   </div>
 
-                  {trips.length === 0 ? (
+                  {filteredTrips.length === 0 ? (
                     <p className="text-center text-gray-500">
                       Không tìm thấy chuyến xe phù hợp.
                     </p>
                   ) : (
-                    trips.map((trip) => (
+                    filteredTrips.map((trip) => (
                       <div
                         key={trip.id}
                         className="border border-gray-300 rounded-lg shadow-sm ring-1 ring-gray-100 px-5 py-4 mb-7"
@@ -414,7 +581,7 @@ const HomePage = () => {
                                 style={{ color: "#00613d" }}
                                 className="font-semibold"
                               >
-                                {trip.bus.busType.seatCount} chỗ trống
+                                {trip.count} chỗ trống
                               </span>
                             </div>
                             <span className="text-red-500 font-semibold mt-1 text-[19px]">
@@ -432,7 +599,14 @@ const HomePage = () => {
                             <span>Trung chuyển</span>
                             <span>Chính sách</span>
                           </div>
-                          <button className="bg-orange-100 text-orange-500 px-4 py-1 rounded-full text-[15px] font-medium">
+                          <button
+                            onClick={() =>
+                              navigate(`/seat-selection/${trip.id}`, {
+                                state: { tripDetails: trip },
+                              })
+                            }
+                            className="bg-orange-100 text-orange-500 px-4 py-1 rounded-full text-[15px] font-medium"
+                          >
                             Chọn chuyến
                           </button>
                         </div>
@@ -691,6 +865,19 @@ const HomePage = () => {
         </>
       )}
 
+      <Snackbar
+        open={snackBar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackBar}
+      >
+        <Alert
+          onClose={handleCloseSnackBar}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
       <Footer />
     </div>
   );

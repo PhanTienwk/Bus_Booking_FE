@@ -503,7 +503,7 @@ const UserManagement = () => {
         style={{ top: 20 }}
       >
         {selectedTrip && (
-          <div>
+          <div id="print-area">
             <p>
               <strong>Tuyến:</strong> {selectedTrip.routeName}
             </p>
