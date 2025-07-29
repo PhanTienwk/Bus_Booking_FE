@@ -91,3 +91,46 @@ nav ul li a:hover {
 .login-btn:hover {
   background-color: #ff4500;
 }
+
+
+.avatar-user {
+  margin-left: 15px;
+}
+
+.avatar-user a {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 24px;
+  transition: all 0.3s ease; /* thay $transition-speed nếu không dùng SCSS */
+  color: #000; /* thay $text-color nếu không dùng SCSS */
+}
+
+.avatar-user a:hover {
+  background-color: rgba(24, 144, 255, 0.1);
+  color: #1890ff !important;
+  text-decoration: none;
+}
+
+.avatar-user a .image-user-infor {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% !important;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.avatar-user a .image-user-infor:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-user a .ant-space {
+  align-items: center;
+}
+
+.avatar-user a .anticon {
+  font-size: 12px;
+  margin-left: 5px;
+}

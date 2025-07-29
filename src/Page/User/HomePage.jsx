@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import {
-  handleGetAllProvince,
-} from "../../services/BusStationService";
-import {
-  searchTripsByProvinces,
-} from "../../services/HomeService";
+import { handleGetAllProvince } from "../../services/BusStationService";
+import { searchTripsByProvinces } from "../../services/HomeService";
+import { getUserInfor } from "../../services/UserService";
 
+import { Dropdown, Space } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 const HomePage = () => {
   const [provinces, setProvinces] = useState([]);
   const [departure, setDeparture] = useState(null);
@@ -17,7 +16,16 @@ const HomePage = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [trips, setTrips] = useState([]);
   const [routeTitle, setRouteTitle] = useState("");
-
+  const [avatar, setAvatar] = useState("/images/avatar.jpg");
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    gender: "1",
+    birthDate: "",
+    phone: "",
+    email: "",
+    cccd: "",
+    avatar: "",
+  });
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
@@ -56,7 +64,9 @@ const HomePage = () => {
       );
       setTrips(response.result); // Lưu danh sách chuyến xe từ API
       setShowSearchResults(true); // Hiển thị section kết quả tìm kiếm
-      setRouteTitle(`${departure.label} - ${destination.label} (${response.result.length})`);
+      setRouteTitle(
+        `${departure.label} - ${destination.label} (${response.result.length})`
+      );
       console.log(response.result);
     } catch (error) {
       console.error("Lỗi khi tìm kiếm chuyến xe:", error);
@@ -77,6 +87,30 @@ const HomePage = () => {
       minute: "2-digit",
     });
   };
+
+  const App = () => (
+    <Dropdown
+      menu={{
+        items: this.items,
+      }}
+    >
+      <a onClick={(e) => e.preventDefault()}>
+        <Space>
+          <img
+            className="image-user-infor"
+            src={
+              "https://res.cloudinary.com/dxxswaeor/image/upload/v1753078869/file_afjup6.jpg"
+            }
+            alt=""
+            width="35"
+            height="35"
+          />
+          <DownOutlined />
+          {userInfo.name}
+        </Space>
+      </a>
+    </Dropdown>
+  );
 
   return (
     <div>
@@ -190,25 +224,37 @@ const HomePage = () => {
                   <p className="font-medium mb-2">Giờ đi</p>
                   <ul className="space-y-2 text-sm text-gray-700">
                     <li>
-                      <input type="checkbox" aria-label="Sáng sớm 00:00 - 06:00" />{" "}
+                      <input
+                        type="checkbox"
+                        aria-label="Sáng sớm 00:00 - 06:00"
+                      />{" "}
                       <span className="ml-2 text-[15px]">
                         Sáng sớm 00:00 - 06:00 (0)
                       </span>
                     </li>
                     <li>
-                      <input type="checkbox" aria-label="Buổi sáng 06:00 - 12:00" />{" "}
+                      <input
+                        type="checkbox"
+                        aria-label="Buổi sáng 06:00 - 12:00"
+                      />{" "}
                       <span className="ml-2 text-[15px]">
                         Buổi sáng 06:00 - 12:00 (0)
                       </span>
                     </li>
                     <li>
-                      <input type="checkbox" aria-label="Buổi chiều 12:00 - 18:00" />{" "}
+                      <input
+                        type="checkbox"
+                        aria-label="Buổi chiều 12:00 - 18:00"
+                      />{" "}
                       <span className="ml-2 text-[15px]">
                         Buổi chiều 12:00 - 18:00 (3)
                       </span>
                     </li>
                     <li>
-                      <input type="checkbox" aria-label="Buổi tối 18:00 - 24:00" />{" "}
+                      <input
+                        type="checkbox"
+                        aria-label="Buổi tối 18:00 - 24:00"
+                      />{" "}
                       <span className="ml-2 text-[15px]">
                         Buổi tối 18:00 - 24:00 (46)
                       </span>
@@ -280,7 +326,9 @@ const HomePage = () => {
                   </div>
 
                   {trips.length === 0 ? (
-                    <p className="text-center text-gray-500">Không tìm thấy chuyến xe phù hợp.</p>
+                    <p className="text-center text-gray-500">
+                      Không tìm thấy chuyến xe phù hợp.
+                    </p>
                   ) : (
                     trips.map((trip) => (
                       <div
@@ -292,7 +340,9 @@ const HomePage = () => {
                             <div className="flex flex-col items-start min-w-max">
                               <div className="flex items-center gap-2">
                                 <p className="text-2xl font-semibold">
-                                  {new Date(trip.departureTime).toLocaleTimeString("vi-VN", {
+                                  {new Date(
+                                    trip.departureTime
+                                  ).toLocaleTimeString("vi-VN", {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   })}
@@ -318,7 +368,9 @@ const HomePage = () => {
                             </div>
 
                             <div className="text-center min-w-max">
-                              <p className="text-[15px] text-gray-500">{trip.busRoute.travelTime} giờ</p>
+                              <p className="text-[15px] text-gray-500">
+                                {trip.busRoute.travelTime} giờ
+                              </p>
                               <p className="text-sm text-gray-400">
                                 (Asia/Ho Chi Minh)
                               </p>
@@ -341,7 +393,10 @@ const HomePage = () => {
                                   className="w-5 h-5"
                                 />
                                 <p className="text-2xl font-semibold ml-2">
-                                  {calculateArrivalTime(trip.departureTime, trip.busRoute.travelTime)}
+                                  {calculateArrivalTime(
+                                    trip.departureTime,
+                                    trip.busRoute.travelTime
+                                  )}
                                 </p>
                               </div>
                               <p className="text-gray-500 text-[16px] mt-1">
@@ -408,7 +463,9 @@ const HomePage = () => {
                     alt="Lượt khách"
                     className="w-20 h-20 mb-4"
                   />
-                  <h3 className="text-xl font-bold text-[#000]">Hơn 40 Triệu</h3>
+                  <h3 className="text-xl font-bold text-[#000]">
+                    Hơn 40 Triệu
+                  </h3>
                   <p className="font-semibold text-gray-700 mb-1">Lượt khách</p>
                   <p className="text-gray-600 text-sm">
                     Phương Trang phục vụ hơn 40 triệu lượt khách bình quân 1 năm
@@ -427,8 +484,8 @@ const HomePage = () => {
                     Phòng vé - Bưu cục
                   </p>
                   <p className="text-gray-600 text-sm">
-                    Phương Trang có hơn 350 phòng vé, trạm trung chuyển, bến xe,...
-                    trên toàn hệ thống
+                    Phương Trang có hơn 350 phòng vé, trạm trung chuyển, bến
+                    xe,... trên toàn hệ thống
                   </p>
                 </div>
 
@@ -441,8 +498,8 @@ const HomePage = () => {
                   <h3 className="text-xl font-bold text-[#000]">Hơn 6,500</h3>
                   <p className="font-semibold text-gray-700 mb-1">Chuyến xe</p>
                   <p className="text-gray-600 text-sm">
-                    Phương Trang phục vụ hơn 6,500 chuyến xe đường dài và liên tỉnh
-                    mỗi ngày
+                    Phương Trang phục vụ hơn 6,500 chuyến xe đường dài và liên
+                    tỉnh mỗi ngày
                   </p>
                 </div>
               </div>
@@ -597,7 +654,9 @@ const HomePage = () => {
                       alt="Xe Hợp Đồng"
                       className="w-23 h-23"
                     />
-                    <p className="mt-3 text-gray-700 font-medium">Xe Hợp Đồng</p>
+                    <p className="mt-3 text-gray-700 font-medium">
+                      Xe Hợp Đồng
+                    </p>
                   </div>
                   <div className="flex flex-col items-center">
                     <img

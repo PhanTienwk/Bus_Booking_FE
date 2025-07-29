@@ -1,7 +1,12 @@
 import React, { useState, useRef } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { login, register, verifyOTP, completeRegistration} from "../../services/auth"; 
+import {
+  login,
+  register,
+  verifyOTP,
+  completeRegistration,
+} from "../../services/auth";
 import { useNavigate } from "react-router-dom";
 // import { jwtDecode } from "jwt-decode";
 
@@ -39,7 +44,7 @@ const LoginPage = () => {
 
   const handleOTPChange = (e, index) => {
     const value = e.target.value;
-    if (/^[0-9]?$/.test(value)) { 
+    if (/^[0-9]?$/.test(value)) {
       const newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
@@ -58,8 +63,12 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await login({ email: credentials.email, password: credentials.password }); 
+      const data = await login({
+        email: credentials.email,
+        password: credentials.password,
+      });
       const role = localStorage.getItem("role");
+
       if (data && data.token) {
         setMessage("Đăng nhập thành công!");
         if (role === "ADMIN") navigate("/admin");
@@ -105,7 +114,9 @@ const LoginPage = () => {
     try {
       const data = await verifyOTP({ email: registerEmail, otp: otpCode });
       if (data.code === 200) {
-        setMessage("Xác thực OTP thành công! Vui lòng hoàn tất thông tin đăng ký.");
+        setMessage(
+          "Xác thực OTP thành công! Vui lòng hoàn tất thông tin đăng ký."
+        );
         setShowOTPForm(false);
         setShowCompleteForm(true);
         setOtp(["", "", "", "", "", ""]);
@@ -134,12 +145,15 @@ const LoginPage = () => {
     }
 
     const requestData = {
-    email: registerEmail,
-    ...completeData,
+      email: registerEmail,
+      ...completeData,
     };
 
     // In ra request gửi đến backend
-    console.log("Request gửi đến backend (/api/complete-registration):", JSON.stringify(requestData, null, 2));
+    console.log(
+      "Request gửi đến backend (/api/complete-registration):",
+      JSON.stringify(requestData, null, 2)
+    );
     try {
       const response = await completeRegistration({
         email: registerEmail,
@@ -149,13 +163,22 @@ const LoginPage = () => {
         setMessage("Hoàn tất đăng ký thành công! Vui lòng đăng nhập.");
         setShowCompleteForm(false);
         setRegisterEmail("");
-        setCompleteData({ name: "", cccd: "", phone: "", gender: "", birthDate: "", password: "" });
+        setCompleteData({
+          name: "",
+          cccd: "",
+          phone: "",
+          gender: "",
+          birthDate: "",
+          password: "",
+        });
         setIsLogin(true);
       } else {
         setMessage("Hoàn tất đăng ký thất bại. Vui lòng thử lại.");
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || "Không thể kết nối đến server.");
+      setMessage(
+        error.response?.data?.message || "Không thể kết nối đến server."
+      );
     }
   };
 
@@ -253,7 +276,11 @@ const LoginPage = () => {
                           aria-label="Password"
                         />
                         <img
-                          src={showPassword ? "/images/eye.png" : "/images/hide.png"}
+                          src={
+                            showPassword
+                              ? "/images/eye.png"
+                              : "/images/hide.png"
+                          }
                           alt="Toggle Password"
                           className="w-4 h-4 mr-2 cursor-pointer"
                           onClick={() => setShowPassword(!showPassword)}
@@ -266,7 +293,9 @@ const LoginPage = () => {
                       >
                         Đăng nhập
                       </button>
-                      {message && <p className="text-center text-red-500">{message}</p>}
+                      {message && (
+                        <p className="text-center text-red-500">{message}</p>
+                      )}
                     </form>
                   ) : showOTPForm ? (
                     <form className="space-y-4" onSubmit={handleOTPSubmit}>
@@ -292,7 +321,9 @@ const LoginPage = () => {
                       >
                         Xác thực OTP
                       </button>
-                      {message && <p className="text-center text-red-500">{message}</p>}
+                      {message && (
+                        <p className="text-center text-red-500">{message}</p>
+                      )}
                     </form>
                   ) : showCompleteForm ? (
                     <form className="space-y-4" onSubmit={handleCompleteSubmit}>
@@ -365,7 +396,11 @@ const LoginPage = () => {
                           aria-label="Password"
                         />
                         <img
-                          src={showPassword ? "/images/eye.png" : "/images/hide.png"}
+                          src={
+                            showPassword
+                              ? "/images/eye.png"
+                              : "/images/hide.png"
+                          }
                           alt="Toggle Password"
                           className="w-4 h-4 mr-2 cursor-pointer"
                           onClick={() => setShowPassword(!showPassword)}
@@ -377,7 +412,9 @@ const LoginPage = () => {
                       >
                         Hoàn tất đăng ký
                       </button>
-                      {message && <p className="text-center text-red-500">{message}</p>}
+                      {message && (
+                        <p className="text-center text-red-500">{message}</p>
+                      )}
                     </form>
                   ) : (
                     <form className="space-y-4" onSubmit={handleRegisterSubmit}>
@@ -403,12 +440,17 @@ const LoginPage = () => {
                       >
                         Đăng ký
                       </button>
-                      {message && <p className="text-center text-red-500">{message}</p>}
+                      {message && (
+                        <p className="text-center text-red-500">{message}</p>
+                      )}
                     </form>
                   )}
 
                   <div className="text-left mt-4 flex items-center gap-2">
-                    <a href="/forgot-password" className="text-[#EF5222] text-sm">
+                    <a
+                      href="/forgot-password"
+                      className="text-[#EF5222] text-sm"
+                    >
                       Quên mật khẩu?
                     </a>
                     <img

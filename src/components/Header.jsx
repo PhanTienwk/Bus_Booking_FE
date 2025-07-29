@@ -1,12 +1,104 @@
-import React from "react";
+import React, { useState } from "react";
+import { Dropdown, Space } from "antd";
+import { DownOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom"; // Để điều hướng
 
 const HomePage = () => {
+  const [avatar, setAvatar] = useState("/images/avatar.jpg");
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    gender: "1",
+    birthDate: "",
+    phone: "",
+    email: "",
+    cccd: "",
+    avatar: "",
+  });
+
+  const navigate = useNavigate(); // Để điều hướng
+
+  // Định nghĩa mảng items cho Dropdown
+  const items = [
+    {
+      key: "1",
+      label: "Tài khoản của tôi",
+      disabled: true,
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "2",
+      label: "Hồ sơ",
+      extra: "⌘P",
+      onClick: () => handleNavigateProfile(),
+    },
+    {
+      key: "3",
+      label: "Hóa đơn",
+      extra: "⌘B",
+    },
+    {
+      key: "4",
+      label: (
+        <span className="sign-out-container">
+          <i className="fas fa-sign-out-alt"></i> Đăng xuất
+        </span>
+      ),
+      extra: "⌘D",
+      onClick: () => handleLogOut(),
+    },
+  ];
+
+  // Hàm điều hướng (tùy chỉnh theo nhu cầu)
+  const handleNavigateProfile = () => {
+    navigate("/profile");
+  };
+
+  const handleLogOut = () => {
+    // Xóa thông tin người dùng hoặc token (ví dụ)
+    setUserInfo({
+      name: "",
+      gender: "1",
+      birthDate: "",
+      phone: "",
+      email: "",
+      cccd: "",
+      avatar: "",
+    });
+    setAvatar("/images/avatar.jpg");
+    navigate("/login");
+  };
+
+  // Component UserDropdown
+  const UserDropdown = () => (
+    <Dropdown
+      menu={{
+        items, // Sử dụng mảng items đã định nghĩa
+      }}
+    >
+      <a onClick={(e) => e.preventDefault()}>
+        <Space>
+          <img
+            className="image-user-infor"
+            src={avatar}
+            alt="Ảnh đại diện"
+            width="35"
+            height="35"
+          />
+          <DownOutlined />
+          {userInfo.name}
+        </Space>
+      </a>
+    </Dropdown>
+  );
+
   return (
     <div className="bg-white">
       <header className="bg-[#EF5222] py-3 px-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/images/vietnam.svg" alt="VN Flag" className="w-5 h-5" />
+            <img src="/images/vietnam.svg" alt="Cờ VN" className="w-5 h-5" />
             <span className="text-white font-medium">VI</span>
             <span className="text-white">|</span>
             <a href="/" className="text-white hover:underline">
@@ -25,22 +117,27 @@ const HomePage = () => {
               <a href="/">Liên hệ</a>
               <a href="/">Về chúng tôi</a>
             </nav>
-            <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 py-2 rounded-full">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5.121 17.804A13.937 13.937 0 0112 15c2.086 0 4.053.496 5.879 1.379M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              Đăng nhập/Đăng ký
-            </button>
+
+            {userInfo ? (
+              <UserDropdown /> // Render trực tiếp UserDropdown
+            ) : (
+              <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 py-2 rounded-full">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5.121 17.804A13.937 13.937 0 0112 15c2.086 0 4.053.496 5.879 1.379M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Đăng nhập/Đăng ký
+              </button>
+            )}
           </div>
         </div>
       </header>
