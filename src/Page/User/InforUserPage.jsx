@@ -7,7 +7,6 @@ import {
   updatePassword,
 } from "../../services/UserService";
 import {
-  getAllInvoices,
   handleGetInvoiceByUserId,
 } from "../../services/InvoiceService";
 import { Snackbar, Alert } from "@mui/material";
@@ -287,20 +286,20 @@ const InforUserPage = () => {
     ];
   };
 
-  const historyticket = () => {
-    if (isLoading) {
-      return <div className="md:col-span-5">Đang tải...</div>;
-    }
+  // const historyticket = () => {
+  //   if (isLoading) {
+  //     return <div className="md:col-span-5">Đang tải...</div>;
+  //   }
 
-    if (activeSection === "account") {
-      <Table
-        columns={getColumns()}
-        dataSource={Invoices}
-        rowKey="id"
-        pagination={{ pageSize: 5 }}
-      />;
-    }
-  };
+  //   if (activeSection === "account") {
+  //     <Table
+  //       columns={getColumns()}
+  //       dataSource={Invoices}
+  //       rowKey="id"
+  //       pagination={{ pageSize: 5 }}
+  //     />;
+  //   }
+  // };
   const renderSection = () => {
     if (isLoading) {
       return <div className="md:col-span-5">Đang tải...</div>;

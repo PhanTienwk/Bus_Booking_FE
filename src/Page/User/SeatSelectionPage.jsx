@@ -3,7 +3,12 @@ import { useLocation } from "react-router-dom";
 import Header from "../../components/Header";
 import { Snackbar, Alert } from "@mui/material";
 import Footer from "../../components/Footer";
-import { fetchSeatLayout, handleSeatSelection, createInvoice } from "../../services/SeatSelectionService";
+import {
+  fetchSeatLayout,
+  handleSeatSelection,
+  createInvoice,
+} from "../../services/SeatSelectionService";
+import { useNavigate } from "react-router-dom";
 
 const SeatSelectionPage = () => {
   const { state } = useLocation();
@@ -13,21 +18,25 @@ const SeatSelectionPage = () => {
   const [lowerSeats, setLowerSeats] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
   const [snackBar, setSnackBar] = useState({
-      open: false,
-      message: "",
-      severity: "info",
-    });
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const [customerInfo, setCustomerInfo] = useState({
     name: "",
     phone: "",
     email: "",
-    paymentMethod:"0" 
+    paymentMethod: "0",
   });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getSeatLayout = async () => {
       try {
-        const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(tripDetails.bus.id);
+        const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(
+          tripDetails.bus.id
+        );
         setUpperSeats(upperSeats);
         setLowerSeats(lowerSeats);
         setBookedSeats(bookedSeats);
@@ -60,12 +69,12 @@ const SeatSelectionPage = () => {
 
   const handlePayment = async () => {
     if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
-      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng","error");
+      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng", "error");
       return;
     }
 
     if (selectedSeats.length === 0) {
-      handleOpenSnackBar("Vui lòng chọn ít nhất một ghế","error");
+      handleOpenSnackBar("Vui lòng chọn ít nhất một ghế", "error");
       return;
     }
 
@@ -77,13 +86,22 @@ const SeatSelectionPage = () => {
       payment_method: customerInfo.paymentMethod,
       phone: customerInfo.phone,
       idbustrip: tripDetails.bus.id,
-      listidseatposition: selectedSeats
+      listidseatposition: selectedSeats,
     };
 
     try {
       const response = await createInvoice(invoiceData);
-      if(response===1000){
-        handleOpenSnackBar("Tạo hóa đơn thành công!","infor")
+      if (response === 1000) {
+        handleOpenSnackBar("Tạo hóa đơn thành công!", "infor");
+      }
+      if (customerInfo.paymentMethod === "1") {
+        navigate("/checkout", {
+          state: {
+            tripDetails,
+            selectedSeats,
+            customerInfo,
+          },
+        });
       }
       console.log("Invoice response:", response);
     } catch (error) {
@@ -129,7 +147,14 @@ const SeatSelectionPage = () => {
                           }
                           alt={seat}
                           className="w-8 h-8 cursor-pointer"
-                          onClick={() => !bookedSeats.includes(seat) && handleSeatSelection(seat, selectedSeats, setSelectedSeats)}
+                          onClick={() =>
+                            !bookedSeats.includes(seat) &&
+                            handleSeatSelection(
+                              seat,
+                              selectedSeats,
+                              setSelectedSeats
+                            )
+                          }
                         />
                         <span className="text-[13px] mt-1">{seat}</span>
                       </div>
@@ -154,7 +179,14 @@ const SeatSelectionPage = () => {
                           }
                           alt={seat}
                           className="w-8 h-8 cursor-pointer"
-                          onClick={() => !bookedSeats.includes(seat) && handleSeatSelection(seat, selectedSeats, setSelectedSeats)}
+                          onClick={() =>
+                            !bookedSeats.includes(seat) &&
+                            handleSeatSelection(
+                              seat,
+                              selectedSeats,
+                              setSelectedSeats
+                            )
+                          }
                         />
                         <span className="text-[13px] mt-1">{seat}</span>
                       </div>
@@ -265,22 +297,29 @@ const SeatSelectionPage = () => {
                 <div className="flex justify-between mb-2">
                   <span>Thời gian xuất bến</span>
                   <span className="font-medium">
-                    {new Date(tripDetails.departureTime).toLocaleString("vi-VN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
+                    {new Date(tripDetails.departureTime).toLocaleString(
+                      "vi-VN",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      }
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Số lượng ghế</span>
-                  <span className="font-medium">{selectedSeats.length} Ghế</span>
+                  <span className="font-medium">
+                    {selectedSeats.length} Ghế
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Số ghế</span>
-                  <span className="font-medium">{selectedSeats.join(", ") || "-"}</span>
+                  <span className="font-medium">
+                    {selectedSeats.join(", ") || "-"}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Điểm trả khách</span>
@@ -289,7 +328,10 @@ const SeatSelectionPage = () => {
                 <div className="flex justify-between text-green-600 font-bold">
                   <span>Tổng tiền lượt đi</span>
                   <span className="text-[16px]">
-                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
                   </span>
                 </div>
               </div>
@@ -301,7 +343,10 @@ const SeatSelectionPage = () => {
                 <div className="flex justify-between mb-2">
                   <span>Giá vé lượt đi</span>
                   <span className="text-red-500 font-medium text-[16px]">
-                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
                   </span>
                 </div>
                 <div className="flex justify-between mb-2">
@@ -311,7 +356,10 @@ const SeatSelectionPage = () => {
                 <div className="flex justify-between font-bold text-red-500">
                   <span>Tổng tiền</span>
                   <span className="text-[16px]">
-                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
                   </span>
                 </div>
               </div>
@@ -330,18 +378,18 @@ const SeatSelectionPage = () => {
       </section>
 
       <Snackbar
-              open={snackBar.open}
-              autoHideDuration={3000}
-              onClose={handleCloseSnackBar}
-            >
-              <Alert
-                onClose={handleCloseSnackBar}
-                severity={snackBar.severity}
-                sx={{ width: "100%" }}
-              >
-                {snackBar.message}
-              </Alert>
-            </Snackbar>
+        open={snackBar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackBar}
+      >
+        <Alert
+          onClose={handleCloseSnackBar}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
       <Footer />
     </div>
   );
