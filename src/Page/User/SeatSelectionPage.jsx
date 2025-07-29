@@ -95,11 +95,16 @@ const SeatSelectionPage = () => {
         handleOpenSnackBar("Tạo hóa đơn thành công!", "infor");
       }
       if (customerInfo.paymentMethod === "1") {
+        const totalAmount = tripDetails.price * selectedSeats.length;
+        const invoiceCode = response.result;
+        console.log(invoiceCode)
         navigate("/checkout", {
           state: {
             tripDetails,
             selectedSeats,
             customerInfo,
+            totalAmount,
+            invoiceCode
           },
         });
       }
