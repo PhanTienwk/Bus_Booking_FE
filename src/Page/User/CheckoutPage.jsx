@@ -3,7 +3,10 @@ import Footer from "../../components/Footer";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { updateInvoiceStatus } from "../../services/InvoiceService";
+import {
+  markInvoiceAsPaid,
+  markInvoiceAsExpired,
+} from "../../services/InvoiceService";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -12,6 +15,32 @@ const CheckoutPage = () => {
   const location = useLocation();
   const { customerInfo, tripDetails, selectedSeats, totalAmount, invoiceCode } =
     location.state || {};
+
+  const [countdown, setCountdown] = useState(1 * 60);
+  const [hasPaid, setHasPaid] = useState(false);
+  const [hasExpired, setHasExpired] = useState(false);
+
+  useEffect(() => {
+    if (countdown <= 0 && !hasPaid) {
+      if (!hasExpired) {
+        setHasExpired(true);
+        markInvoiceAsExpired(invoiceCode)
+          .then(() => {
+            navigate("/user");
+          })
+          .catch((error) => {
+            console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
+          });
+      }
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown, hasPaid, hasExpired, invoiceCode, navigate]);
 
   useEffect(() => {
     const BANK_ID = "MBBank";
@@ -43,10 +72,10 @@ const CheckoutPage = () => {
           );
 
         if (matched && !hasPaid) {
-          hasPaid = true;
+          setHasPaid(true);
           clearInterval(interval);
 
-          updateInvoiceStatus(invoiceCode)
+          markInvoiceAsPaid(invoiceCode)
             .then(() => {
               navigate("/thankyou", {
                 state: {
@@ -122,7 +151,12 @@ const CheckoutPage = () => {
             </div>
             <div className="bg-gray-50 p-4 rounded-xl mb-4 text-sm text-gray-600">
               Thời gian giữ chỗ còn lại:{" "}
-              <span className="font-medium">18 : 34</span>
+              <span className="font-medium">
+                {`${String(Math.floor(countdown / 60)).padStart(
+                  2,
+                  "0"
+                )}:${String(countdown % 60).padStart(2, "0")}`}
+              </span>
             </div>
             {qrUrl ? (
               <img src={qrUrl} alt="QR thanh toán" className="w-48 h-48 mb-4" />

@@ -12,8 +12,12 @@ const handleGetInvoiceByUserId = (id) => {
   return axios.get(`/api/admin/get-invoice-by-userid?phone=${id}`);
 };
 
-const updateInvoiceStatus = (id) => {
-  return axios.put(`/api/admin/update-invoice-status/${id}`);
+const markInvoiceAsPaid = (id) => {
+  return axios.put(`/api/admin/mark-invoice-paid/${id}`);
 };
 
-export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId, updateInvoiceStatus };
+const markInvoiceAsExpired = (id) => {
+  return axios.put(`/api/admin/mark-invoice-expired/${id}`);
+};
+
+export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId, markInvoiceAsPaid, markInvoiceAsExpired };
