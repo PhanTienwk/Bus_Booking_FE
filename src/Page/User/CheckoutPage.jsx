@@ -13,7 +13,7 @@ const CheckoutPage = () => {
   const [qrUrl, setQrUrl] = useState("");
 
   const location = useLocation();
-  const { customerInfo, tripDetails, selectedSeats, totalAmount, invoiceCode } =
+  const { customerInfo, tripDetails, selectedSeats, busId, totalAmount, invoiceCode } =
     location.state || {};
 
   const [countdown, setCountdown] = useState(1 * 60);
@@ -24,7 +24,7 @@ const CheckoutPage = () => {
     if (countdown <= 0 && !hasPaid) {
       if (!hasExpired) {
         setHasExpired(true);
-        markInvoiceAsExpired(invoiceCode)
+        markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
           .then(() => {
             navigate("/user");
           })
@@ -40,7 +40,7 @@ const CheckoutPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown, hasPaid, hasExpired, invoiceCode, navigate]);
+  }, [countdown, hasPaid, hasExpired, invoiceCode, selectedSeats, busId, navigate]);
 
   useEffect(() => {
     const BANK_ID = "MBBank";

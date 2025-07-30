@@ -16,8 +16,13 @@ const markInvoiceAsPaid = (id) => {
   return axios.put(`/api/admin/mark-invoice-paid/${id}`);
 };
 
-const markInvoiceAsExpired = (id) => {
-  return axios.put(`/api/admin/mark-invoice-expired/${id}`);
+const markInvoiceAsExpired = (invoiceId, selectedSeats, busId) => {
+  return axios.put("/api/admin/mark-invoice-expired", {
+    invoiceId,
+    selectedSeats,
+    busId,
+  });
 };
+
 
 export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId, markInvoiceAsPaid, markInvoiceAsExpired };

@@ -97,14 +97,28 @@ const SeatSelectionPage = () => {
       if (customerInfo.paymentMethod === "1") {
         const totalAmount = tripDetails.price * selectedSeats.length;
         const invoiceCode = response.result;
-        console.log(invoiceCode)
+        console.log("selectedSeats: ", selectedSeats);
         navigate("/checkout", {
           state: {
             tripDetails,
             selectedSeats,
+            busId: tripDetails.bus.id,
             customerInfo,
             totalAmount,
-            invoiceCode
+            invoiceCode,
+          },
+        });
+      }
+      if (customerInfo.paymentMethod === "0") {
+        const invoiceCode = response.result;
+        const totalAmount = tripDetails.price * selectedSeats.length;
+        navigate("/thankyou", {
+          state: {
+            tripDetails,
+            selectedSeats,
+            customerInfo,
+            invoiceCode,
+            totalAmount,
           },
         });
       }

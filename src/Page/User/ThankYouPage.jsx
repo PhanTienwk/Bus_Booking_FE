@@ -2,6 +2,7 @@ import React from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const ThankYouPage = () => {
   const location = useLocation();
@@ -10,6 +11,8 @@ const ThankYouPage = () => {
     selectedSeats,
     totalAmount,
   } = location.state || {};
+
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -66,7 +69,7 @@ const ThankYouPage = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center gap-10">
-              <button className="border border-orange-500 text-orange-500 px-6 py-2 rounded-full font-medium hover:bg-orange-50 transition">
+              <button className="border border-orange-500 text-orange-500 px-6 py-2 rounded-full font-medium hover:bg-orange-50 transition" onClick={() => navigate("/user")}>
                 QUAY LẠI TRANG CHỦ
               </button>
               <button className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition">
