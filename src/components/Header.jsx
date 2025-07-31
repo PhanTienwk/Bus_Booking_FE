@@ -145,9 +145,10 @@ const HomePage = () => {
               <a href="/">Liên hệ</a>
               <a href="/">Về chúng tôi</a>
             </nav>
-
             {userInfo ? (
-              <UserDropdown /> // Render trực tiếp UserDropdown
+              <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 py-2 rounded-full">
+                <UserDropdown />
+              </button>
             ) : (
               <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 py-2 rounded-full">
                 <svg
@@ -163,7 +164,8 @@ const HomePage = () => {
                     d="M5.121 17.804A13.937 13.937 0 0112 15c2.086 0 4.053.496 5.879 1.379M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                Đăng nhập/Đăng ký
+
+                <div>Đăng nhập/Đăng ký </div>
               </button>
             )}
           </div>
