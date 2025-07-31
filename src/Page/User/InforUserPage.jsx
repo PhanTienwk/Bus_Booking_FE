@@ -216,7 +216,7 @@ const InforUserPage = () => {
   const getColumns = () => {
     return [
       {
-        title: "ID Hóa đơn",
+        title: "Mã Hóa đơn",
         dataIndex: "id",
         key: "id",
       },

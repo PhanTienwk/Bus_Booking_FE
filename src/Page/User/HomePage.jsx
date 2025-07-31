@@ -64,7 +64,10 @@ const HomePage = () => {
 
   const handleSearch = async () => {
     if (!departure || !destination || !departureDate) {
-      handleOpenSnackBar("Vui lòng chọn điểm đi, điểm đến và ngày đi!", "error");
+      handleOpenSnackBar(
+        "Vui lòng chọn điểm đi, điểm đến và ngày đi!",
+        "error"
+      );
       return;
     }
 
@@ -77,10 +80,15 @@ const HomePage = () => {
       );
       setTrips(response.result);
       setShowSearchResults(true);
-      setRouteTitle(`${departure.label} - ${destination.label} (${response.result.length})`);
+      setRouteTitle(
+        `${departure.label} - ${destination.label} (${response.result.length})`
+      );
     } catch (error) {
       console.error("Lỗi khi tìm kiếm chuyến xe:", error);
-      handleOpenSnackBar("Không tìm thấy chuyến xe. Vui lòng thử lại!", "error");
+      handleOpenSnackBar(
+        "Không tìm thấy chuyến xe. Vui lòng thử lại!",
+        "error"
+      );
     }
   };
 
@@ -136,18 +144,24 @@ const HomePage = () => {
   const getTripCountByTimeRange = (range) => {
     return trips.filter((trip) => {
       const departureHour = new Date(trip.departureTime).getHours();
-      if (range === "earlyMorning" && departureHour >= 0 && departureHour < 6) return true;
-      if (range === "morning" && departureHour >= 6 && departureHour < 12) return true;
-      if (range === "afternoon" && departureHour >= 12 && departureHour < 18) return true;
-      if (range === "evening" && departureHour >= 18 && departureHour <= 23) return true;
+      if (range === "earlyMorning" && departureHour >= 0 && departureHour < 6)
+        return true;
+      if (range === "morning" && departureHour >= 6 && departureHour < 12)
+        return true;
+      if (range === "afternoon" && departureHour >= 12 && departureHour < 18)
+        return true;
+      if (range === "evening" && departureHour >= 18 && departureHour <= 23)
+        return true;
       return false;
     }).length;
   };
 
   const getTripCountByFloor = (floor) => {
     return trips.filter((trip) => {
-      if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount)) return true;
-      if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount)) return true;
+      if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount))
+        return true;
+      if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount))
+        return true;
       return false;
     }).length;
   };
@@ -158,16 +172,29 @@ const HomePage = () => {
       if (filters.timeRanges.length > 0) {
         const departureHour = new Date(trip.departureTime).getHours();
         passTimeFilter = filters.timeRanges.some((range) => {
-          if (range === "earlyMorning" && departureHour >= 0 && departureHour < 6) return true;
-          if (range === "morning" && departureHour >= 6 && departureHour < 12) return true;
-          if (range === "afternoon" && departureHour >= 12 && departureHour < 18) return true;
-          if (range === "evening" && departureHour >= 18 && departureHour <= 23) return true;
+          if (
+            range === "earlyMorning" &&
+            departureHour >= 0 &&
+            departureHour < 6
+          )
+            return true;
+          if (range === "morning" && departureHour >= 6 && departureHour < 12)
+            return true;
+          if (
+            range === "afternoon" &&
+            departureHour >= 12 &&
+            departureHour < 18
+          )
+            return true;
+          if (range === "evening" && departureHour >= 18 && departureHour <= 23)
+            return true;
           return false;
         });
       }
 
       const passBusTypeFilter =
-        filters.busTypes.length === 0 || filters.busTypes.includes(trip.bus.busType.name);
+        filters.busTypes.length === 0 ||
+        filters.busTypes.includes(trip.bus.busType.name);
 
       let passFloorFilter = true;
       if (filters.floors.length > 0) {
@@ -175,17 +202,19 @@ const HomePage = () => {
           filters.floors.includes("Tầng trên") &&
           filters.floors.includes("Tầng dưới")
         ) {
-          passFloorFilter = (trip.countA + trip.countB) >= parseInt(ticketCount);
+          passFloorFilter = trip.countA + trip.countB >= parseInt(ticketCount);
         } else {
           passFloorFilter = filters.floors.some((floor) => {
-            if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount)) return true;
-            if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount)) return true;
+            if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount))
+              return true;
+            if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount))
+              return true;
             return false;
           });
         }
       } else {
         // Nếu không chọn tầng, kiểm tra tổng ghế trống
-        passFloorFilter = (trip.countA + trip.countB) >= parseInt(ticketCount);
+        passFloorFilter = trip.countA + trip.countB >= parseInt(ticketCount);
       }
 
       return passTimeFilter && passBusTypeFilter && passFloorFilter;
@@ -196,7 +225,9 @@ const HomePage = () => {
 
   useEffect(() => {
     if (showSearchResults && departure && destination) {
-      setRouteTitle(`${departure.label} - ${destination.label} (${filteredTrips.length})`);
+      setRouteTitle(
+        `${departure.label} - ${destination.label} (${filteredTrips.length})`
+      );
     }
   }, [filteredTrips, departure, destination, showSearchResults]);
 
@@ -308,7 +339,11 @@ const HomePage = () => {
                     onClick={handleClearFilters}
                   >
                     Bỏ lọc
-                    <img src="/images/delete.svg" alt="Xóa bộ lọc" className="w-5 h-5 ml-1" />
+                    <img
+                      src="/images/delete.svg"
+                      alt="Xóa bộ lọc"
+                      className="w-5 h-5 ml-1"
+                    />
                   </button>
                 </div>
 
@@ -323,7 +358,8 @@ const HomePage = () => {
                         aria-label="Sáng sớm 00:00 - 06:00"
                       />
                       <span className="ml-2 text-[15px]">
-                        Sáng sớm 00:00 - 06:00 ({getTripCountByTimeRange("earlyMorning")})
+                        Sáng sớm 00:00 - 06:00 (
+                        {getTripCountByTimeRange("earlyMorning")})
                       </span>
                     </li>
                     <li>
@@ -334,7 +370,8 @@ const HomePage = () => {
                         aria-label="Buổi sáng 06:00 - 12:00"
                       />
                       <span className="ml-2 text-[15px]">
-                        Buổi sáng 06:00 - 12:00 ({getTripCountByTimeRange("morning")})
+                        Buổi sáng 06:00 - 12:00 (
+                        {getTripCountByTimeRange("morning")})
                       </span>
                     </li>
                     <li>
@@ -345,7 +382,8 @@ const HomePage = () => {
                         aria-label="Buổi chiều 12:00 - 18:00"
                       />
                       <span className="ml-2 text-[15px]">
-                        Buổi chiều 12:00 - 18:00 ({getTripCountByTimeRange("afternoon")})
+                        Buổi chiều 12:00 - 18:00 (
+                        {getTripCountByTimeRange("afternoon")})
                       </span>
                     </li>
                     <li>
@@ -356,7 +394,8 @@ const HomePage = () => {
                         aria-label="Buổi tối 18:00 - 24:00"
                       />
                       <span className="ml-2 text-[15px]">
-                        Buổi tối 18:00 - 24:00 ({getTripCountByTimeRange("evening")})
+                        Buổi tối 18:00 - 24:00 (
+                        {getTripCountByTimeRange("evening")})
                       </span>
                     </li>
                   </ul>
@@ -369,7 +408,9 @@ const HomePage = () => {
                   <div className="flex gap-2 flex-wrap">
                     <button
                       className={`px-3 py-1 border rounded text-[15px] ${
-                        filters.busTypes.includes("Xe thường") ? "bg-[#EF5222] text-white" : ""
+                        filters.busTypes.includes("Xe thường")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
                       }`}
                       onClick={() => handleBusTypeFilter("Xe thường")}
                     >
@@ -377,7 +418,9 @@ const HomePage = () => {
                     </button>
                     <button
                       className={`px-3 py-1 border rounded text-[15px] ${
-                        filters.busTypes.includes("Limousine") ? "bg-[#EF5222] text-white" : ""
+                        filters.busTypes.includes("Limousine")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
                       }`}
                       onClick={() => handleBusTypeFilter("Limousine")}
                     >
@@ -393,7 +436,9 @@ const HomePage = () => {
                   <div className="flex gap-2 flex-wrap">
                     <button
                       className={`px-3 py-1 border rounded text-[15px] ${
-                        filters.floors.includes("Tầng trên") ? "bg-[#EF5222] text-white" : ""
+                        filters.floors.includes("Tầng trên")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
                       }`}
                       onClick={() => handleFloorFilter("Tầng trên")}
                     >
@@ -401,7 +446,9 @@ const HomePage = () => {
                     </button>
                     <button
                       className={`px-3 py-1 border rounded text-[15px] ${
-                        filters.floors.includes("Tầng dưới") ? "bg-[#EF5222] text-white" : ""
+                        filters.floors.includes("Tầng dưới")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
                       }`}
                       onClick={() => handleFloorFilter("Tầng dưới")}
                     >
@@ -446,7 +493,9 @@ const HomePage = () => {
                   </div>
 
                   {filteredTrips.length === 0 ? (
-                    <p className="text-center text-gray-500">Không tìm thấy chuyến xe phù hợp.</p>
+                    <p className="text-center text-gray-500">
+                      Không tìm thấy chuyến xe phù hợp.
+                    </p>
                   ) : (
                     filteredTrips.map((trip) => (
                       <div
@@ -458,7 +507,9 @@ const HomePage = () => {
                             <div className="flex flex-col items-start min-w-max">
                               <div className="flex items-center gap-2">
                                 <p className="text-2xl font-semibold">
-                                  {new Date(trip.departureTime).toLocaleTimeString("vi-VN", {
+                                  {new Date(
+                                    trip.departureTime
+                                  ).toLocaleTimeString("vi-VN", {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   })}
@@ -484,7 +535,9 @@ const HomePage = () => {
                             </div>
 
                             <div className="text-center min-w-max">
-                              <p className="text-[15px] text-gray-500">{trip.busRoute.travelTime} giờ</p>
+                              <p className="text-[15px] text-gray-500">
+                                {trip.busRoute.travelTime} giờ
+                              </p>
                               <p className="text-sm text-gray-400">
                                 (Asia/Ho Chi Minh)
                               </p>
@@ -507,7 +560,10 @@ const HomePage = () => {
                                   className="w-5 h-5"
                                 />
                                 <p className="text-2xl font-semibold ml-2">
-                                  {calculateArrivalTime(trip.departureTime, trip.busRoute.travelTime)}
+                                  {calculateArrivalTime(
+                                    trip.departureTime,
+                                    trip.busRoute.travelTime
+                                  )}
                                 </p>
                               </div>
                               <p className="text-gray-500 text-[16px] mt-1">
@@ -544,7 +600,11 @@ const HomePage = () => {
                             <span>Chính sách</span>
                           </div>
                           <button
-                            onClick={() => navigate(`/seat-selection/${trip.id}`, { state: { tripDetails: trip } })}
+                            onClick={() =>
+                              navigate(`/seat-selection/${trip.id}`, {
+                                state: { tripDetails: trip },
+                              })
+                            }
                             className="bg-orange-100 text-orange-500 px-4 py-1 rounded-full text-[15px] font-medium"
                           >
                             Chọn chuyến
@@ -577,7 +637,9 @@ const HomePage = () => {
                     alt="Lượt khách"
                     className="w-20 h-20 mb-4"
                   />
-                  <h3 className="text-xl font-bold text-[#000]">Hơn 40 Triệu</h3>
+                  <h3 className="text-xl font-bold text-[#000]">
+                    Hơn 40 Triệu
+                  </h3>
                   <p className="font-semibold text-gray-700 mb-1">Lượt khách</p>
                   <p className="text-gray-600 text-sm">
                     Phương Trang phục vụ hơn 40 triệu lượt khách bình quân 1 năm
@@ -596,8 +658,8 @@ const HomePage = () => {
                     Phòng vé - Bưu cục
                   </p>
                   <p className="text-gray-600 text-sm">
-                    Phương Trang có hơn 350 phòng vé, trạm trung chuyển, bến xe,...
-                    trên toàn hệ thống
+                    Phương Trang có hơn 350 phòng vé, trạm trung chuyển, bến
+                    xe,... trên toàn hệ thống
                   </p>
                 </div>
 
@@ -610,8 +672,8 @@ const HomePage = () => {
                   <h3 className="text-xl font-bold text-[#000]">Hơn 6,500</h3>
                   <p className="font-semibold text-gray-700 mb-1">Chuyến xe</p>
                   <p className="text-gray-600 text-sm">
-                    Phương Trang phục vụ hơn 6,500 chuyến xe đường dài và liên tỉnh
-                    mỗi ngày
+                    Phương Trang phục vụ hơn 6,500 chuyến xe đường dài và liên
+                    tỉnh mỗi ngày
                   </p>
                 </div>
               </div>
@@ -766,7 +828,9 @@ const HomePage = () => {
                       alt="Xe Hợp Đồng"
                       className="w-23 h-23"
                     />
-                    <p className="mt-3 text-gray-700 font-medium">Xe Hợp Đồng</p>
+                    <p className="mt-3 text-gray-700 font-medium">
+                      Xe Hợp Đồng
+                    </p>
                   </div>
                   <div className="flex flex-col items-center">
                     <img

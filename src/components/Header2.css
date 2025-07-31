@@ -1,0 +1,8 @@
+.image-user-infor{
+border-radius:15px;
+width: 36px;
+height: 36px;
+border-radius: 50% !important;
+object-fit: cover;
+border: 2px solid #ffffff;
+}
