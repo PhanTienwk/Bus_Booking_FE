@@ -387,7 +387,7 @@ const InforUserPage = () => {
 
   return (
     <div>
-      <section className="bg-[#f7f7f7] py-6 px-4 bg-white">
+      <section className="bg-white min-h-[calc(100vh-57px)] py-6 px-4">
         <div className="max-w-6xl mx-auto bg-white rounded-xl p-6 grid grid-cols-1 md:grid-cols-7 gap-8">
           <div className="md:col-span-2 flex flex-col gap-3 bg-white rounded-xl p-6 border">
             <button
