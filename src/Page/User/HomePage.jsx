@@ -16,10 +16,12 @@ const HomePage = () => {
   const [departure, setDeparture] = useState(null);
   const [destination, setDestination] = useState(null);
   const [departureDate, setDepartureDate] = useState("");
+  const [selectedTab, setSelectedTab] = useState("departure");
   const [tripType, setTripType] = useState("oneway");
   const [returnDate, setReturnDate] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [trips, setTrips] = useState([]);
+  const [tripsReturn, setTripsReturn] = useState([]);
   const [ticketCount, setTicketCount] = useState("1");
   const [routeTitle, setRouteTitle] = useState("");
   const [filters, setFilters] = useState({
@@ -91,6 +93,18 @@ const HomePage = () => {
       );
       return;
     }
+
+    if (tripType === "roundtrip") {
+      const responseReturn = await searchTripsByProvinces(
+        destination.value,
+        departure.value,
+        returnDate,
+        ticketCount
+      );
+      setTripsReturn(responseReturn.result);
+    }
+
+    setSelectedTab("departure");
 
     try {
       const response = await searchTripsByProvinces(
@@ -241,7 +255,9 @@ const HomePage = () => {
     });
   };
 
-  const filteredTrips = filterTrips(trips);
+  const filteredTrips = filterTrips(
+    selectedTab === "departure" ? trips : tripsReturn
+  );
 
   useEffect(() => {
     if (showSearchResults && departure && destination) {
@@ -365,13 +381,17 @@ const HomePage = () => {
                       ? dayjs(departureDate, backendDateFormat)
                       : null
                   }
-                  onChange={(date, dateString) =>
-                    setDepartureDate(
-                      dayjs(dateString, displayDateFormat).format(
-                        backendDateFormat
-                      )
-                    )
-                  }
+                  onChange={(date, dateString) => {
+                    if (!date) {
+                      setDepartureDate("");
+                    } else {
+                      setDepartureDate(
+                        dayjs(dateString, displayDateFormat).format(
+                          backendDateFormat
+                        )
+                      );
+                    }
+                  }}
                   format={displayDateFormat}
                   className="w-full h-[48px]"
                   placeholder="Chọn ngày đi"
@@ -384,13 +404,17 @@ const HomePage = () => {
                     value={
                       returnDate ? dayjs(returnDate, backendDateFormat) : null
                     }
-                    onChange={(date, dateString) =>
-                      setReturnDate(
-                        dayjs(dateString, displayDateFormat).format(
-                          backendDateFormat
-                        )
-                      )
-                    }
+                    onChange={(date, dateString) => {
+                      if (!date) {
+                        setReturnDate("");
+                      } else {
+                        setReturnDate(
+                          dayjs(dateString, displayDateFormat).format(
+                            backendDateFormat
+                          )
+                        );
+                      }
+                    }}
                     format={displayDateFormat}
                     className="w-full h-[48px]"
                     placeholder="Chọn ngày về"
@@ -440,7 +464,7 @@ const HomePage = () => {
         {showSearchResults && (
           <section className="bg-white pt-6 pb-10">
             <div className="max-w-6xl mx-auto">
-              <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex flex-col md:flex-row gap-6">
                 <div className="w-full md:w-1/3 bg-white rounded-xl shadow p-4 border border-gray-200">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">BỘ LỌC TÌM KIẾM</h3>
@@ -568,7 +592,7 @@ const HomePage = () => {
                   </div>
                 </div>
 
-                <div className="w-full md:w-2/3">
+                <div className="w-full md:w-[800px] max-w-full">
                   <div className="bg-white">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="font-semibold text-xl">
@@ -601,6 +625,39 @@ const HomePage = () => {
                         </button>
                       </div>
                     </div>
+
+                    {tripType === "roundtrip" && (
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex w-full border-b border-gray-200">
+                          <button
+                            className={`flex-1 text-center py-3 ${
+                              selectedTab === "departure"
+                                ? "text-[#EF5222] border-b-[3px] border-[#EF5222]"
+                                : "text-gray-800"
+                            } uppercase text-base tracking-wide`}
+                            onClick={() => setSelectedTab("departure")}
+                          >
+                            CHUYẾN ĐI -{" "}
+                            {dayjs(departureDate)
+                              .format("dddd, DD/MM")
+                              .toUpperCase()}
+                          </button>
+                          <button
+                            className={`flex-1 text-center py-3 ${
+                              selectedTab === "return"
+                                ? "text-[#EF5222] border-b-[3px] border-[#EF5222]"
+                                : "text-gray-800"
+                            } uppercase text-base tracking-wide`}
+                            onClick={() => setSelectedTab("return")}
+                          >
+                            CHUYẾN VỀ -{" "}
+                            {dayjs(returnDate)
+                              .format("dddd, DD/MM")
+                              .toUpperCase()}
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {filteredTrips.length === 0 ? (
                       <p className="text-center text-gray-500">
