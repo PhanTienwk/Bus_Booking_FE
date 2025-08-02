@@ -112,19 +112,18 @@ const SeatSelectionPage = () => {
       listidseatposition: selectedSeats,
     };
 
-    const invoiceDataReturn =
-      returnTrip
-        ? {
-            id: returnTrip.id,
-            email: customerInfo.email,
-            name: customerInfo.name,
-            number_of_tickets: selectedSeatsReturn.length,
-            payment_method: customerInfo.paymentMethod,
-            phone: customerInfo.phone,
-            idbustrip: returnTrip.bus.id,
-            listidseatposition: selectedSeatsReturn,
-          }
-        : null;
+    const invoiceDataReturn = returnTrip
+      ? {
+          id: returnTrip.id,
+          email: customerInfo.email,
+          name: customerInfo.name,
+          number_of_tickets: selectedSeatsReturn.length,
+          payment_method: customerInfo.paymentMethod,
+          phone: customerInfo.phone,
+          idbustrip: returnTrip.bus.id,
+          listidseatposition: selectedSeatsReturn,
+        }
+      : null;
 
     try {
       const response = await createInvoice(invoiceData);
@@ -146,17 +145,23 @@ const SeatSelectionPage = () => {
       }
 
       if (customerInfo.paymentMethod === "1") {
-        const totalAmount = tripDetails.price * selectedSeats.length;
+        const totalAmount =
+          tripDetails.price * selectedSeats.length +
+          (returnTrip ? returnTrip.price * selectedSeatsReturn.length : 0);
         const invoiceCode = response.result;
-        console.log("selectedSeats: ", selectedSeats);
+        const invoiceCodeReturn = responseReturn?.result || null;
+
         navigate("/checkout", {
           state: {
             tripDetails,
             selectedSeats,
+            returnTrip,
+            selectedSeatsReturn,
             busId: tripDetails.bus.id,
             customerInfo,
             totalAmount,
             invoiceCode,
+            invoiceCodeReturn,
           },
         });
       }
