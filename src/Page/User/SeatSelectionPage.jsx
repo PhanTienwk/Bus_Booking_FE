@@ -11,8 +11,9 @@ import {
 import { useNavigate } from "react-router-dom";
 
 const SeatSelectionPage = () => {
-  const { state } = useLocation();
-  const tripDetails = state?.tripDetails;
+  // const { state } = useLocation();
+  // const tripDetails = state?.tripDetails;
+  const { tripDetails, returnTrip } = useLocation().state || {};
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [upperSeats, setUpperSeats] = useState([]);
   const [lowerSeats, setLowerSeats] = useState([]);

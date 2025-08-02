@@ -24,6 +24,8 @@ const HomePage = () => {
   const [tripsReturn, setTripsReturn] = useState([]);
   const [ticketCount, setTicketCount] = useState("1");
   const [routeTitle, setRouteTitle] = useState("");
+  const [selectedDepartureTrip, setSelectedDepartureTrip] = useState(null);
+  const [selectedReturnTrip, setSelectedReturnTrip] = useState(null);
   const [filters, setFilters] = useState({
     timeRanges: [],
     busTypes: [],
@@ -126,6 +128,21 @@ const HomePage = () => {
       );
     }
   };
+
+  useEffect(() => {
+    if (
+      tripType === "roundtrip" &&
+      selectedDepartureTrip &&
+      selectedReturnTrip
+    ) {
+      navigate(`/seat-selection/${selectedDepartureTrip.id}`, {
+        state: {
+          tripDetails: selectedDepartureTrip,
+          returnTrip: selectedReturnTrip,
+        },
+      });
+    }
+  }, [tripType, selectedDepartureTrip, selectedReturnTrip, navigate]);
 
   const calculateArrivalTime = (departureTime, travelTime) => {
     const departure = new Date(departureTime);
@@ -465,129 +482,263 @@ const HomePage = () => {
           <section className="bg-white pt-6 pb-10">
             <div className="max-w-6xl mx-auto">
               <div className="flex flex-col md:flex-row gap-6">
-                <div className="w-full md:w-1/3 bg-white rounded-xl shadow p-4 border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">BỘ LỌC TÌM KIẾM</h3>
-                    <button
-                      className="flex items-center text-red-500 text-base font-medium"
-                      onClick={handleClearFilters}
-                    >
-                      Bỏ lọc
-                      <img
-                        src="/images/delete.svg"
-                        alt="Xóa bộ lọc"
-                        className="w-5 h-5 ml-1"
-                      />
-                    </button>
-                  </div>
+                <div className="w-full md:w-1/3">
+                  {selectedDepartureTrip && (
+                    <div className="bg-white rounded-xl shadow p-4 border border-gray-200 mb-4">
+                      <h4 className="text-base font-semibold mb-3 border-b pb-2">
+                        CHUYẾN ĐI CỦA BẠN
+                      </h4>
 
-                  <div className="mb-4">
-                    <p className="font-medium mb-2">Giờ đi</p>
-                    <ul className="space-y-2 text-sm text-gray-700">
-                      <li>
-                        <input
-                          type="checkbox"
-                          checked={filters.timeRanges.includes("earlyMorning")}
-                          onChange={() => handleTimeRangeFilter("earlyMorning")}
-                          aria-label="Sáng sớm 00:00 - 06:00"
-                        />
-                        <span className="ml-2 text-[15px]">
-                          Sáng sớm 00:00 - 06:00 (
-                          {getTripCountByTimeRange("earlyMorning")})
-                        </span>
-                      </li>
-                      <li>
-                        <input
-                          type="checkbox"
-                          checked={filters.timeRanges.includes("morning")}
-                          onChange={() => handleTimeRangeFilter("morning")}
-                          aria-label="Buổi sáng 06:00 - 12:00"
-                        />
-                        <span className="ml-2 text-[15px]">
-                          Buổi sáng 06:00 - 12:00 (
-                          {getTripCountByTimeRange("morning")})
-                        </span>
-                      </li>
-                      <li>
-                        <input
-                          type="checkbox"
-                          checked={filters.timeRanges.includes("afternoon")}
-                          onChange={() => handleTimeRangeFilter("afternoon")}
-                          aria-label="Buổi chiều 12:00 - 18:00"
-                        />
-                        <span className="ml-2 text-[15px]">
-                          Buổi chiều 12:00 - 18:00 (
-                          {getTripCountByTimeRange("afternoon")})
-                        </span>
-                      </li>
-                      <li>
-                        <input
-                          type="checkbox"
-                          checked={filters.timeRanges.includes("evening")}
-                          onChange={() => handleTimeRangeFilter("evening")}
-                          aria-label="Buổi tối 18:00 - 24:00"
-                        />
-                        <span className="ml-2 text-[15px]">
-                          Buổi tối 18:00 - 24:00 (
-                          {getTripCountByTimeRange("evening")})
-                        </span>
-                      </li>
-                    </ul>
-                  </div>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-6 h-6 rounded bg-gray-400 text-white text-xs flex items-center justify-center">
+                          1
+                        </div>
 
-                  <hr className="my-4 border-t border-gray-300" />
+                        <div className="flex flex-col text-sm text-gray-800">
+                          <p className="font-semibold">
+                            {dayjs(selectedDepartureTrip.departureTime).format(
+                              "dddd, DD/MM/YYYY"
+                            )}
+                          </p>
+                          <p>
+                            {departure?.label} - {destination?.label}
+                          </p>
+                        </div>
+                      </div>
 
-                  <div className="mb-4">
-                    <p className="font-medium mb-2">Loại xe</p>
-                    <div className="flex gap-2 flex-wrap">
+                      <div className="text-sm font-medium">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-green-600">
+                            {dayjs(selectedDepartureTrip.departureTime).format(
+                              "HH:mm"
+                            )}
+                          </p>
+
+                          <div className="text-center text-xs text-gray-400 flex-1">
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-green-600" />
+                              <div className="border-t border-dashed border-gray-400 w-10" />
+                              <span className="text-gray-500">
+                                {selectedDepartureTrip.busRoute.travelTime} giờ
+                              </span>
+                              <div className="border-t border-dashed border-gray-400 w-10" />
+                              <div className="w-2 h-2 rounded-full bg-orange-500" />
+                            </div>
+                          </div>
+
+                          <p className="text-orange-600">
+                            {dayjs(selectedDepartureTrip.departureTime)
+                              .add(
+                                selectedDepartureTrip.busRoute.travelTime,
+                                "hour"
+                              )
+                              .format("HH:mm")}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-gray-700">
+                          <p>
+                            {selectedDepartureTrip.busRoute.busStationFrom.name}
+                          </p>
+                          <p>
+                            {selectedDepartureTrip.busRoute.busStationTo.name}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedReturnTrip && (
+                    <div className="bg-white rounded-xl shadow p-4 border border-gray-200 mb-4">
+                      <h4 className="text-base font-semibold mb-3 border-b pb-2">
+                        CHUYẾN VỀ CỦA BẠN
+                      </h4>
+
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-6 h-6 rounded bg-gray-400 text-white text-xs flex items-center justify-center">
+                          2
+                        </div>
+
+                        <div className="flex flex-col text-sm text-gray-800">
+                          <p className="font-semibold">
+                            {dayjs(selectedReturnTrip.departureTime).format(
+                              "dddd, DD/MM/YYYY"
+                            )}
+                          </p>
+                          <p>
+                            {destination?.label} - {departure?.label}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-sm font-medium">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-green-600">
+                            {dayjs(selectedReturnTrip.departureTime).format(
+                              "HH:mm"
+                            )}
+                          </p>
+
+                          <div className="text-center text-xs text-gray-400 flex-1">
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-green-600" />
+                              <div className="border-t border-dashed border-gray-400 w-10" />
+                              <span className="text-gray-500">
+                                {selectedReturnTrip.busRoute.travelTime} giờ
+                              </span>
+                              <div className="border-t border-dashed border-gray-400 w-10" />
+                              <div className="w-2 h-2 rounded-full bg-orange-500" />
+                            </div>
+                          </div>
+
+                          <p className="text-orange-600">
+                            {dayjs(selectedReturnTrip.departureTime)
+                              .add(
+                                selectedReturnTrip.busRoute.travelTime,
+                                "hour"
+                              )
+                              .format("HH:mm")}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-gray-700">
+                          <p>
+                            {selectedReturnTrip.busRoute.busStationFrom.name}
+                          </p>
+                          <p>{selectedReturnTrip.busRoute.busStationTo.name}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-white rounded-xl shadow p-4 border border-gray-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">BỘ LỌC TÌM KIẾM</h3>
                       <button
-                        className={`px-3 py-1 border rounded text-[15px] ${
-                          filters.busTypes.includes("Xe thường")
-                            ? "bg-[#EF5222] text-white"
-                            : ""
-                        }`}
-                        onClick={() => handleBusTypeFilter("Xe thường")}
+                        className="flex items-center text-red-500 text-base font-medium"
+                        onClick={handleClearFilters}
                       >
-                        Thường
-                      </button>
-                      <button
-                        className={`px-3 py-1 border rounded text-[15px] ${
-                          filters.busTypes.includes("Limousine")
-                            ? "bg-[#EF5222] text-white"
-                            : ""
-                        }`}
-                        onClick={() => handleBusTypeFilter("Limousine")}
-                      >
-                        Limousine
+                        Bỏ lọc
+                        <img
+                          src="/images/delete.svg"
+                          alt="Xóa bộ lọc"
+                          className="w-5 h-5 ml-1"
+                        />
                       </button>
                     </div>
-                  </div>
 
-                  <hr className="my-4 border-t border-gray-300" />
+                    <div className="mb-4">
+                      <p className="font-medium mb-2">Giờ đi</p>
+                      <ul className="space-y-2 text-sm text-gray-700">
+                        <li>
+                          <input
+                            type="checkbox"
+                            checked={filters.timeRanges.includes(
+                              "earlyMorning"
+                            )}
+                            onChange={() =>
+                              handleTimeRangeFilter("earlyMorning")
+                            }
+                            aria-label="Sáng sớm 00:00 - 06:00"
+                          />
+                          <span className="ml-2 text-[15px]">
+                            Sáng sớm 00:00 - 06:00 (
+                            {getTripCountByTimeRange("earlyMorning")})
+                          </span>
+                        </li>
+                        <li>
+                          <input
+                            type="checkbox"
+                            checked={filters.timeRanges.includes("morning")}
+                            onChange={() => handleTimeRangeFilter("morning")}
+                            aria-label="Buổi sáng 06:00 - 12:00"
+                          />
+                          <span className="ml-2 text-[15px]">
+                            Buổi sáng 06:00 - 12:00 (
+                            {getTripCountByTimeRange("morning")})
+                          </span>
+                        </li>
+                        <li>
+                          <input
+                            type="checkbox"
+                            checked={filters.timeRanges.includes("afternoon")}
+                            onChange={() => handleTimeRangeFilter("afternoon")}
+                            aria-label="Buổi chiều 12:00 - 18:00"
+                          />
+                          <span className="ml-2 text-[15px]">
+                            Buổi chiều 12:00 - 18:00 (
+                            {getTripCountByTimeRange("afternoon")})
+                          </span>
+                        </li>
+                        <li>
+                          <input
+                            type="checkbox"
+                            checked={filters.timeRanges.includes("evening")}
+                            onChange={() => handleTimeRangeFilter("evening")}
+                            aria-label="Buổi tối 18:00 - 24:00"
+                          />
+                          <span className="ml-2 text-[15px]">
+                            Buổi tối 18:00 - 24:00 (
+                            {getTripCountByTimeRange("evening")})
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
 
-                  <div>
-                    <p className="font-medium mb-2">Tầng</p>
-                    <div className="flex gap-2 flex-wrap">
-                      <button
-                        className={`px-3 py-1 border rounded text-[15px] ${
-                          filters.floors.includes("Tầng trên")
-                            ? "bg-[#EF5222] text-white"
-                            : ""
-                        }`}
-                        onClick={() => handleFloorFilter("Tầng trên")}
-                      >
-                        Tầng trên ({getTripCountByFloor("Tầng trên")})
-                      </button>
-                      <button
-                        className={`px-3 py-1 border rounded text-[15px] ${
-                          filters.floors.includes("Tầng dưới")
-                            ? "bg-[#EF5222] text-white"
-                            : ""
-                        }`}
-                        onClick={() => handleFloorFilter("Tầng dưới")}
-                      >
-                        Tầng dưới ({getTripCountByFloor("Tầng dưới")})
-                      </button>
+                    <hr className="my-4 border-t border-gray-300" />
+
+                    <div className="mb-4">
+                      <p className="font-medium mb-2">Loại xe</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          className={`px-3 py-1 border rounded text-[15px] ${
+                            filters.busTypes.includes("Xe thường")
+                              ? "bg-[#EF5222] text-white"
+                              : ""
+                          }`}
+                          onClick={() => handleBusTypeFilter("Xe thường")}
+                        >
+                          Thường
+                        </button>
+                        <button
+                          className={`px-3 py-1 border rounded text-[15px] ${
+                            filters.busTypes.includes("Limousine")
+                              ? "bg-[#EF5222] text-white"
+                              : ""
+                          }`}
+                          onClick={() => handleBusTypeFilter("Limousine")}
+                        >
+                          Limousine
+                        </button>
+                      </div>
+                    </div>
+
+                    <hr className="my-4 border-t border-gray-300" />
+
+                    <div>
+                      <p className="font-medium mb-2">Tầng</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          className={`px-3 py-1 border rounded text-[15px] ${
+                            filters.floors.includes("Tầng trên")
+                              ? "bg-[#EF5222] text-white"
+                              : ""
+                          }`}
+                          onClick={() => handleFloorFilter("Tầng trên")}
+                        >
+                          Tầng trên ({getTripCountByFloor("Tầng trên")})
+                        </button>
+                        <button
+                          className={`px-3 py-1 border rounded text-[15px] ${
+                            filters.floors.includes("Tầng dưới")
+                              ? "bg-[#EF5222] text-white"
+                              : ""
+                          }`}
+                          onClick={() => handleFloorFilter("Tầng dưới")}
+                        >
+                          Tầng dưới ({getTripCountByFloor("Tầng dưới")})
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -767,11 +918,19 @@ const HomePage = () => {
                               <span>Chính sách</span>
                             </div>
                             <button
-                              onClick={() =>
-                                navigate(`/seat-selection/${trip.id}`, {
-                                  state: { tripDetails: trip },
-                                })
-                              }
+                              onClick={() => {
+                                if (tripType === "oneway") {
+                                  navigate(`/seat-selection/${trip.id}`, {
+                                    state: { tripDetails: trip },
+                                  });
+                                } else {
+                                  if (selectedTab === "departure") {
+                                    setSelectedDepartureTrip(trip);
+                                  } else {
+                                    setSelectedReturnTrip(trip);
+                                  }
+                                }
+                              }}
                               className="bg-orange-100 text-orange-500 px-4 py-1 rounded-full text-[15px] font-medium"
                             >
                               Chọn chuyến
