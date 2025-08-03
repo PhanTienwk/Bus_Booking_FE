@@ -7,6 +7,8 @@ import { Modal, ConfigProvider } from "antd";
 import viVN from "antd/locale/vi_VN";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
+import isBetween from "dayjs/plugin/isBetween";
+
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import { Table, Typography as AntTypography, DatePicker, Select } from "antd";
 
@@ -34,6 +36,8 @@ const UserManagement = () => {
   const [showModal, setShowModal] = useState(false);
 
   const [seatList, setSeatList] = useState([]);
+
+  dayjs.extend(isBetween);
 
   useEffect(() => {
     getMyInfo()
@@ -74,7 +78,19 @@ const UserManagement = () => {
     setWeeks(result);
 
     if (result.length > 0) {
-      setSelectedWeek(result[0].value);
+      const today = dayjs();
+      const matchedWeek = result.find((week) => {
+        const [startStr, endStr] = week.value.split("_");
+        const start = dayjs(startStr);
+        const end = dayjs(endStr);
+        return today.isBetween(start, end, "day", "[]");
+      });
+
+      if (matchedWeek) {
+        setSelectedWeek(matchedWeek.value);
+      } else {
+        setSelectedWeek(result[0].value);
+      }
     }
   }, [selectedMonth, userInfo]);
 

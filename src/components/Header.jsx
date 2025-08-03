@@ -105,7 +105,7 @@ const HomePage = () => {
         items, // Sử dụng mảng items đã định nghĩa
       }}
     >
-      <a onClick={(e) => e.preventDefault()}>
+      <a href="/" onClick={(e) => e.preventDefault()}>
         <Space>
           <img
             className="image-user-infor"
@@ -113,6 +113,7 @@ const HomePage = () => {
             alt="Ảnh đại diện"
             width="35"
             height="35"
+            style={{ position: "relative", bottom: "-3px" }}
           />
           <DownOutlined />
           {userInfo.name}
@@ -146,11 +147,11 @@ const HomePage = () => {
               <a href="/">Về chúng tôi</a>
             </nav>
             {userInfo ? (
-              <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 py-2 rounded-full">
+              <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 rounded-full">
                 <UserDropdown />
               </button>
             ) : (
-              <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 py-2 rounded-full">
+              <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 rounded-full">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"

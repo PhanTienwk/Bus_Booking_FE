@@ -1,15 +1,150 @@
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import {
+  markInvoiceAsPaid,
+  markInvoiceAsExpired,
+} from "../../services/InvoiceService";
 
 const CheckoutPage = () => {
+  const navigate = useNavigate();
   const [qrUrl, setQrUrl] = useState("");
+
+  const location = useLocation();
+  const {
+    customerInfo,
+    tripDetails,
+    selectedSeats,
+    returnTrip,
+    selectedSeatsReturn,
+    busId,
+    totalAmount,
+    invoiceCode,
+    invoiceCodeReturn,
+  } = location.state || {};
+
+  const [countdown, setCountdown] = useState(2 * 60);
+  const [hasPaid, setHasPaid] = useState(false);
+  const [hasExpired, setHasExpired] = useState(false);
+
+  // useEffect(() => {
+  //   if (countdown <= 0 && !hasPaid) {
+  //     if (!hasExpired) {
+  //       setHasExpired(true);
+  //       markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
+  //         .then(() => {
+  //           if (
+  //             invoiceCodeReturn &&
+  //             selectedSeatsReturn &&
+  //             returnTrip?.bus?.id
+  //           ) {
+  //             return markInvoiceAsExpired(
+  //               invoiceCodeReturn,
+  //               selectedSeatsReturn,
+  //               returnTrip.bus.id
+  //             );
+  //           }
+  //         })
+  //         .then(() => {
+  //           navigate("/user");
+  //         })
+  //         .catch((error) => {
+  //           console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
+  //         });
+  //     }
+  //     return;
+  //   }
+
+  //   const timer = setInterval(() => {
+  //     setCountdown((prev) => prev - 1);
+  //   }, 1000);
+
+  //   return () => clearInterval(timer);
+  // }, [
+  //   countdown,
+  //   hasPaid,
+  //   hasExpired,
+  //   invoiceCode,
+  //   invoiceCodeReturn,
+  //   selectedSeats,
+  //   selectedSeatsReturn,
+  //   returnTrip,
+  //   busId,
+  //   navigate,
+  // ]);
+
+  useEffect(() => {
+    const EXPIRE_SECONDS = 2 * 60;
+
+    const savedStartTime = sessionStorage.getItem("paymentStartTime");
+    const now = Math.floor(Date.now() / 1000);
+
+    let startTime;
+    if (savedStartTime) {
+      startTime = parseInt(savedStartTime);
+    } else {
+      startTime = now;
+      sessionStorage.setItem("paymentStartTime", startTime);
+    }
+
+    const elapsed = now - startTime;
+    const remaining = Math.max(EXPIRE_SECONDS - elapsed, 0);
+
+    setCountdown(remaining);
+
+    if (remaining <= 0) {
+      setHasExpired(true);
+      markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
+        .then(() => {
+          if (invoiceCodeReturn && selectedSeatsReturn && returnTrip?.bus?.id) {
+            return markInvoiceAsExpired(
+              invoiceCodeReturn,
+              selectedSeatsReturn,
+              returnTrip.bus.id
+            );
+          }
+        })
+        .then(() => {
+          sessionStorage.removeItem("paymentStartTime");
+          navigate("/user");
+        })
+        .catch((error) => {
+          console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
+        });
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [
+    hasPaid,
+    hasExpired,
+    invoiceCode,
+    invoiceCodeReturn,
+    selectedSeats,
+    selectedSeatsReturn,
+    returnTrip,
+    busId,
+    navigate,
+  ]);
 
   useEffect(() => {
     const BANK_ID = "MBBank";
     const ACCOUNT_NO = "0916430832";
-    const AMOUNT = 10000;
-    const DESCRIPTION = "Dat ve xe cho Dung nha mn oi";
+    const AMOUNT = totalAmount / 10;
+    const DESCRIPTION = `Thanh toan hoa don ${invoiceCode}`;
+    console.log("DESCRIPTION: ", DESCRIPTION);
 
     const qrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-qr_only.png?amount=${AMOUNT}&addInfo=${DESCRIPTION}`;
     setQrUrl(qrUrl);
@@ -29,14 +164,36 @@ const CheckoutPage = () => {
           .slice(0, 2)
           .find(
             (item) =>
-              parseInt(item["Giá trị"]) >= AMOUNT &&
+              parseInt(item["Giá trị"]) <= AMOUNT &&
               item["Mô tả"]?.includes(DESCRIPTION)
           );
 
         if (matched && !hasPaid) {
-          hasPaid = true;
-          alert("✅ Thanh toán thành công");
+          setHasPaid(true);
           clearInterval(interval);
+
+          markInvoiceAsPaid(invoiceCode)
+            .then(() => {
+              if (invoiceCodeReturn) {
+                return markInvoiceAsPaid(invoiceCodeReturn);
+              }
+            })
+            .then(() => {
+              navigate("/thankyou", {
+                state: {
+                  tripDetails,
+                  selectedSeats,
+                  returnTrip,
+                  selectedSeatsReturn,
+                  customerInfo,
+                  invoiceCode,
+                  totalAmount,
+                },
+              });
+            })
+            .catch((error) => {
+              console.error("Lỗi cập nhật trạng thái hóa đơn:", error);
+            });
         }
       } catch (error) {
         console.error("Lỗi khi kiểm tra thanh toán:", error);
@@ -45,7 +202,17 @@ const CheckoutPage = () => {
 
     interval = setInterval(checkPayment, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [
+    totalAmount,
+    customerInfo,
+    invoiceCode,
+    invoiceCodeReturn,
+    tripDetails,
+    returnTrip,
+    selectedSeats,
+    selectedSeatsReturn,
+    navigate,
+  ]);
 
   return (
     <div>
@@ -87,11 +254,16 @@ const CheckoutPage = () => {
               Tổng thanh toán
             </h2>
             <div className="text-3xl font-bold text-orange-600 mb-4">
-              290.000đ
+              {totalAmount?.toLocaleString("vi-VN")}đ
             </div>
             <div className="bg-gray-50 p-4 rounded-xl mb-4 text-sm text-gray-600">
               Thời gian giữ chỗ còn lại:{" "}
-              <span className="font-medium">18 : 34</span>
+              <span className="font-medium">
+                {`${String(Math.floor(countdown / 60)).padStart(
+                  2,
+                  "0"
+                )}:${String(countdown % 60).padStart(2, "0")}`}
+              </span>
             </div>
             {qrUrl ? (
               <img src={qrUrl} alt="QR thanh toán" className="w-48 h-48 mb-4" />
@@ -121,15 +293,21 @@ const CheckoutPage = () => {
               <div className="text-sm text-gray-700">
                 <div className="flex justify-between mb-1">
                   <span>Họ và tên</span>
-                  <span className="font-medium">Dũng Nguyễn</span>
+                  <span className="font-medium">
+                    {customerInfo?.name || "Chưa có"}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-1">
                   <span>Số điện thoại</span>
-                  <span className="font-medium">0916430832</span>
+                  <span className="font-medium">
+                    {customerInfo?.phone || "Chưa có"}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-1">
                   <span>Email</span>
-                  <span className="font-medium">lamdepcungnhau@gmail.com</span>
+                  <span className="font-medium">
+                    {customerInfo?.email || "Chưa có"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -139,38 +317,140 @@ const CheckoutPage = () => {
               <div className="text-sm text-gray-700">
                 <div className="flex justify-between mb-2">
                   <span>Tuyến xe</span>
-                  <span className="font-medium">Mien Tay - Da Lat</span>
+                  <span className="font-medium">
+                    {tripDetails.busRoute.busStationFrom.name} -{" "}
+                    {tripDetails.busRoute.busStationTo.name}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Thời gian xuất bến</span>
-                  <span className="font-medium">19:30 07/07/2025</span>
+                  <span className="font-medium">
+                    {tripDetails?.departureTime
+                      ? new Date(tripDetails.departureTime).toLocaleString(
+                          "vi-VN"
+                        )
+                      : ""}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Số lượng ghế</span>
-                  <span className="font-medium">1 Ghế</span>
+                  <span className="font-medium">
+                    {selectedSeats?.length || 0} Ghế
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Số ghế</span>
-                  <span className="font-medium">B02</span>
+                  <span className="font-medium">
+                    {selectedSeats?.join(", ")}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Điểm lên xe</span>
-                  <span className="font-medium">BX Miền Tây</span>
+                  <span className="font-medium">
+                    {tripDetails.busRoute.busStationFrom.name}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Thời gian tới điểm lên xe</span>
-                  <span className="font-medium">Trước 19:15 07/07/2025</span>
+                  <span className="font-medium">
+                    {tripDetails?.departureTime
+                      ? "Trước " +
+                        new Date(
+                          new Date(tripDetails.departureTime).getTime() -
+                            15 * 60000
+                        ).toLocaleString("vi-VN")
+                      : ""}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Điểm trả khách</span>
-                  <span className="font-medium">DA LAT</span>
+                  <span className="font-medium">
+                    {tripDetails.busRoute.busStationTo.name}
+                  </span>
                 </div>
                 <div className="flex justify-between text-green-600 font-bold">
                   <span>Tổng tiền lượt đi</span>
-                  <span className="text-[16px]">290.000đ</span>
+                  <span className="text-[16px]">
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
+                  </span>
                 </div>
               </div>
             </div>
+
+            {returnTrip && (
+              <div className="bg-white p-[20px] rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-4">
+                  Thông tin lượt về
+                </h3>
+                <div className="text-sm text-gray-700">
+                  <div className="flex justify-between mb-2">
+                    <span>Tuyến xe</span>
+                    <span className="font-medium">
+                      {returnTrip.busRoute.busStationFrom.name} -{" "}
+                      {returnTrip.busRoute.busStationTo.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Thời gian xuất bến</span>
+                    <span className="font-medium">
+                      {returnTrip?.departureTime
+                        ? new Date(returnTrip.departureTime).toLocaleString(
+                            "vi-VN"
+                          )
+                        : ""}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Số lượng ghế</span>
+                    <span className="font-medium">
+                      {selectedSeatsReturn?.length || 0} Ghế
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Số ghế</span>
+                    <span className="font-medium">
+                      {selectedSeatsReturn?.join(", ")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Điểm lên xe</span>
+                    <span className="font-medium">
+                      {returnTrip.busRoute.busStationFrom.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Thời gian tới điểm lên xe</span>
+                    <span className="font-medium">
+                      {returnTrip?.departureTime
+                        ? "Trước " +
+                          new Date(
+                            new Date(returnTrip.departureTime).getTime() -
+                              15 * 60000
+                          ).toLocaleString("vi-VN")
+                        : ""}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Điểm trả khách</span>
+                    <span className="font-medium">
+                      {returnTrip.busRoute.busStationTo.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-green-600 font-bold">
+                    <span>Tổng tiền lượt về</span>
+                    <span className="text-[16px]">
+                      {(
+                        returnTrip.price * selectedSeatsReturn.length
+                      ).toLocaleString("vi-VN")}
+                      đ
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white p-[20px] rounded-xl shadow-sm">
               <h3 className="text-lg font-semibold mb-4">Chi tiết giá</h3>
@@ -178,16 +458,34 @@ const CheckoutPage = () => {
                 <div className="flex justify-between mb-2">
                   <span>Giá vé lượt đi</span>
                   <span className="text-red-500 font-medium text-[16px]">
-                    290.000đ
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
                   </span>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <span>Phí thanh toán</span>
-                  <span className="text-[16px]">0đ</span>
-                </div>
+                {returnTrip && (
+                  <div className="flex justify-between mb-2">
+                    <span>Giá vé lượt về</span>
+                    <span className="text-red-500 font-medium text-[16px]">
+                      {(
+                        returnTrip.price * selectedSeatsReturn.length
+                      ).toLocaleString("vi-VN")}
+                      đ
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-red-500">
                   <span>Tổng tiền</span>
-                  <span className="text-[16px]">290.000đ</span>
+                  <span className="text-[16px]">
+                    {(
+                      tripDetails.price * selectedSeats.length +
+                      (returnTrip
+                        ? returnTrip.price * selectedSeatsReturn.length
+                        : 0)
+                    ).toLocaleString("vi-VN")}
+                    đ
+                  </span>
                 </div>
               </div>
             </div>

@@ -8,7 +8,6 @@ import {
 } from "../../services/UserService";
 import { Table, Button, Modal, Input } from "antd";
 import {
-  getAllInvoices,
   handleGetInvoiceByUserId,
   handleUpdateInvoiceStatus,
   handleAddBankDT,
@@ -326,6 +325,7 @@ const InforUserPage = () => {
     ];
   };
 
+
   const handleTicketCancel = (record) => {
     setSelectedTicket(record);
 
@@ -475,6 +475,7 @@ const InforUserPage = () => {
       </p>
     </div>
   );
+
   const renderSection = () => {
     if (isLoading) {
       return <div className="md:col-span-5">Đang tải...</div>;

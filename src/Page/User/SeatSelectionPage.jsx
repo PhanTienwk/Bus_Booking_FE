@@ -3,31 +3,45 @@ import { useLocation } from "react-router-dom";
 import Header from "../../components/Header";
 import { Snackbar, Alert } from "@mui/material";
 import Footer from "../../components/Footer";
-import { fetchSeatLayout, handleSeatSelection, createInvoice } from "../../services/SeatSelectionService";
+import {
+  fetchSeatLayout,
+  handleSeatSelection,
+  createInvoice,
+} from "../../services/SeatSelectionService";
+import { useNavigate } from "react-router-dom";
 
 const SeatSelectionPage = () => {
-  const { state } = useLocation();
-  const tripDetails = state?.tripDetails;
+  const { tripDetails, returnTrip } = useLocation().state || {};
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [upperSeats, setUpperSeats] = useState([]);
   const [lowerSeats, setLowerSeats] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
   const [snackBar, setSnackBar] = useState({
-      open: false,
-      message: "",
-      severity: "info",
-    });
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const [customerInfo, setCustomerInfo] = useState({
     name: "",
     phone: "",
     email: "",
-    paymentMethod:"0" 
+    paymentMethod: "0",
+    acceptTerms: false,
   });
+
+  const [selectedSeatsReturn, setSelectedSeatsReturn] = useState([]);
+  const [upperSeatsReturn, setUpperSeatsReturn] = useState([]);
+  const [lowerSeatsReturn, setLowerSeatsReturn] = useState([]);
+  const [bookedSeatsReturn, setBookedSeatsReturn] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getSeatLayout = async () => {
       try {
-        const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(tripDetails.bus.id);
+        const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(
+          tripDetails.bus.id
+        );
         setUpperSeats(upperSeats);
         setLowerSeats(lowerSeats);
         setBookedSeats(bookedSeats);
@@ -40,6 +54,25 @@ const SeatSelectionPage = () => {
       getSeatLayout();
     }
   }, [tripDetails?.bus?.id]);
+
+  useEffect(() => {
+    const getReturnSeatLayout = async () => {
+      try {
+        const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(
+          returnTrip.bus.id
+        );
+        setUpperSeatsReturn(upperSeats);
+        setLowerSeatsReturn(lowerSeats);
+        setBookedSeatsReturn(bookedSeats);
+      } catch (error) {
+        console.error("Không thể tải sơ đồ ghế cho chuyến về");
+      }
+    };
+
+    if (returnTrip?.bus?.id) {
+      getReturnSeatLayout();
+    }
+  }, [returnTrip?.bus?.id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -59,13 +92,34 @@ const SeatSelectionPage = () => {
   };
 
   const handlePayment = async () => {
-    if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
-      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng","error");
+    if (
+      selectedSeats.length === 0 &&
+      (!returnTrip || selectedSeatsReturn.length === 0)
+    ) {
+      handleOpenSnackBar("Vui lòng chọn ghế để thanh toán!", "error");
       return;
     }
 
-    if (selectedSeats.length === 0) {
-      handleOpenSnackBar("Vui lòng chọn ít nhất một ghế","error");
+    if (returnTrip && selectedSeatsReturn.length === 0) {
+      handleOpenSnackBar("Vui lòng chọn ghế lượt về!", "error");
+      return;
+    }
+
+    if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
+      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng", "error");
+      return;
+    }
+
+    if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
+      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng", "error");
+      return;
+    }
+
+    if (!customerInfo.acceptTerms) {
+      handleOpenSnackBar(
+        "Vui lòng chấp nhận điều khoản trước khi thanh toán",
+        "error"
+      );
       return;
     }
 
@@ -77,13 +131,76 @@ const SeatSelectionPage = () => {
       payment_method: customerInfo.paymentMethod,
       phone: customerInfo.phone,
       idbustrip: tripDetails.bus.id,
-      listidseatposition: selectedSeats
+      listidseatposition: selectedSeats,
     };
+
+    const invoiceDataReturn = returnTrip
+      ? {
+          id: returnTrip.id,
+          email: customerInfo.email,
+          name: customerInfo.name,
+          number_of_tickets: selectedSeatsReturn.length,
+          payment_method: customerInfo.paymentMethod,
+          phone: customerInfo.phone,
+          idbustrip: returnTrip.bus.id,
+          listidseatposition: selectedSeatsReturn,
+        }
+      : null;
 
     try {
       const response = await createInvoice(invoiceData);
-      if(response===1000){
-        handleOpenSnackBar("Tạo hóa đơn thành công!","infor")
+
+      let responseReturn = null;
+      if (invoiceDataReturn) {
+        responseReturn = await createInvoice(invoiceDataReturn);
+      }
+
+      if (response === 1000 || response?.code === 1000) {
+        handleOpenSnackBar("Tạo hóa đơn lượt đi thành công!", "infor");
+      }
+
+      if (
+        invoiceDataReturn &&
+        (responseReturn === 1000 || responseReturn?.code === 1000)
+      ) {
+        handleOpenSnackBar("Tạo hóa đơn lượt về thành công!", "infor");
+      }
+
+      if (customerInfo.paymentMethod === "1") {
+        const totalAmount =
+          tripDetails.price * selectedSeats.length +
+          (returnTrip ? returnTrip.price * selectedSeatsReturn.length : 0);
+        const invoiceCode = response.result;
+        const invoiceCodeReturn = responseReturn?.result || null;
+
+        navigate("/checkout", {
+          state: {
+            tripDetails,
+            selectedSeats,
+            returnTrip,
+            selectedSeatsReturn,
+            busId: tripDetails.bus.id,
+            customerInfo,
+            totalAmount,
+            invoiceCode,
+            invoiceCodeReturn,
+          },
+        });
+      }
+      if (customerInfo.paymentMethod === "0") {
+        const invoiceCode = response.result;
+        const totalAmount = tripDetails.price * selectedSeats.length;
+        navigate("/thankyou", {
+          state: {
+            tripDetails,
+            selectedSeats,
+            returnTrip,
+            selectedSeatsReturn,
+            customerInfo,
+            invoiceCode,
+            totalAmount,
+          },
+        });
       }
       console.log("Invoice response:", response);
     } catch (error) {
@@ -105,7 +222,7 @@ const SeatSelectionPage = () => {
           <div className="md:col-span-2 flex flex-col gap-6">
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <div className="flex justify-between items-center mb-4 mx-3">
-                <h2 className="text-xl font-semibold">Chọn ghế</h2>
+                <h2 className="text-xl font-semibold">Chuyến đi</h2>
                 <span className="text-sm text-blue-500 cursor-pointer">
                   Thông tin xe
                 </span>
@@ -129,7 +246,14 @@ const SeatSelectionPage = () => {
                           }
                           alt={seat}
                           className="w-8 h-8 cursor-pointer"
-                          onClick={() => !bookedSeats.includes(seat) && handleSeatSelection(seat, selectedSeats, setSelectedSeats)}
+                          onClick={() =>
+                            !bookedSeats.includes(seat) &&
+                            handleSeatSelection(
+                              seat,
+                              selectedSeats,
+                              setSelectedSeats
+                            )
+                          }
                         />
                         <span className="text-[13px] mt-1">{seat}</span>
                       </div>
@@ -154,7 +278,14 @@ const SeatSelectionPage = () => {
                           }
                           alt={seat}
                           className="w-8 h-8 cursor-pointer"
-                          onClick={() => !bookedSeats.includes(seat) && handleSeatSelection(seat, selectedSeats, setSelectedSeats)}
+                          onClick={() =>
+                            !bookedSeats.includes(seat) &&
+                            handleSeatSelection(
+                              seat,
+                              selectedSeats,
+                              setSelectedSeats
+                            )
+                          }
                         />
                         <span className="text-[13px] mt-1">{seat}</span>
                       </div>
@@ -181,6 +312,101 @@ const SeatSelectionPage = () => {
                 </div>
               </div>
             </div>
+
+            {returnTrip && (
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <div className="flex justify-between items-center mb-4 mx-3">
+                  <h2 className="text-xl font-semibold">Chuyến về</h2>
+                  <span className="text-sm text-blue-500 cursor-pointer">
+                    Thông tin xe
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-6 ml-2">
+                  <div>
+                    <h4 className="text-sm font-semibold mb-4 text-center">
+                      Tầng trên
+                    </h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {upperSeatsReturn.map((seat) => (
+                        <div key={seat} className="flex flex-col items-center">
+                          <img
+                            src={
+                              bookedSeatsReturn.includes(seat)
+                                ? "/images/seat_disabled.svg"
+                                : selectedSeatsReturn.includes(seat)
+                                ? "/images/seat_selecting.svg"
+                                : "/images/seat_active.svg"
+                            }
+                            alt={seat}
+                            className="w-8 h-8 cursor-pointer"
+                            onClick={() =>
+                              !bookedSeatsReturn.includes(seat) &&
+                              handleSeatSelection(
+                                seat,
+                                selectedSeatsReturn,
+                                setSelectedSeatsReturn
+                              )
+                            }
+                          />
+                          <span className="text-[13px] mt-1">{seat}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-semibold mb-4 text-center">
+                      Tầng dưới
+                    </h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {lowerSeatsReturn.map((seat) => (
+                        <div key={seat} className="flex flex-col items-center">
+                          <img
+                            src={
+                              bookedSeatsReturn.includes(seat)
+                                ? "/images/seat_disabled.svg"
+                                : selectedSeatsReturn.includes(seat)
+                                ? "/images/seat_selecting.svg"
+                                : "/images/seat_active.svg"
+                            }
+                            alt={seat}
+                            className="w-8 h-8 cursor-pointer"
+                            onClick={() =>
+                              !bookedSeatsReturn.includes(seat) &&
+                              handleSeatSelection(
+                                seat,
+                                selectedSeatsReturn,
+                                setSelectedSeatsReturn
+                              )
+                            }
+                          />
+                          <span className="text-[13px] mt-1">{seat}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="ml-6">
+                    <h4 className="text-sm font-semibold mb-4">Ghi chú</h4>
+                    <div className="flex flex-col gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-gray-300 rounded"></div>
+                        <span>Đã bán</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-blue-100 rounded"></div>
+                        <span>Còn trống</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-red-200 rounded"></div>
+                        <span>Đang chọn</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <h3 className="text-lg font-semibold mb-4">
@@ -222,13 +448,21 @@ const SeatSelectionPage = () => {
                 </select>
               </div>
               <label className="text-sm text-red-500 flex items-center gap-2 leading-tight">
-                <input type="checkbox" className="mt-0.5" />
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={customerInfo.acceptTerms}
+                  onChange={(e) =>
+                    setCustomerInfo((prev) => ({
+                      ...prev,
+                      acceptTerms: e.target.checked,
+                    }))
+                  }
+                />
+
                 <span>
-                  Chấp nhận{" "}
-                  <a href="/" className="underline">
-                    điều khoản
-                  </a>{" "}
-                  đặt vé & chính sách bảo mật thông tin của FUTA Bus Lines
+                  Chấp nhận điều khoản đặt vé & chính sách bảo mật thông tin của
+                  FUTA Bus Lines.
                 </span>
               </label>
 
@@ -265,22 +499,29 @@ const SeatSelectionPage = () => {
                 <div className="flex justify-between mb-2">
                   <span>Thời gian xuất bến</span>
                   <span className="font-medium">
-                    {new Date(tripDetails.departureTime).toLocaleString("vi-VN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
+                    {new Date(tripDetails.departureTime).toLocaleString(
+                      "vi-VN",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      }
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Số lượng ghế</span>
-                  <span className="font-medium">{selectedSeats.length} Ghế</span>
+                  <span className="font-medium">
+                    {selectedSeats.length} Ghế
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Số ghế</span>
-                  <span className="font-medium">{selectedSeats.join(", ") || "-"}</span>
+                  <span className="font-medium">
+                    {selectedSeats.join(", ") || "-"}
+                  </span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span>Điểm trả khách</span>
@@ -289,11 +530,71 @@ const SeatSelectionPage = () => {
                 <div className="flex justify-between text-green-600 font-bold">
                   <span>Tổng tiền lượt đi</span>
                   <span className="text-[16px]">
-                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
                   </span>
                 </div>
               </div>
             </div>
+
+            {returnTrip && (
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-4">
+                  Thông tin lượt về
+                </h3>
+                <div className="text-sm text-gray-700">
+                  <div className="flex justify-between mb-2">
+                    <span>Tuyến xe</span>
+                    <span className="font-medium">
+                      {returnTrip.busRoute.busStationFrom.name} -{" "}
+                      {returnTrip.busRoute.busStationTo.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Thời gian xuất bến</span>
+                    <span className="font-medium">
+                      {new Date(returnTrip.departureTime).toLocaleString(
+                        "vi-VN",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Số lượng ghế</span>
+                    <span className="font-medium">
+                      {selectedSeatsReturn.length} Ghế
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Số ghế</span>
+                    <span className="font-medium">
+                      {selectedSeatsReturn.join(", ") || "-"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Điểm trả khách</span>
+                    <span className="font-medium">-</span>
+                  </div>
+                  <div className="flex justify-between text-green-600 font-bold">
+                    <span>Tổng tiền lượt về</span>
+                    <span className="text-[16px]">
+                      {(
+                        returnTrip.price * selectedSeatsReturn.length
+                      ).toLocaleString("vi-VN")}
+                      đ
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <h3 className="text-lg font-semibold mb-4">Chi tiết giá</h3>
@@ -301,17 +602,33 @@ const SeatSelectionPage = () => {
                 <div className="flex justify-between mb-2">
                   <span>Giá vé lượt đi</span>
                   <span className="text-red-500 font-medium text-[16px]">
-                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
                   </span>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <span>Phí thanh toán</span>
-                  <span>0đ</span>
-                </div>
+                {returnTrip && (
+                  <div className="flex justify-between mb-2">
+                    <span>Giá vé lượt về</span>
+                    <span className="text-red-500 font-medium text-[16px]">
+                      {(
+                        returnTrip.price * selectedSeatsReturn.length
+                      ).toLocaleString("vi-VN")}
+                      đ
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-red-500">
                   <span>Tổng tiền</span>
                   <span className="text-[16px]">
-                    {(tripDetails.price * selectedSeats.length).toLocaleString("vi-VN")}đ
+                    {(
+                      tripDetails.price * selectedSeats.length +
+                      (returnTrip
+                        ? returnTrip.price * selectedSeatsReturn.length
+                        : 0)
+                    ).toLocaleString("vi-VN")}
+                    đ
                   </span>
                 </div>
               </div>
@@ -320,7 +637,6 @@ const SeatSelectionPage = () => {
             <button
               className="bg-orange-500 text-white px-6 py-3 font-semibold hover:bg-orange-600 transition duration-200"
               style={{ borderRadius: "0.75rem" }}
-              disabled={selectedSeats.length === 0}
               onClick={handlePayment}
             >
               Thanh toán
@@ -330,18 +646,18 @@ const SeatSelectionPage = () => {
       </section>
 
       <Snackbar
-              open={snackBar.open}
-              autoHideDuration={3000}
-              onClose={handleCloseSnackBar}
-            >
-              <Alert
-                onClose={handleCloseSnackBar}
-                severity={snackBar.severity}
-                sx={{ width: "100%" }}
-              >
-                {snackBar.message}
-              </Alert>
-            </Snackbar>
+        open={snackBar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackBar}
+      >
+        <Alert
+          onClose={handleCloseSnackBar}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
       <Footer />
     </div>
   );
