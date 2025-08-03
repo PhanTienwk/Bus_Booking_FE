@@ -6,17 +6,28 @@ import {
   updateUserInfor,
   updatePassword,
 } from "../../services/UserService";
+import { Table, Button, Modal, Input } from "antd";
 import {
   handleGetInvoiceByUserId,
+  handleUpdateInvoiceStatus,
+  handleAddBankDT,
 } from "../../services/InvoiceService";
 import { Snackbar, Alert } from "@mui/material";
-import { Table } from "antd";
+
 const InforUserPage = () => {
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
   const [activeSection, setActiveSection] = useState("account");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [Invoices, setInvoice] = useState([]);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
+  const [bankDetails, setBankDetails] = useState({
+    bankAccountNumber: "",
+    bankName: "",
+  });
+  const [showBankForm, setShowBankForm] = useState(false);
   const [userInfo, setUserInfo] = useState({
     name: "",
     gender: "1",
@@ -46,7 +57,7 @@ const InforUserPage = () => {
         const InvoicesRes = await handleGetInvoiceByUserId(
           response.result.phone
         );
-        console.log("respon", response);
+
         if (response?.code === 1000) {
           const result = response.result;
           setUserInfo({
@@ -273,6 +284,34 @@ const InforUserPage = () => {
           return methods[method] || `Phương thức ${method}`;
         },
       },
+      {
+        title: "Trạng thái",
+        dataIndex: "status",
+        key: "status",
+        render: (status) => {
+          const statusMap = {
+            0: "Chưa thanh toán",
+            1: "Thanh toán thành công",
+            2: "Hủy vé thành công",
+          };
+          return statusMap[status] || "Không xác định";
+        },
+      },
+      {
+        title: "Hành động",
+        key: "action",
+        render: (_, record) => (
+          <div>
+            <Button
+              type="primary"
+              ghost
+              onClick={() => handleTicketCancel(record)}
+            >
+              Hủy vé
+            </Button>
+          </div>
+        ),
+      },
       // {
       //   title: "Trạng thái",
       //   key: "status",
@@ -286,20 +325,157 @@ const InforUserPage = () => {
     ];
   };
 
-  // const historyticket = () => {
-  //   if (isLoading) {
-  //     return <div className="md:col-span-5">Đang tải...</div>;
-  //   }
 
-  //   if (activeSection === "account") {
-  //     <Table
-  //       columns={getColumns()}
-  //       dataSource={Invoices}
-  //       rowKey="id"
-  //       pagination={{ pageSize: 5 }}
-  //     />;
-  //   }
-  // };
+  const handleTicketCancel = (record) => {
+    setSelectedTicket(record);
+
+    if (!record || record.status === undefined) {
+      handleOpenSnackBar("Dữ liệu vé không hợp lệ!", "error");
+      return;
+    }
+
+    if (record.status === 1) {
+      // chờ thanh toán thì hủy vé ko cần nhập stk
+      setSelectedInvoiceId(null);
+      setShowCancelConfirm(true);
+    } else if (record.status === 2) {
+      setSelectedInvoiceId(record.id);
+
+      setShowBankForm(true);
+    } else {
+      handleOpenSnackBar(
+        "Hành động không được phép cho trạng thái vé này!",
+        "error"
+      );
+    }
+  };
+  const handleBankDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setBankDetails({ ...bankDetails, [name]: value });
+  };
+
+  const handleBankDetailsSubmit = async () => {
+    if (!bankDetails.bankAccountNumber || !bankDetails.bankName) {
+      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin ngân hàng!", "error");
+      return;
+    }
+
+    console.log("data", selectedTicket.user.id, selectedTicket.id);
+    try {
+      const response = await handleAddBankDT({
+        idUser: selectedTicket.user.id, // Giả sử userInfo.id chứa id của người dùng
+        idInvoice: selectedTicket.id,
+        bankName: bankDetails.bankName,
+        bankAccountNumber: bankDetails.bankAccountNumber,
+      });
+
+      console.log("check respon", response);
+
+      if (response.code === 1000) {
+        handleOpenSnackBar(
+          "Cập nhật thông tin ngân hàng thành công!",
+          "success"
+        );
+        setBankDetails({ bankAccountNumber: "", bankName: "" });
+        setShowBankForm(false);
+        setSelectedInvoiceId(null);
+        // Cập nhật trạng thái hóa đơn thành "Hủy vé thành công" (status = 2)
+        const cancelRes = await handleUpdateInvoiceStatus(selectedInvoiceId, 2);
+        if (cancelRes.code === 1000) {
+          setInvoice((prev) =>
+            prev.map((invoice) =>
+              invoice.id === selectedInvoiceId
+                ? { ...invoice, status: 2 }
+                : invoice
+            )
+          );
+        } else {
+          handleOpenSnackBar(
+            cancelRes.message || "Cập nhật trạng thái hóa đơn thất bại!",
+            "error"
+          );
+        }
+      } else {
+        handleOpenSnackBar(
+          response.data.message || "Lỗi khi cập nhật thông tin ngân hàng!",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin ngân hàng:", error);
+      handleOpenSnackBar(
+        error?.response?.data?.message ||
+          "Lỗi khi cập nhật thông tin ngân hàng!",
+        "error"
+      );
+    }
+  };
+  const confirmTicketCancel = async () => {
+    try {
+      const cancelRes = await handleUpdateInvoiceStatus(selectedTicket.id, 0);
+      console.log("cancelRes", cancelRes);
+      if (cancelRes.code === 1000) {
+        handleOpenSnackBar("Hủy vé thành công!", "success");
+        // Update the invoice list
+        setInvoice((prev) =>
+          prev.map((invoice) =>
+            invoice.id === selectedTicket.id
+              ? { ...invoice, status: 2 }
+              : invoice
+          )
+        );
+      } else {
+        handleOpenSnackBar(cancelRes.message || "Hủy vé thất bại!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi hủy vé:", error);
+      handleOpenSnackBar(
+        error?.response?.data?.message || "Lỗi khi hủy vé!",
+        "error"
+      );
+    } finally {
+      setShowCancelConfirm(false);
+      setSelectedTicket(null);
+    }
+  };
+  const BankDetailsModal = (
+    <div className="p-4">
+      <div className="grid grid-cols-1 gap-4 text-sm text-gray-800">
+        <div>
+          <label className="block text-gray-500 mb-1">
+            Số tài khoản ngân hàng:
+          </label>
+          <Input
+            type="text"
+            name="bankAccountNumber"
+            value={bankDetails.bankAccountNumber}
+            onChange={handleBankDetailsChange}
+            placeholder="Nhập số tài khoản ngân hàng"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-500 mb-1">Tên ngân hàng:</label>
+          <Input
+            type="text"
+            name="bankName"
+            value={bankDetails.bankName}
+            onChange={handleBankDetailsChange}
+            placeholder="Nhập tên ngân hàng"
+          />
+        </div>
+      </div>
+    </div>
+  );
+  const CancelModal = (
+    <div className="p-4">
+      <p className="text-gray-800">
+        Bạn có chắc chắn muốn hủy vé có mã hóa đơn{" "}
+        <strong>{selectedTicket?.id}</strong> không? Hành động này không thể
+        hoàn tác.
+      </p>
+    </div>
+  );
+
   const renderSection = () => {
     if (isLoading) {
       return <div className="md:col-span-5">Đang tải...</div>;
@@ -508,7 +684,7 @@ const InforUserPage = () => {
           </p>
           <Table
             columns={getColumns()}
-            dataSource={Invoices}
+            dataSource={Invoices.filter((invoice) => invoice.status !== 1)}
             rowKey="id"
             pagination={{ pageSize: 5 }}
           />
@@ -622,6 +798,40 @@ const InforUserPage = () => {
             </div>
           </div>
         )}
+
+        <Modal
+          title="Xác nhận hủy vé"
+          open={showCancelConfirm}
+          onOk={confirmTicketCancel}
+          onCancel={() => setShowCancelConfirm(false)}
+          width={600}
+          okText="Hủy vé"
+          cancelText="Không"
+          okButtonProps={{
+            style: { backgroundColor: "#ef5222", borderColor: "#ef5222" },
+          }}
+        >
+          {CancelModal}
+        </Modal>
+
+        <Modal
+          title="Nhập thông tin ngân hàng"
+          open={showBankForm}
+          onOk={handleBankDetailsSubmit}
+          onCancel={() => {
+            setShowBankForm(false);
+            setBankDetails({ bankAccountNumber: "", bankName: "" });
+            setSelectedInvoiceId(null);
+          }}
+          width={600}
+          okText="Lưu"
+          cancelText="Hủy"
+          okButtonProps={{
+            style: { backgroundColor: "#ef5222", borderColor: "#ef5222" },
+          }}
+        >
+          {BankDetailsModal}
+        </Modal>
       </section>
       <Snackbar
         open={snackBar.open}
