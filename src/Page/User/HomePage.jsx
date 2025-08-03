@@ -96,6 +96,11 @@ const HomePage = () => {
       return;
     }
 
+    if (tripType === "roundtrip" && !returnDate) {
+      handleOpenSnackBar("Vui lòng chọn ngày về cho chuyến khứ hồi!", "error");
+      return;
+    }
+
     if (tripType === "roundtrip") {
       const responseReturn = await searchTripsByProvinces(
         destination.value,

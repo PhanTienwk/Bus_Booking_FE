@@ -26,6 +26,7 @@ const SeatSelectionPage = () => {
     phone: "",
     email: "",
     paymentMethod: "0",
+    acceptTerms: false,
   });
 
   const [selectedSeatsReturn, setSelectedSeatsReturn] = useState([]);
@@ -91,13 +92,34 @@ const SeatSelectionPage = () => {
   };
 
   const handlePayment = async () => {
+    if (
+      selectedSeats.length === 0 &&
+      (!returnTrip || selectedSeatsReturn.length === 0)
+    ) {
+      handleOpenSnackBar("Vui lòng chọn ghế để thanh toán!", "error");
+      return;
+    }
+
+    if (returnTrip && selectedSeatsReturn.length === 0) {
+      handleOpenSnackBar("Vui lòng chọn ghế lượt về!", "error");
+      return;
+    }
+
     if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
       handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng", "error");
       return;
     }
 
-    if (selectedSeats.length === 0) {
-      handleOpenSnackBar("Vui lòng chọn ít nhất một ghế", "error");
+    if (!customerInfo.name || !customerInfo.phone || !customerInfo.email) {
+      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin khách hàng", "error");
+      return;
+    }
+
+    if (!customerInfo.acceptTerms) {
+      handleOpenSnackBar(
+        "Vui lòng chấp nhận điều khoản trước khi thanh toán",
+        "error"
+      );
       return;
     }
 
@@ -426,13 +448,21 @@ const SeatSelectionPage = () => {
                 </select>
               </div>
               <label className="text-sm text-red-500 flex items-center gap-2 leading-tight">
-                <input type="checkbox" className="mt-0.5" />
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={customerInfo.acceptTerms}
+                  onChange={(e) =>
+                    setCustomerInfo((prev) => ({
+                      ...prev,
+                      acceptTerms: e.target.checked,
+                    }))
+                  }
+                />
+
                 <span>
-                  Chấp nhận{" "}
-                  <a href="/" className="underline">
-                    điều khoản
-                  </a>{" "}
-                  đặt vé & chính sách bảo mật thông tin của FUTA Bus Lines
+                  Chấp nhận điều khoản đặt vé & chính sách bảo mật thông tin của
+                  FUTA Bus Lines.
                 </span>
               </label>
 
@@ -607,7 +637,6 @@ const SeatSelectionPage = () => {
             <button
               className="bg-orange-500 text-white px-6 py-3 font-semibold hover:bg-orange-600 transition duration-200"
               style={{ borderRadius: "0.75rem" }}
-              disabled={selectedSeats.length === 0}
               onClick={handlePayment}
             >
               Thanh toán

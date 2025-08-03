@@ -11,7 +11,6 @@ const ThankYouPage = () => {
     selectedSeats,
     returnTrip,
     selectedSeatsReturn,
-    totalAmount,
   } = location.state || {};
 
   const navigate = useNavigate();
@@ -62,7 +61,10 @@ const ThankYouPage = () => {
                       {selectedSeats?.length || 0} Ghế
                     </td>
                     <td className="py-2 px-4 border font-semibold">
-                      {totalAmount?.toLocaleString("vi-VN")}đ
+                      {(
+                          tripDetails.price * selectedSeats.length
+                        ).toLocaleString("vi-VN")}
+                        đ
                     </td>
                   </tr>
                   {returnTrip && (

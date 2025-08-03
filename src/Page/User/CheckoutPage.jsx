@@ -25,36 +25,116 @@ const CheckoutPage = () => {
     invoiceCodeReturn,
   } = location.state || {};
 
-  const [countdown, setCountdown] = useState(20 * 60);
+  const [countdown, setCountdown] = useState(2 * 60);
   const [hasPaid, setHasPaid] = useState(false);
   const [hasExpired, setHasExpired] = useState(false);
 
+  // useEffect(() => {
+  //   if (countdown <= 0 && !hasPaid) {
+  //     if (!hasExpired) {
+  //       setHasExpired(true);
+  //       markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
+  //         .then(() => {
+  //           if (
+  //             invoiceCodeReturn &&
+  //             selectedSeatsReturn &&
+  //             returnTrip?.bus?.id
+  //           ) {
+  //             return markInvoiceAsExpired(
+  //               invoiceCodeReturn,
+  //               selectedSeatsReturn,
+  //               returnTrip.bus.id
+  //             );
+  //           }
+  //         })
+  //         .then(() => {
+  //           navigate("/user");
+  //         })
+  //         .catch((error) => {
+  //           console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
+  //         });
+  //     }
+  //     return;
+  //   }
+
+  //   const timer = setInterval(() => {
+  //     setCountdown((prev) => prev - 1);
+  //   }, 1000);
+
+  //   return () => clearInterval(timer);
+  // }, [
+  //   countdown,
+  //   hasPaid,
+  //   hasExpired,
+  //   invoiceCode,
+  //   invoiceCodeReturn,
+  //   selectedSeats,
+  //   selectedSeatsReturn,
+  //   returnTrip,
+  //   busId,
+  //   navigate,
+  // ]);
+
   useEffect(() => {
-    if (countdown <= 0 && !hasPaid) {
-      if (!hasExpired) {
-        setHasExpired(true);
-        markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
-          .then(() => {
-            navigate("/user");
-          })
-          .catch((error) => {
-            console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
-          });
-      }
+    const EXPIRE_SECONDS = 2 * 60;
+
+    const savedStartTime = sessionStorage.getItem("paymentStartTime");
+    const now = Math.floor(Date.now() / 1000);
+
+    let startTime;
+    if (savedStartTime) {
+      startTime = parseInt(savedStartTime);
+    } else {
+      startTime = now;
+      sessionStorage.setItem("paymentStartTime", startTime);
+    }
+
+    const elapsed = now - startTime;
+    const remaining = Math.max(EXPIRE_SECONDS - elapsed, 0);
+
+    setCountdown(remaining);
+
+    if (remaining <= 0) {
+      setHasExpired(true);
+      markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
+        .then(() => {
+          if (invoiceCodeReturn && selectedSeatsReturn && returnTrip?.bus?.id) {
+            return markInvoiceAsExpired(
+              invoiceCodeReturn,
+              selectedSeatsReturn,
+              returnTrip.bus.id
+            );
+          }
+        })
+        .then(() => {
+          sessionStorage.removeItem("paymentStartTime");
+          navigate("/user");
+        })
+        .catch((error) => {
+          console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
+        });
       return;
     }
 
     const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
   }, [
-    countdown,
     hasPaid,
     hasExpired,
     invoiceCode,
+    invoiceCodeReturn,
     selectedSeats,
+    selectedSeatsReturn,
+    returnTrip,
     busId,
     navigate,
   ]);
