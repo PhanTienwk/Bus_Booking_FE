@@ -28,14 +28,6 @@ const handleAddBankDT = (data) => {
   });
 };
 
-export {
-  handleAddBankDT,
-  getAllInvoices,
-  getAllInvoicesId,
-  handleGetInvoiceByUserId,
-  handleUpdateInvoiceStatus,
-};
-
 const markInvoiceAsPaid = (id) => {
   return axios.put(`/api/admin/mark-invoice-paid/${id}`);
 };
@@ -48,6 +40,14 @@ const markInvoiceAsExpired = (invoiceId, selectedSeats, busId) => {
   });
 };
 
+export {
+  handleAddBankDT,
+  getAllInvoices,
+  getAllInvoicesId,
+  handleGetInvoiceByUserId,
+  handleUpdateInvoiceStatus,
+  markInvoiceAsPaid,
+  markInvoiceAsExpired
+};
 
-export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId, markInvoiceAsPaid, markInvoiceAsExpired };
 

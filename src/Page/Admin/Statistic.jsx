@@ -51,7 +51,7 @@ const AdminLayout = () => {
     totalBus: 0,
     totalBusRoute: 0,
     totalBusTrip: 0,
-    totalInvoiceAmount: 0,
+    totalBusStation: 0,
   });
 
   const [startDate, setStartDate] = useState("");
@@ -209,9 +209,8 @@ const AdminLayout = () => {
                   icon: "/images/bus-route.png",
                 },
                 {
-                  label: "Doanh thu",
-                  value:
-                    stats.totalInvoiceAmount.toLocaleString("vi-VN") + " đ",
+                  label: "Số lượng bến xe",
+                  value: stats.totalBusStation,
                   icon: "/images/ticket.png",
                 },
               ].map((item, idx) => (
