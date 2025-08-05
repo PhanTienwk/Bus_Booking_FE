@@ -13,34 +13,131 @@ const CheckoutPage = () => {
   const [qrUrl, setQrUrl] = useState("");
 
   const location = useLocation();
-  const { customerInfo, tripDetails, selectedSeats, busId, totalAmount, invoiceCode } =
-    location.state || {};
+  const {
+    customerInfo,
+    tripDetails,
+    selectedSeats,
+    returnTrip,
+    selectedSeatsReturn,
+    busId,
+    totalAmount,
+    invoiceCode,
+    invoiceCodeReturn,
+  } = location.state || {};
 
-  const [countdown, setCountdown] = useState(1 * 60);
+  const [countdown, setCountdown] = useState(2 * 60);
   const [hasPaid, setHasPaid] = useState(false);
   const [hasExpired, setHasExpired] = useState(false);
 
+  // useEffect(() => {
+  //   if (countdown <= 0 && !hasPaid) {
+  //     if (!hasExpired) {
+  //       setHasExpired(true);
+  //       markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
+  //         .then(() => {
+  //           if (
+  //             invoiceCodeReturn &&
+  //             selectedSeatsReturn &&
+  //             returnTrip?.bus?.id
+  //           ) {
+  //             return markInvoiceAsExpired(
+  //               invoiceCodeReturn,
+  //               selectedSeatsReturn,
+  //               returnTrip.bus.id
+  //             );
+  //           }
+  //         })
+  //         .then(() => {
+  //           navigate("/user");
+  //         })
+  //         .catch((error) => {
+  //           console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
+  //         });
+  //     }
+  //     return;
+  //   }
+
+  //   const timer = setInterval(() => {
+  //     setCountdown((prev) => prev - 1);
+  //   }, 1000);
+
+  //   return () => clearInterval(timer);
+  // }, [
+  //   countdown,
+  //   hasPaid,
+  //   hasExpired,
+  //   invoiceCode,
+  //   invoiceCodeReturn,
+  //   selectedSeats,
+  //   selectedSeatsReturn,
+  //   returnTrip,
+  //   busId,
+  //   navigate,
+  // ]);
+
   useEffect(() => {
-    if (countdown <= 0 && !hasPaid) {
-      if (!hasExpired) {
-        setHasExpired(true);
-        markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
-          .then(() => {
-            navigate("/user");
-          })
-          .catch((error) => {
-            console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
-          });
-      }
+    const EXPIRE_SECONDS = 2 * 60;
+
+    const savedStartTime = sessionStorage.getItem("paymentStartTime");
+    const now = Math.floor(Date.now() / 1000);
+
+    let startTime;
+    if (savedStartTime) {
+      startTime = parseInt(savedStartTime);
+    } else {
+      startTime = now;
+      sessionStorage.setItem("paymentStartTime", startTime);
+    }
+
+    const elapsed = now - startTime;
+    const remaining = Math.max(EXPIRE_SECONDS - elapsed, 0);
+
+    setCountdown(remaining);
+
+    if (remaining <= 0) {
+      setHasExpired(true);
+      markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
+        .then(() => {
+          if (invoiceCodeReturn && selectedSeatsReturn && returnTrip?.bus?.id) {
+            return markInvoiceAsExpired(
+              invoiceCodeReturn,
+              selectedSeatsReturn,
+              returnTrip.bus.id
+            );
+          }
+        })
+        .then(() => {
+          sessionStorage.removeItem("paymentStartTime");
+          navigate("/user");
+        })
+        .catch((error) => {
+          console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
+        });
       return;
     }
 
     const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown, hasPaid, hasExpired, invoiceCode, selectedSeats, busId, navigate]);
+  }, [
+    hasPaid,
+    hasExpired,
+    invoiceCode,
+    invoiceCodeReturn,
+    selectedSeats,
+    selectedSeatsReturn,
+    returnTrip,
+    busId,
+    navigate,
+  ]);
 
   useEffect(() => {
     const BANK_ID = "MBBank";
@@ -77,10 +174,17 @@ const CheckoutPage = () => {
 
           markInvoiceAsPaid(invoiceCode)
             .then(() => {
+              if (invoiceCodeReturn) {
+                return markInvoiceAsPaid(invoiceCodeReturn);
+              }
+            })
+            .then(() => {
               navigate("/thankyou", {
                 state: {
                   tripDetails,
                   selectedSeats,
+                  returnTrip,
+                  selectedSeatsReturn,
                   customerInfo,
                   invoiceCode,
                   totalAmount,
@@ -102,8 +206,11 @@ const CheckoutPage = () => {
     totalAmount,
     customerInfo,
     invoiceCode,
+    invoiceCodeReturn,
     tripDetails,
+    returnTrip,
     selectedSeats,
+    selectedSeatsReturn,
     navigate,
   ]);
 
@@ -264,11 +371,86 @@ const CheckoutPage = () => {
                 <div className="flex justify-between text-green-600 font-bold">
                   <span>Tổng tiền lượt đi</span>
                   <span className="text-[16px]">
-                    {totalAmount?.toLocaleString("vi-VN")}đ
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
                   </span>
                 </div>
               </div>
             </div>
+
+            {returnTrip && (
+              <div className="bg-white p-[20px] rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold mb-4">
+                  Thông tin lượt về
+                </h3>
+                <div className="text-sm text-gray-700">
+                  <div className="flex justify-between mb-2">
+                    <span>Tuyến xe</span>
+                    <span className="font-medium">
+                      {returnTrip.busRoute.busStationFrom.name} -{" "}
+                      {returnTrip.busRoute.busStationTo.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Thời gian xuất bến</span>
+                    <span className="font-medium">
+                      {returnTrip?.departureTime
+                        ? new Date(returnTrip.departureTime).toLocaleString(
+                            "vi-VN"
+                          )
+                        : ""}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Số lượng ghế</span>
+                    <span className="font-medium">
+                      {selectedSeatsReturn?.length || 0} Ghế
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Số ghế</span>
+                    <span className="font-medium">
+                      {selectedSeatsReturn?.join(", ")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Điểm lên xe</span>
+                    <span className="font-medium">
+                      {returnTrip.busRoute.busStationFrom.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Thời gian tới điểm lên xe</span>
+                    <span className="font-medium">
+                      {returnTrip?.departureTime
+                        ? "Trước " +
+                          new Date(
+                            new Date(returnTrip.departureTime).getTime() -
+                              15 * 60000
+                          ).toLocaleString("vi-VN")
+                        : ""}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Điểm trả khách</span>
+                    <span className="font-medium">
+                      {returnTrip.busRoute.busStationTo.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-green-600 font-bold">
+                    <span>Tổng tiền lượt về</span>
+                    <span className="text-[16px]">
+                      {(
+                        returnTrip.price * selectedSeatsReturn.length
+                      ).toLocaleString("vi-VN")}
+                      đ
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-white p-[20px] rounded-xl shadow-sm">
               <h3 className="text-lg font-semibold mb-4">Chi tiết giá</h3>
@@ -276,17 +458,33 @@ const CheckoutPage = () => {
                 <div className="flex justify-between mb-2">
                   <span>Giá vé lượt đi</span>
                   <span className="text-red-500 font-medium text-[16px]">
-                    {totalAmount?.toLocaleString("vi-VN")}đ
+                    {(tripDetails.price * selectedSeats.length).toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
                   </span>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <span>Phí thanh toán</span>
-                  <span className="text-[16px]">0đ</span>
-                </div>
+                {returnTrip && (
+                  <div className="flex justify-between mb-2">
+                    <span>Giá vé lượt về</span>
+                    <span className="text-red-500 font-medium text-[16px]">
+                      {(
+                        returnTrip.price * selectedSeatsReturn.length
+                      ).toLocaleString("vi-VN")}
+                      đ
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-red-500">
                   <span>Tổng tiền</span>
                   <span className="text-[16px]">
-                    {totalAmount?.toLocaleString("vi-VN")}đ
+                    {(
+                      tripDetails.price * selectedSeats.length +
+                      (returnTrip
+                        ? returnTrip.price * selectedSeatsReturn.length
+                        : 0)
+                    ).toLocaleString("vi-VN")}
+                    đ
                   </span>
                 </div>
               </div>

@@ -9,7 +9,8 @@ const ThankYouPage = () => {
   const {
     tripDetails,
     selectedSeats,
-    totalAmount,
+    returnTrip,
+    selectedSeatsReturn,
   } = location.state || {};
 
   const navigate = useNavigate();
@@ -45,17 +46,49 @@ const ThankYouPage = () => {
                 </thead>
                 <tbody>
                   <tr className="text-gray-800">
-                    <td className="py-2 px-4 border">{tripDetails?.departureTime
-                      ? new Date(tripDetails.departureTime).toLocaleString(
-                          "vi-VN"
-                        )
-                      : ""}</td>
                     <td className="py-2 px-4 border">
-                      {tripDetails.busRoute.busStationFrom.name} - {tripDetails.busRoute.busStationTo.name}
+                      {tripDetails?.departureTime
+                        ? new Date(tripDetails.departureTime).toLocaleString(
+                            "vi-VN"
+                          )
+                        : ""}
                     </td>
-                    <td className="py-2 px-4 border">{selectedSeats?.length || 0} Ghế</td>
-                    <td className="py-2 px-4 border font-semibold">{(totalAmount)?.toLocaleString("vi-VN")}đ</td>
+                    <td className="py-2 px-4 border">
+                      {tripDetails.busRoute.busStationFrom.name} -{" "}
+                      {tripDetails.busRoute.busStationTo.name}
+                    </td>
+                    <td className="py-2 px-4 border">
+                      {selectedSeats?.length || 0} Ghế
+                    </td>
+                    <td className="py-2 px-4 border font-semibold">
+                      {(
+                          tripDetails.price * selectedSeats.length
+                        ).toLocaleString("vi-VN")}
+                        đ
+                    </td>
                   </tr>
+                  {returnTrip && (
+                    <tr className="text-gray-800">
+                      <td className="py-2 px-4 border">
+                        {new Date(returnTrip.departureTime).toLocaleString(
+                          "vi-VN"
+                        )}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {returnTrip.busRoute.busStationFrom.name} -{" "}
+                        {returnTrip.busRoute.busStationTo.name}
+                      </td>
+                      <td className="py-2 px-4 border">
+                        {selectedSeatsReturn?.length || 0} Ghế
+                      </td>
+                      <td className="py-2 px-4 border font-semibold">
+                        {(
+                          returnTrip.price * selectedSeatsReturn.length
+                        ).toLocaleString("vi-VN")}
+                        đ
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -69,7 +102,10 @@ const ThankYouPage = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center gap-10">
-              <button className="border border-orange-500 text-orange-500 px-6 py-2 rounded-full font-medium hover:bg-orange-50 transition" onClick={() => navigate("/user")}>
+              <button
+                className="border border-orange-500 text-orange-500 px-6 py-2 rounded-full font-medium hover:bg-orange-50 transition"
+                onClick={() => navigate("/user")}
+              >
                 QUAY LẠI TRANG CHỦ
               </button>
               <button className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition">
