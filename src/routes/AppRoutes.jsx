@@ -19,6 +19,7 @@ import InvoiceManagement from "../Page/Admin/InvoiceManagement";
 import TripManagement from "../Page/Admin/TripManagement";
 import UserInformation from "../Page/Admin/UserInformation";
 import DriverPage from "../Page/Driver/DriverPage";
+import Test from "../Page/User/test";
 
 import "../tailwind.css";
 
@@ -36,6 +37,7 @@ const AppRoutes = () => {
         <Route path="/history-ticket" element={<HistoryTicketPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/user" element={<HomePage />} />
+        <Route path="/test" element={<Test />} />
 
         <Route path="/admin" element={<UserManagement />} />
         <Route path="/admin/driver" element={<DriverManagement />} />

@@ -1,35 +1,125 @@
-import { Table } from "antd";
+import { Table, Popover, Button, Input, Select } from "antd";
+import { FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getAllInvoices, getAllInvoicesId } from "../../services/InvoiceService"; 
+import { getAllInvoices, getAllInvoicesId, handleFilterInvoices } from "../../services/InvoiceService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Typography,
   Modal,
   Box,
-  Button,
+  Button as MuiButton,
   Card,
   CardContent,
   TextField,
 } from "@mui/material";
 
+const FilterButtonInvoice = ({ onClose, onSubmit }) => {
+  const [filterData, setFilterData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    status: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFilterData({ ...filterData, [name]: value });
+  };
+
+  const handleStatusChange = (value) => {
+    setFilterData({ ...filterData, status: value });
+  };
+
+  const handleSubmit = () => {
+    onSubmit(filterData);
+  };
+
+  return (
+    <div style={{ width: 300 }}>
+      <div className="mb-3">
+        <label className="form-label">Tên khách hàng</label>
+        <Input
+          name="name"
+          placeholder="Nhập tên khách hàng"
+          value={filterData.name}
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="mb-3">
+        <label className="form-label">Số điện thoại</label>
+        <Input
+          name="phone"
+          placeholder="Nhập số điện thoại"
+          value={filterData.phone}
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="mb-3">
+        <label className="form-label">Email</label>
+        <Input
+          name="email"
+          placeholder="Nhập email"
+          value={filterData.email}
+          onChange={handleInputChange}
+        />
+      </div>
+      <div className="mb-3">
+        <label className="form-label">Trạng thái</label>
+        <Select
+          style={{ width: "100%" }}
+          placeholder="Chọn trạng thái"
+          value={filterData.status}
+          onChange={handleStatusChange}
+        >
+          <Select.Option value="">Tất cả</Select.Option>
+          <Select.Option value="0">Chưa thanh toán</Select.Option>
+          <Select.Option value="1">Đã thanh toán</Select.Option>
+          <Select.Option value="2">Đã hủy</Select.Option>
+        </Select>
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button onClick={onClose}>Hủy</Button>
+        <Button type="primary" onClick={handleSubmit}>
+          Lọc
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const AdminLayout = () => {
   const [invoiceList, setInvoiceList] = useState([]);
+  const [filteredInvoiceList, setFilteredInvoiceList] = useState([]);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const [tickets, setTickets] = useState([]); 
+  const [tickets, setTickets] = useState([]);
+  const [openFormFilter, setOpenFormFilter] = useState(false);
+  const [filterParams, setFilterParams] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    status: "",
+  });
 
   useEffect(() => {
     fetchInvoices();
   }, []);
 
+  useEffect(() => {
+    setFilteredInvoiceList(invoiceList); 
+  }, [invoiceList]);
+
   const fetchInvoices = async () => {
     try {
       const response = await getAllInvoices();
       setInvoiceList(response.result || []);
+      if (!filterParams.name && !filterParams.phone && !filterParams.email && !filterParams.status) {
+        setFilteredInvoiceList(response.result || []);
+      }
     } catch (error) {
       toast.error("Lỗi khi tải danh sách hóa đơn");
       console.error("Fetch invoice error:", error);
@@ -46,11 +136,6 @@ const AdminLayout = () => {
     }
   };
 
-  // const handleDelete = (invoice) => {
-  //   setInvoiceToDelete(invoice);
-  //   setConfirmDeleteOpen(true);
-  // };
-
   const confirmDelete = async () => {
     toast.success("Đã xóa hóa đơn (mô phỏng)");
     setConfirmDeleteOpen(false);
@@ -60,13 +145,13 @@ const AdminLayout = () => {
 
   const handleUpdate = (invoice) => {
     setSelectedInvoice(invoice);
-    fetchTickets(invoice.id); 
+    fetchTickets(invoice.id);
     setUpdateModalOpen(true);
   };
 
   const handleView = (invoice) => {
     setSelectedInvoice(invoice);
-    fetchTickets(invoice.id); 
+    fetchTickets(invoice.id);
     setViewModalOpen(true);
   };
 
@@ -76,7 +161,7 @@ const AdminLayout = () => {
       toast.success("Cập nhật hóa đơn thành công (mô phỏng)");
       setUpdateModalOpen(false);
       setSelectedInvoice(null);
-      setTickets([]); 
+      setTickets([]);
       fetchInvoices();
     } catch (error) {
       toast.error("Lỗi khi cập nhật hóa đơn");
@@ -87,6 +172,23 @@ const AdminLayout = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedInvoice((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onSubmitPopover = async (filterData) => {
+    try {
+      const response = await handleFilterInvoices(filterData);
+      if (response.code === 1000) {
+        setFilterParams(filterData);
+        setFilteredInvoiceList(response.result || []);
+        toast.success("Lọc hóa đơn thành công!");
+      } else {
+        toast.error(response.message || "Lọc hóa đơn thất bại!");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Lỗi khi lọc hóa đơn!");
+      console.error("Filter invoices error:", error);
+    }
+    setOpenFormFilter(false);
   };
 
   const getColumns = () => [
@@ -147,13 +249,16 @@ const AdminLayout = () => {
       key: "action",
       render: (_, record) => (
         <>
-          <Button color="primary" onClick={() => handleView(record)}>
+          <MuiButton color="primary" onClick={() => handleView(record)}>
             Xem chi tiết
-          </Button>
-          <Button color="info" onClick={() => handleUpdate(record)} style={{ marginRight: 8 }}>
+          </MuiButton>
+          <MuiButton
+            color="info"
+            onClick={() => handleUpdate(record)}
+            style={{ marginRight: 8 }}
+          >
             Cập nhật
-          </Button>
-          
+          </MuiButton>
         </>
       ),
     },
@@ -204,9 +309,28 @@ const AdminLayout = () => {
                 <Typography variant="h5" gutterBottom>
                   Danh sách hóa đơn
                 </Typography>
+                <div className="button-group mb-4">
+                  <Popover
+                    placement="bottomRight"
+                    content={
+                      <FilterButtonInvoice
+                        onClose={() => setOpenFormFilter(false)}
+                        onSubmit={onSubmitPopover}
+                      />
+                    }
+                    title="Lọc Hóa Đơn"
+                    trigger="click"
+                    open={openFormFilter}
+                    onOpenChange={setOpenFormFilter}
+                  >
+                    <Button className="filter-button">
+                      Lọc <FilterOutlined />
+                    </Button>
+                  </Popover>
+                </div>
                 <Table
                   columns={getColumns()}
-                  dataSource={invoiceList}
+                  dataSource={filteredInvoiceList}
                   rowKey="id"
                   pagination={{ pageSize: 5 }}
                 />
@@ -240,19 +364,19 @@ const AdminLayout = () => {
                 <strong>{invoiceToDelete?.name}</strong>?
               </Typography>
               <Box className="mt-4 flex justify-end gap-2">
-                <Button
+                <MuiButton
                   onClick={() => setConfirmDeleteOpen(false)}
                   variant="outlined"
                 >
                   Hủy
-                </Button>
-                <Button
+                </MuiButton>
+                <MuiButton
                   variant="contained"
                   color="error"
                   onClick={confirmDelete}
                 >
                   Xóa
-                </Button>
+                </MuiButton>
               </Box>
             </Box>
           </Modal>
@@ -262,7 +386,7 @@ const AdminLayout = () => {
             open={updateModalOpen}
             onClose={() => {
               setUpdateModalOpen(false);
-              setTickets([]); 
+              setTickets([]);
             }}
           >
             <Box
@@ -271,7 +395,7 @@ const AdminLayout = () => {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                width: 800, 
+                width: 800,
                 bgcolor: "background.paper",
                 borderRadius: 2,
                 boxShadow: 24,
@@ -365,7 +489,7 @@ const AdminLayout = () => {
                   />
 
                   <Box className="mt-4 flex justify-end gap-2">
-                    <Button
+                    <MuiButton
                       onClick={() => {
                         setUpdateModalOpen(false);
                         setTickets([]);
@@ -373,10 +497,10 @@ const AdminLayout = () => {
                       variant="outlined"
                     >
                       Hủy
-                    </Button>
-                    <Button type="submit" variant="contained" color="primary">
+                    </MuiButton>
+                    <MuiButton type="submit" variant="contained" color="primary">
                       Lưu
-                    </Button>
+                    </MuiButton>
                   </Box>
                 </form>
               )}
@@ -466,8 +590,7 @@ const AdminLayout = () => {
                     label="Trạng thái"
                     name="status"
                     select
-                    SelectProps={{
-                    native: true }}
+                    SelectProps={{ native: true }}
                     value={selectedInvoice.status || 0}
                     disabled
                     margin="normal"
@@ -489,7 +612,7 @@ const AdminLayout = () => {
                   />
 
                   <Box className="mt-4 flex justify-end">
-                    <Button
+                    <MuiButton
                       onClick={() => {
                         setViewModalOpen(false);
                         setTickets([]);
@@ -497,7 +620,7 @@ const AdminLayout = () => {
                       variant="outlined"
                     >
                       Đóng
-                    </Button>
+                    </MuiButton>
                   </Box>
                 </>
               )}

@@ -25,4 +25,44 @@ const markInvoiceAsExpired = (invoiceId, selectedSeats, busId) => {
 };
 
 
-export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId, markInvoiceAsPaid, markInvoiceAsExpired };
+const handleFilterInvoices = (payload) => {
+  return axios.post(`/api/filter`, payload);
+};
+
+const getTicketsByInvoiceId = async (invoiceId) => {
+  try {
+    const response = await axios.get(`/api/admin/get-invoice-by-id/${invoiceId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.code === 1000) {
+      console.log(response.result)
+      return {
+        code: response.code,
+        result: response.result || [],
+      };
+    } else {
+      throw new Error(response.message || 'Lấy thông tin vé thất bại');
+    }
+  } catch (error) {
+    console.error('Lỗi khi gọi API getTicketsByInvoiceId:', error);
+  }
+};
+
+const changeTicket = async (ticketId, newTripId) => {
+  try {
+    const response = await axios.put(`/tickets/${ticketId}/change`, {
+      newTripId: newTripId,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+
+
+export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId, markInvoiceAsPaid,changeTicket, markInvoiceAsExpired,handleFilterInvoices,getTicketsByInvoiceId };
