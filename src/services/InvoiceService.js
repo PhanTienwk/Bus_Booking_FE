@@ -12,7 +12,6 @@ const handleGetInvoiceByUserId = (id) => {
   return axios.get(`/api/admin/get-invoice-by-userid?phone=${id}`);
 };
 
-
 const handleUpdateInvoiceStatus = (id, status) => {
   return axios.put(
     `/api/admin/update-invoice-status?id=${id}&status=${status}`
@@ -40,14 +39,17 @@ const markInvoiceAsExpired = (invoiceId, selectedSeats, busId) => {
   });
 };
 
+const handleGetBankList = (id) => {
+  return axios.get(`/https://api.vietqr.io/v2/banks`);
+};
+
 export {
+  handleGetBankList,
   handleAddBankDT,
   getAllInvoices,
   getAllInvoicesId,
   handleGetInvoiceByUserId,
   handleUpdateInvoiceStatus,
   markInvoiceAsPaid,
-  markInvoiceAsExpired
+  markInvoiceAsExpired,
 };
-
-
