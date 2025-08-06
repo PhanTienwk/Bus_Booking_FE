@@ -19,7 +19,8 @@ import {
 } from "antd";
 import { PlusSquareOutlined, FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import moment from "moment";
+// import moment from "moment";
+import moment from "moment-timezone";
 import { handleGetAllBusApi } from "../../services/BusService";
 import {
   handleGetAllBusRoute,
@@ -31,6 +32,7 @@ import {
   handleFilterBusTrips,
 } from "../../services/BusTripService";
 import FilterButtonBusTrip from "../../components/Button/FilterButtonTrip";
+
 export default function BusTripManage() {
   const [, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -267,9 +269,12 @@ export default function BusTripManage() {
       }
 
       // Tạo payload cho API
+      const departureTime7h = new Date(dataAdd.departureTime);
+      departureTime7h.setHours(departureTime7h.getHours() + 7);
+      const result = departureTime7h.toISOString();
       const payload = {
         busRouteId: parseInt(dataAdd.busRouteId),
-        departureTime: dataAdd.departureTime.toISOString(),
+        departureTime: result,
         costOperating: parseFloat(dataAdd.costOperating),
         costIncurred: parseFloat(dataAdd.costIncurred),
         price: parseInt(dataAdd.price),
@@ -339,10 +344,12 @@ export default function BusTripManage() {
         return;
       }
 
-      // Tạo payload cho API
+      const departureTime7h = new Date(selectedBusTrip.departureTime);
+      departureTime7h.setHours(departureTime7h.getHours() + 7);
+      const result = departureTime7h.toISOString();
       const payload = {
         busRouteId: parseInt(selectedBusTrip.busRouteId),
-        departureTime: selectedBusTrip.departureTime.toISOString(),
+        departureTime: result,
         costOperating: parseFloat(selectedBusTrip.costOperating),
         costIncurred: parseFloat(selectedBusTrip.costIncurred),
         price: parseInt(selectedBusTrip.price),
