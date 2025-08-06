@@ -134,8 +134,17 @@ const InforUserPage = () => {
       try {
         setIsLoading(true);
         const response = await getUserInfor();
+<<<<<<< HEAD
+=======
+
+        console.log("respone", response);
+>>>>>>> 5eb3d019180602e36e120ecaa0f3e8bc30ace60a
         const InvoicesRes = await handleGetInvoiceByUserId(response.result.id);
         //    const ticketRes = await handleGetTicketByPhone(response.result.phone);
+
+        const InvoicesRes = await handleGetInvoiceByUserId(
+          response.result.phone
+        );
 
         const responseBL = await axios.get("https://api.vietqr.io/v2/banks");
         if (responseBL.data.code === "00") {
