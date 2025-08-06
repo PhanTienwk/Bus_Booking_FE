@@ -25,15 +25,18 @@ const handleAddUser = (data) => {
     const response = axios.post("/api/create-user", data);
     return response;
   } catch (error) {
-    throw new Error(error?.errorMessage ||
-      error?.response?.data?.message ||
-      error?.message || 'Thêm người dùng thất bại.');
+    throw new Error(
+      error?.errorMessage ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Thêm người dùng thất bại."
+    );
   }
 };
 
 const getUserInfor = () => {
   return axios.get("/api/myinfouser");
-}
+};
 
 const updateUserInfor = async (formData) => {
   try {
@@ -44,7 +47,9 @@ const updateUserInfor = async (formData) => {
   } catch (error) {
     console.log(error);
     throw new Error(
-      error?.response?.data?.message || error?.message || "Cập nhật thông tin thất bại."
+      error?.response?.data?.message ||
+        error?.message ||
+        "Cập nhật thông tin thất bại."
     );
   }
 };
@@ -56,11 +61,12 @@ const updatePassword = async (formData) => {
   } catch (error) {
     console.log(error);
     throw new Error(
-      error?.response?.message || error?.message || "Cập nhật thông tin thất bại."
+      error?.response?.message ||
+        error?.message ||
+        "Cập nhật thông tin thất bại."
     );
   }
 };
-
 
 const handleAddDriver = async (data) => {
   try {
@@ -73,20 +79,22 @@ const handleAddDriver = async (data) => {
     formData.append("cccd", data.cccd);
     formData.append("phone", data.phone);
     formData.append("gender", data.gender);
-    formData.append("birthDate", data.birthDate); 
+    formData.append("birthDate", data.birthDate);
     formData.append("password", data.password);
     console.log("FormData contents:");
     for (let pair of formData.entries()) {
-       console.log(`${pair[0]}:`, pair[1]);
+      console.log(`${pair[0]}:`, pair[1]);
     }
     const response = await axios.post("/api/create-driver", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw new Error(
-      error?.response?.data?.message || error?.message || "Thêm tài xế thất bại."
+      error?.response?.data?.message ||
+        error?.message ||
+        "Thêm tài xế thất bại."
     );
   }
 };
@@ -123,7 +131,6 @@ const getAllBusRoutes = () => {
   return axios.get("/api/admin/list-bus-route");
 };
 
-
 const getAllBusTrips = () => {
   return axios.get("/api/admin/list-bus-trip");
 };
@@ -132,7 +139,7 @@ const getAllProvinces = () => {
   return axios.get("/api/admin/list-province");
 };
 
-export { 
+export {
   getAllUsers,
   getAllDrivers,
   updateUserById,
@@ -148,5 +155,5 @@ export {
   handleAddDriver,
   getUserInfor,
   updateUserInfor,
-  updatePassword
- };
+  updatePassword,
+};

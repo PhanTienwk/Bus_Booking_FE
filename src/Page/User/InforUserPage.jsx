@@ -8,7 +8,7 @@ import {
   updatePassword,
 } from "../../services/UserService";
 import { Table, Button, Modal, Input, Select } from "antd";
-import { handleGetTicketByPhone } from "../../services/ticketService";
+import { handleGetTicketByUserId } from "../../services/ticketService";
 import {
   handleGetInvoiceByUserId,
   handleUpdateInvoiceStatus,
@@ -60,10 +60,9 @@ const InforUserPage = () => {
       try {
         setIsLoading(true);
         const response = await getUserInfor();
-        const InvoicesRes = await handleGetInvoiceByUserId(
-          response.result.phone
-        );
-        const ticketRes = await handleGetTicketByPhone(response.result.phone);
+        console.log("respone", response);
+        const InvoicesRes = await handleGetInvoiceByUserId(response.result.id);
+        const ticketRes = await handleGetTicketByUserId(response.result.id);
 
         const responseBL = await axios.get("https://api.vietqr.io/v2/banks");
         if (responseBL.data.code === "00") {
@@ -543,13 +542,7 @@ const InforUserPage = () => {
       <div className="grid grid-cols-1 gap-4 text-sm text-gray-800">
         <div>
           <label className="block text-gray-500 mb-1">Tên ngân hàng:</label>
-          {console.log("bankList:", bankList)}
-          {console.log(
-            "Filtered banks:",
-            Array.isArray(bankList)
-              ? bankList.filter((bank) => bank.isTransfer === 1)
-              : []
-          )}
+
           <Select
             name="bankName"
             value={bankDetails.bankName.code}

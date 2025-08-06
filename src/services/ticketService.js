@@ -1,6 +1,6 @@
 import axios from "../axios";
-const handleGetTicketByPhone = (phone) => {
-  return axios.get(`/api/admin/get-ticket-by-phone?phone=${phone}`);
+const handleGetTicketByUserId = (id) => {
+  return axios.get(`/api/admin/get-ticket-by-idUser?id=${id}`);
 };
 
-export { handleGetTicketByPhone };
+export { handleGetTicketByUserId };
