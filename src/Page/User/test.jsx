@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUserInfor, updateUserInfor, updatePassword } from "../../services/UserService";
-import { handleGetInvoiceByUserId, getTicketsByInvoiceId, changeTicket } from "../../services/InvoiceService";
+import {
+  getUserInfor,
+  updateUserInfor,
+  updatePassword,
+} from "../../services/UserService";
+import {
+  handleGetInvoiceByUserId,
+  getTicketsByInvoiceId,
+  changeTicket,
+} from "../../services/InvoiceService";
 import { handleGetAllProvince } from "../../services/BusStationService";
 import { searchTripsByProvinces } from "../../services/HomeService";
 import { fetchSeatLayout } from "../../services/SeatSelectionService";
@@ -40,8 +48,10 @@ const InforUserPage = () => {
   });
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isTicketModalVisible, setIsTicketModalVisible] = useState(false);
-  const [isChangeTicketModalVisible, setIsChangeTicketModalVisible] = useState(false);
-  const [isSeatSelectionModalVisible, setIsSeatSelectionModalVisible] = useState(false);
+  const [isChangeTicketModalVisible, setIsChangeTicketModalVisible] =
+    useState(false);
+  const [isSeatSelectionModalVisible, setIsSeatSelectionModalVisible] =
+    useState(false);
   const [changeTicketId, setChangeTicketId] = useState(null);
   const [newBusId, setnewBusId] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
@@ -98,7 +108,6 @@ const InforUserPage = () => {
         handleOpenSnackBar("Lỗi khi lấy danh sách tỉnh thành!", "error");
       }
     };
-    
 
     fetchProvinces();
   }, []);
@@ -108,7 +117,9 @@ const InforUserPage = () => {
       try {
         setIsLoading(true);
         const response = await getUserInfor();
-        const invoicesRes = await handleGetInvoiceByUserId(response.result.phone);
+        const invoicesRes = await handleGetInvoiceByUserId(
+          response.result.phone
+        );
         if (response?.code === 1000) {
           const result = response.result;
           setUserInfo({
@@ -145,10 +156,12 @@ const InforUserPage = () => {
   // Tải sơ đồ ghế khi mở modal chọn ghế
   useEffect(() => {
     const getSeatLayout = async () => {
-      console.log(newBusId)
+      console.log(newBusId);
       if (newBusId) {
         try {
-          const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(newBusId);
+          const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(
+            newBusId
+          );
           setUpperSeats(upperSeats);
           setLowerSeats(lowerSeats);
           setBookedSeats(bookedSeats);
@@ -232,7 +245,10 @@ const InforUserPage = () => {
           confirmPassword: "",
         });
       } else {
-        handleOpenSnackBar(res.message || "Cập nhật mật khẩu thất bại!", "error");
+        handleOpenSnackBar(
+          res.message || "Cập nhật mật khẩu thất bại!",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Lỗi khi cập nhật mật khẩu:", error);
@@ -275,7 +291,10 @@ const InforUserPage = () => {
         handleOpenSnackBar("Cập nhật thông tin thành công!", "success");
         setIsEditing(false);
       } else {
-        handleOpenSnackBar(updateRes.message || "Cập nhật thông tin thất bại!", "error");
+        handleOpenSnackBar(
+          updateRes.message || "Cập nhật thông tin thất bại!",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
@@ -288,7 +307,10 @@ const InforUserPage = () => {
 
   const handleSearch = async () => {
     if (!departure || !destination || !departureDate) {
-      handleOpenSnackBar("Vui lòng chọn điểm đi, điểm đến và ngày đi!", "error");
+      handleOpenSnackBar(
+        "Vui lòng chọn điểm đi, điểm đến và ngày đi!",
+        "error"
+      );
       return;
     }
     try {
@@ -300,10 +322,15 @@ const InforUserPage = () => {
       );
       setTrips(response.result);
       setShowSearchResults(true);
-      setRouteTitle(`${departure.label} - ${destination.label} (${response.result.length})`);
+      setRouteTitle(
+        `${departure.label} - ${destination.label} (${response.result.length})`
+      );
     } catch (error) {
       console.error("Lỗi khi tìm kiếm chuyến xe:", error);
-      handleOpenSnackBar("Không tìm thấy chuyến xe. Vui lòng thử lại!", "error");
+      handleOpenSnackBar(
+        "Không tìm thấy chuyến xe. Vui lòng thử lại!",
+        "error"
+      );
     }
   };
 
@@ -314,7 +341,10 @@ const InforUserPage = () => {
     const minutes = Math.round((travelTime % 1) * 60);
     arrival.setHours(departure.getHours() + hours);
     arrival.setMinutes(departure.getMinutes() + minutes);
-    return arrival.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    return arrival.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   const handleTimeRangeFilter = (range) => {
@@ -352,60 +382,93 @@ const InforUserPage = () => {
   const getTripCountByTimeRange = (range) => {
     return trips.filter((trip) => {
       const departureHour = new Date(trip.departureTime).getHours();
-      if (range === "earlyMorning" && departureHour >= 0 && departureHour < 6) return true;
-      if (range === "morning" && departureHour >= 6 && departureHour < 12) return true;
-      if (range === "afternoon" && departureHour >= 12 && departureHour < 18) return true;
-      if (range === "evening" && departureHour >= 18 && departureHour <= 23) return true;
+      if (range === "earlyMorning" && departureHour >= 0 && departureHour < 6)
+        return true;
+      if (range === "morning" && departureHour >= 6 && departureHour < 12)
+        return true;
+      if (range === "afternoon" && departureHour >= 12 && departureHour < 18)
+        return true;
+      if (range === "evening" && departureHour >= 18 && departureHour <= 23)
+        return true;
       return false;
     }).length;
   };
 
   const getTripCountByFloor = (floor) => {
     return trips.filter((trip) => {
-      if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount)) return true;
-      if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount)) return true;
+      if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount))
+        return true;
+      if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount))
+        return true;
       return false;
     }).length;
   };
 
   const filterTrips = (trips) => {
-  return trips.filter((trip) => {
-    let passTimeFilter = true;
-    if (filters.timeRanges.length > 0) {
-      const departureHour = new Date(trip.departureTime).getHours();
-      passTimeFilter = filters.timeRanges.some((range) => {
-        if (range === "earlyMorning" && departureHour >= 0 && departureHour < 6) return true;
-        if (range === "morning" && departureHour >= 6 && departureHour < 12) return true;
-        if (range === "afternoon" && departureHour >= 12 && departureHour < 18) return true;
-        if (range === "evening" && departureHour >= 18 && departureHour <= 23) return true;
-        return false;
-      });
-    }
-    const passBusTypeFilter = filters.busTypes.length === 0 || filters.busTypes.includes(trip.bus.busType.name);
-    let passFloorFilter = true;
-    if (filters.floors.length > 0) {
-      if (filters.floors.includes("Tầng trên") && filters.floors.includes("Tầng dưới")) {
-        passFloorFilter = trip.countA + trip.countB >= parseInt(ticketCount);
-      } else {
-        passFloorFilter = filters.floors.some((floor) => {
-          if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount)) return true;
-          if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount)) return true;
+    return trips.filter((trip) => {
+      let passTimeFilter = true;
+      if (filters.timeRanges.length > 0) {
+        const departureHour = new Date(trip.departureTime).getHours();
+        passTimeFilter = filters.timeRanges.some((range) => {
+          if (
+            range === "earlyMorning" &&
+            departureHour >= 0 &&
+            departureHour < 6
+          )
+            return true;
+          if (range === "morning" && departureHour >= 6 && departureHour < 12)
+            return true;
+          if (
+            range === "afternoon" &&
+            departureHour >= 12 &&
+            departureHour < 18
+          )
+            return true;
+          if (range === "evening" && departureHour >= 18 && departureHour <= 23)
+            return true;
           return false;
         });
       }
-    } else {
-      passFloorFilter = trip.countA + trip.countB >= parseInt(ticketCount);
-    }
-    const passPriceFilter = currentTicketPrice === null || trip.price <= currentTicketPrice;
-    return passTimeFilter && passBusTypeFilter && passFloorFilter && passPriceFilter;
-  });
-};
+      const passBusTypeFilter =
+        filters.busTypes.length === 0 ||
+        filters.busTypes.includes(trip.bus.busType.name);
+      let passFloorFilter = true;
+      if (filters.floors.length > 0) {
+        if (
+          filters.floors.includes("Tầng trên") &&
+          filters.floors.includes("Tầng dưới")
+        ) {
+          passFloorFilter = trip.countA + trip.countB >= parseInt(ticketCount);
+        } else {
+          passFloorFilter = filters.floors.some((floor) => {
+            if (floor === "Tầng trên" && trip.countA >= parseInt(ticketCount))
+              return true;
+            if (floor === "Tầng dưới" && trip.countB >= parseInt(ticketCount))
+              return true;
+            return false;
+          });
+        }
+      } else {
+        passFloorFilter = trip.countA + trip.countB >= parseInt(ticketCount);
+      }
+      const passPriceFilter =
+        currentTicketPrice === null || trip.price <= currentTicketPrice;
+      return (
+        passTimeFilter &&
+        passBusTypeFilter &&
+        passFloorFilter &&
+        passPriceFilter
+      );
+    });
+  };
 
   const filteredTrips = filterTrips(trips);
 
   useEffect(() => {
     if (showSearchResults && departure && destination) {
-      setRouteTitle(`${departure.label} - ${destination.label} (${filteredTrips.length})`);
+      setRouteTitle(
+        `${departure.label} - ${destination.label} (${filteredTrips.length})`
+      );
     }
   }, [filteredTrips, departure, destination, showSearchResults]);
 
@@ -417,11 +480,17 @@ const InforUserPage = () => {
         setSelectedInvoice({ ...invoice, tickets: ticketRes.result || [] });
         setIsTicketModalVisible(true);
       } else {
-        handleOpenSnackBar(ticketRes?.message || "Lấy thông tin vé thất bại!", "error");
+        handleOpenSnackBar(
+          ticketRes?.message || "Lấy thông tin vé thất bại!",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Lỗi khi lấy thông tin vé:", error);
-      handleOpenSnackBar(error?.response?.data?.message || "Lỗi khi lấy thông tin vé!", "error");
+      handleOpenSnackBar(
+        error?.response?.data?.message || "Lỗi khi lấy thông tin vé!",
+        "error"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -435,12 +504,12 @@ const InforUserPage = () => {
   const handleChangeTicket = (ticketId) => {
     const ticket = selectedInvoice.tickets.find((t) => t.id === ticketId);
     if (ticket) {
-    setCurrentTicketPrice(ticket.invoice.busTrip.price || 0);
-    setChangeTicketId(ticketId);
-    setIsChangeTicketModalVisible(true);
-  } else {
-    handleOpenSnackBar("Không tìm thấy thông tin vé!", "error");
-  }
+      setCurrentTicketPrice(ticket.invoice.busTrip.price || 0);
+      setChangeTicketId(ticketId);
+      setIsChangeTicketModalVisible(true);
+    } else {
+      handleOpenSnackBar("Không tìm thấy thông tin vé!", "error");
+    }
   };
 
   const handleChangeTicketModalClose = () => {
@@ -469,68 +538,113 @@ const InforUserPage = () => {
   };
 
   const handleConfirmChangeTicket = async (trip) => {
-  if (!trip) {
-    handleOpenSnackBar("Không tìm thấy chuyến xe!", "error");
-    return;
-  }
-
-  if (trip.price > currentTicketPrice) {
-    handleOpenSnackBar("Chỉ được đổi vé có giá thấp hơn hoặc bằng giá vé hiện tại!", "error");
-    return;
-  }
-
-  setnewBusId(trip.id);
-  setIsSeatSelectionModalVisible(true);
-};
-
-  const handleConfirmSeatSelection = async () => {
-  if (selectedSeats.length === 0) {
-    handleOpenSnackBar("Vui lòng chọn một ghế!", "error");
-    return;
-  }
-  try {
-    setIsLoading(true);
-    const selectedTrip = trips.find(trip => trip.id === newBusId);
-    if (!selectedTrip) {
+    if (!trip) {
       handleOpenSnackBar("Không tìm thấy chuyến xe!", "error");
       return;
     }
-    const res = await changeTicket(changeTicketId, newBusId, selectedSeats, selectedTrip.price);
-    if (res.code === 1000) {
-      handleOpenSnackBar("Đổi vé thành công!", "success");
-      const ticketRes = await getTicketsByInvoiceId(selectedInvoice.id);
-      if (ticketRes?.code === 1000) {
-        setSelectedInvoice({ ...selectedInvoice, tickets: ticketRes.result || [] });
-      }
-      handleSeatSelectionModalClose();
-      handleChangeTicketModalClose();
-    } else {
-      handleOpenSnackBar(res.message || "Đổi vé thất bại!", "error");
+
+    if (trip.price > currentTicketPrice) {
+      handleOpenSnackBar(
+        "Chỉ được đổi vé có giá thấp hơn hoặc bằng giá vé hiện tại!",
+        "error"
+      );
+      return;
     }
-  } catch (error) {
-    console.error("Lỗi khi đổi vé:", error);
-    handleOpenSnackBar(error.message || "Lỗi khi đổi vé!", "error");
-  } finally {
-    setIsLoading(false);
-  }
-};
+
+    setnewBusId(trip.id);
+    setIsSeatSelectionModalVisible(true);
+  };
+
+  const handleConfirmSeatSelection = async () => {
+    if (selectedSeats.length === 0) {
+      handleOpenSnackBar("Vui lòng chọn một ghế!", "error");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const selectedTrip = trips.find((trip) => trip.id === newBusId);
+      if (!selectedTrip) {
+        handleOpenSnackBar("Không tìm thấy chuyến xe!", "error");
+        return;
+      }
+      const res = await changeTicket(
+        changeTicketId,
+        newBusId,
+        selectedSeats,
+        selectedTrip.price
+      );
+      if (res.code === 1000) {
+        handleOpenSnackBar("Đổi vé thành công!", "success");
+        const ticketRes = await getTicketsByInvoiceId(selectedInvoice.id);
+        if (ticketRes?.code === 1000) {
+          setSelectedInvoice({
+            ...selectedInvoice,
+            tickets: ticketRes.result || [],
+          });
+        }
+        handleSeatSelectionModalClose();
+        handleChangeTicketModalClose();
+      } else {
+        handleOpenSnackBar(res.message || "Đổi vé thất bại!", "error");
+      }
+    } catch (error) {
+      console.error("Lỗi khi đổi vé:", error);
+      handleOpenSnackBar(error.message || "Lỗi khi đổi vé!", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getColumns = () => {
     return [
       { title: "Mã Hóa đơn", dataIndex: "id", key: "id" },
-      { title: "Tên khách hàng", dataIndex: ["user", "name"], key: "userName", render: (text) => text || "Chưa xác định" },
-      { title: "Số điện thoại", dataIndex: ["user", "phone"], key: "userPhone", render: (text) => text || "Chưa xác định" },
-      { title: "Bến xe đi", dataIndex: ["busTrip", "busRoute", "busStationFrom", "name"], key: "busStationFrom", render: (text) => text || "Chưa xác định" },
-      { title: "Bến xe đến", dataIndex: ["busTrip", "busRoute", "busStationTo", "name"], key: "busStationTo", render: (text) => text || "Chưa xác định" },
+      {
+        title: "Tên khách hàng",
+        dataIndex: ["user", "name"],
+        key: "userName",
+        render: (text) => text || "Chưa xác định",
+      },
+      {
+        title: "Số điện thoại",
+        dataIndex: ["user", "phone"],
+        key: "userPhone",
+        render: (text) => text || "Chưa xác định",
+      },
+      {
+        title: "Bến xe đi",
+        dataIndex: ["busTrip", "busRoute", "busStationFrom", "name"],
+        key: "busStationFrom",
+        render: (text) => text || "Chưa xác định",
+      },
+      {
+        title: "Bến xe đến",
+        dataIndex: ["busTrip", "busRoute", "busStationTo", "name"],
+        key: "busStationTo",
+        render: (text) => text || "Chưa xác định",
+      },
       { title: "Số vé", dataIndex: "numberOfTickets", key: "numberOfTickets" },
-      { title: "Tổng tiền", dataIndex: "totalAmount", key: "totalAmount", render: (amount) => `${amount.toFixed(2)} VNĐ` },
-      { title: "Thời gian đặt", dataIndex: "timeOfBooking", key: "timeOfBooking", render: (text) => (text ? formatDateTime(text) : "Chưa xác định") },
+      {
+        title: "Tổng tiền",
+        dataIndex: "totalAmount",
+        key: "totalAmount",
+        render: (amount) => `${amount.toFixed(2)} VNĐ`,
+      },
+      {
+        title: "Thời gian đặt",
+        dataIndex: "timeOfBooking",
+        key: "timeOfBooking",
+        render: (text) => (text ? formatDateTime(text) : "Chưa xác định"),
+      },
       {
         title: "Phương thức thanh toán",
         dataIndex: "paymentMethod",
         key: "paymentMethod",
         render: (method) => {
-          const methods = { 0: "Chưa thanh toán", 2: "Thanh toán online", 5: "Tiền mặt" };
+          const methods = {
+            0: "Chưa thanh toán",
+            2: "Thanh toán online",
+            5: "Tiền mặt",
+          };
           return methods[method] || `Phương thức ${method}`;
         },
       },
@@ -538,7 +652,11 @@ const InforUserPage = () => {
         title: "Hành động",
         key: "action",
         render: (_, record) => (
-          <Button type="primary" onClick={() => handleViewTickets(record)} className="bg-[#ef5222] hover:bg-orange-600">
+          <Button
+            type="primary"
+            onClick={() => handleViewTickets(record)}
+            className="bg-[#ef5222] hover:bg-orange-600"
+          >
             Xem thông tin vé
           </Button>
         ),
@@ -548,21 +666,41 @@ const InforUserPage = () => {
 
   const ticketColumns = [
     { title: "Mã vé", dataIndex: "id", key: "id" },
-    { title: "Số ghế", dataIndex: "seatPosition", key: "seatNumber", render: (seatPosition) => seatPosition?.name || "Chưa xác định" },
-    { title: "Loại vé", dataIndex: ["invoice", "busTrip", "bus", "busType", "name"], key: "ticketType", render: (busTypeName) => busTypeName || "Thường" },
-    { title: "Giá vé", dataIndex: ["invoice", "busTrip", "price"], key: "price", render: (price) => `${(price || 0).toFixed(2)} VNĐ` },
+    {
+      title: "Số ghế",
+      dataIndex: "seatPosition",
+      key: "seatNumber",
+      render: (seatPosition) => seatPosition?.name || "Chưa xác định",
+    },
+    {
+      title: "Loại vé",
+      dataIndex: ["invoice", "busTrip", "bus", "busType", "name"],
+      key: "ticketType",
+      render: (busTypeName) => busTypeName || "Thường",
+    },
+    {
+      title: "Giá vé",
+      dataIndex: ["invoice", "busTrip", "price"],
+      key: "price",
+      render: (price) => `${(price || 0).toFixed(2)} VNĐ`,
+    },
     {
       title: "Thời gian khởi hành",
       dataIndex: ["invoice", "busTrip", "departureTime"],
       key: "departureTime",
-      render: (departureTime) => (departureTime ? formatDateTime(departureTime) : "Chưa xác định"),
+      render: (departureTime) =>
+        departureTime ? formatDateTime(departureTime) : "Chưa xác định",
     },
     {
       title: "Hành động",
       key: "action",
       render: (_, record) =>
         selectedInvoice?.status === 2 && record.status === 1 ? (
-          <Button type="primary" onClick={() => handleChangeTicket(record.id)} className="bg-[#ef5222] hover:bg-orange-600">
+          <Button
+            type="primary"
+            onClick={() => handleChangeTicket(record.id)}
+            className="bg-[#ef5222] hover:bg-orange-600"
+          >
             Đổi vé
           </Button>
         ) : null,
@@ -576,12 +714,23 @@ const InforUserPage = () => {
       <div>
         <h3 className="text-lg font-semibold mb-4">Chi tiết vé</h3>
         {tickets.length > 0 ? (
-          <Table columns={ticketColumns} dataSource={tickets} rowKey="id" pagination={false} className="border rounded-lg" />
+          <Table
+            columns={ticketColumns}
+            dataSource={tickets}
+            rowKey="id"
+            pagination={false}
+            className="border rounded-lg"
+          />
         ) : (
-          <p>Không có thông tin vé. Vui lòng liên hệ hỗ trợ để biết thêm chi tiết.</p>
+          <p>
+            Không có thông tin vé. Vui lòng liên hệ hỗ trợ để biết thêm chi
+            tiết.
+          </p>
         )}
         {selectedInvoice.status === 2 && (
-          <p className="mt-4 text-sm text-gray-500">Hóa đơn này đang ở trạng thái có thể đổi vé.</p>
+          <p className="mt-4 text-sm text-gray-500">
+            Hóa đơn này đang ở trạng thái có thể đổi vé.
+          </p>
         )}
       </div>
     );
@@ -642,9 +791,16 @@ const InforUserPage = () => {
               <div className="w-full md:w-1/3 bg-white rounded-xl shadow p-4 border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">BỘ LỌC TÌM KIẾM</h3>
-                  <button className="flex items-center text-red-500 text-base font-medium" onClick={handleClearFilters}>
+                  <button
+                    className="flex items-center text-red-500 text-base font-medium"
+                    onClick={handleClearFilters}
+                  >
                     Bỏ lọc
-                    <img src="/images/delete.svg" alt="Xóa bộ lọc" className="w-5 h-5 ml-1" />
+                    <img
+                      src="/images/delete.svg"
+                      alt="Xóa bộ lọc"
+                      className="w-5 h-5 ml-1"
+                    />
                   </button>
                 </div>
                 <div className="mb-4">
@@ -658,7 +814,8 @@ const InforUserPage = () => {
                         aria-label="Sáng sớm 00:00 - 06:00"
                       />
                       <span className="ml-2 text-[15px]">
-                        Sáng sớm 00:00 - 06:00 ({getTripCountByTimeRange("earlyMorning")})
+                        Sáng sớm 00:00 - 06:00 (
+                        {getTripCountByTimeRange("earlyMorning")})
                       </span>
                     </li>
                     <li>
@@ -669,7 +826,8 @@ const InforUserPage = () => {
                         aria-label="Buổi sáng 06:00 - 12:00"
                       />
                       <span className="ml-2 text-[15px]">
-                        Buổi sáng 06:00 - 12:00 ({getTripCountByTimeRange("morning")})
+                        Buổi sáng 06:00 - 12:00 (
+                        {getTripCountByTimeRange("morning")})
                       </span>
                     </li>
                     <li>
@@ -680,7 +838,8 @@ const InforUserPage = () => {
                         aria-label="Buổi chiều 12:00 - 18:00"
                       />
                       <span className="ml-2 text-[15px]">
-                        Buổi chiều 12:00 - 18:00 ({getTripCountByTimeRange("afternoon")})
+                        Buổi chiều 12:00 - 18:00 (
+                        {getTripCountByTimeRange("afternoon")})
                       </span>
                     </li>
                     <li>
@@ -691,7 +850,8 @@ const InforUserPage = () => {
                         aria-label="Buổi tối 18:00 - 24:00"
                       />
                       <span className="ml-2 text-[15px]">
-                        Buổi tối 18:00 - 24:00 ({getTripCountByTimeRange("evening")})
+                        Buổi tối 18:00 - 24:00 (
+                        {getTripCountByTimeRange("evening")})
                       </span>
                     </li>
                   </ul>
@@ -701,13 +861,21 @@ const InforUserPage = () => {
                   <p className="font-medium mb-2">Loại xe</p>
                   <div className="flex gap-2 flex-wrap">
                     <button
-                      className={`px-3 py-1 border rounded text-[15px] ${filters.busTypes.includes("Xe thường") ? "bg-[#EF5222] text-white" : ""}`}
+                      className={`px-3 py-1 border rounded text-[15px] ${
+                        filters.busTypes.includes("Xe thường")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
+                      }`}
                       onClick={() => handleBusTypeFilter("Xe thường")}
                     >
                       Thường
                     </button>
                     <button
-                      className={`px-3 py-1 border rounded text-[15px] ${filters.busTypes.includes("Limousine") ? "bg-[#EF5222] text-white" : ""}`}
+                      className={`px-3 py-1 border rounded text-[15px] ${
+                        filters.busTypes.includes("Limousine")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
+                      }`}
                       onClick={() => handleBusTypeFilter("Limousine")}
                     >
                       Limousine
@@ -719,13 +887,21 @@ const InforUserPage = () => {
                   <p className="font-medium mb-2">Tầng</p>
                   <div className="flex gap-2 flex-wrap">
                     <button
-                      className={`px-3 py-1 border rounded text-[15px] ${filters.floors.includes("Tầng trên") ? "bg-[#EF5222] text-white" : ""}`}
+                      className={`px-3 py-1 border rounded text-[15px] ${
+                        filters.floors.includes("Tầng trên")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
+                      }`}
                       onClick={() => handleFloorFilter("Tầng trên")}
                     >
                       Tầng trên ({getTripCountByFloor("Tầng trên")})
                     </button>
                     <button
-                      className={`px-3 py-1 border rounded text-[15px] ${filters.floors.includes("Tầng dưới") ? "bg-[#EF5222] text-white" : ""}`}
+                      className={`px-3 py-1 border rounded text-[15px] ${
+                        filters.floors.includes("Tầng dưới")
+                          ? "bg-[#EF5222] text-white"
+                          : ""
+                      }`}
                       onClick={() => handleFloorFilter("Tầng dưới")}
                     >
                       Tầng dưới ({getTripCountByFloor("Tầng dưới")})
@@ -735,51 +911,84 @@ const InforUserPage = () => {
               </div>
               <div className="w-full md:w-2/3">
                 <div className="bg-white">
-                  <h3 className="font-semibold text-xl mb-6">{routeTitle || "Vui lòng tìm kiếm chuyến xe"}</h3>
+                  <h3 className="font-semibold text-xl mb-6">
+                    {routeTitle || "Vui lòng tìm kiếm chuyến xe"}
+                  </h3>
                   {filteredTrips.length === 0 ? (
-                    <p className="text-center text-gray-500">Không tìm thấy chuyến xe phù hợp.</p>
+                    <p className="text-center text-gray-500">
+                      Không tìm thấy chuyến xe phù hợp.
+                    </p>
                   ) : (
                     filteredTrips.map((trip) => (
-                      <div key={trip.id} className="border border-gray-300 rounded-lg shadow-sm ring-1 ring-gray-100 px-5 py-4 mb-7">
+                      <div
+                        key={trip.id}
+                        className="border border-gray-300 rounded-lg shadow-sm ring-1 ring-gray-100 px-5 py-4 mb-7"
+                      >
                         <div className="flex justify-between items-start gap-6 mb-2">
                           <div className="flex items-center justify-between w-full gap-2">
                             <div className="flex flex-col items-start min-w-max">
                               <div className="flex items-center gap-2">
                                 <p className="text-2xl font-semibold">
-                                  {new Date(trip.departureTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                                  {new Date(
+                                    trip.departureTime
+                                  ).toLocaleTimeString("vi-VN", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
                                 </p>
-                                <img src="/images/pickup.svg" alt="Điểm đón" className="w-5 h-5" />
+                                <img
+                                  src="/images/pickup.svg"
+                                  alt="Điểm đón"
+                                  className="w-5 h-5"
+                                />
                                 <div
                                   className="h-[2px] w-[80px] ml-2"
                                   style={{
-                                    backgroundImage: "radial-gradient(circle, #9CA3AF 1.5px, transparent 1.5px)",
+                                    backgroundImage:
+                                      "radial-gradient(circle, #9CA3AF 1.5px, transparent 1.5px)",
                                     backgroundSize: "8px 2px",
                                     backgroundRepeat: "repeat-x",
                                   }}
                                 ></div>
                               </div>
-                              <p className="text-gray-500 text-[16px] mt-1">{trip.busRoute.busStationFrom.name}</p>
+                              <p className="text-gray-500 text-[16px] mt-1">
+                                {trip.busRoute.busStationFrom.name}
+                              </p>
                             </div>
                             <div className="text-center min-w-max">
-                              <p className="text-[15px] text-gray-500">{trip.busRoute.travelTime} giờ</p>
-                              <p className="text-sm text-gray-400">(Asia/Ho Chi Minh)</p>
+                              <p className="text-[15px] text-gray-500">
+                                {trip.busRoute.travelTime} giờ
+                              </p>
+                              <p className="text-sm text-gray-400">
+                                (Asia/Ho Chi Minh)
+                              </p>
                             </div>
                             <div className="flex flex-col items-end min-w-max">
                               <div className="flex items-center gap-2">
                                 <div
                                   className="h-[2px] w-[80px] mr-2"
                                   style={{
-                                    backgroundImage: "radial-gradient(circle, #9CA3AF 1.5px, transparent 1.5px)",
+                                    backgroundImage:
+                                      "radial-gradient(circle, #9CA3AF 1.5px, transparent 1.5px)",
                                     backgroundSize: "8px 2px",
                                     backgroundRepeat: "repeat-x",
                                   }}
                                 ></div>
-                                <img src="/images/station.svg" alt="Điểm đến" className="w-5 h-5" />
+                                <img
+                                  src="/images/station.svg"
+                                  alt="Điểm đến"
+                                  className="w-5 h-5"
+                                />
                                 <p className="text-2xl font-semibold ml-2">
-                                  {calculateArrivalTime(trip.departureTime, trip.busRoute.travelTime)}
+                                  {calculateArrivalTime(
+                                    trip.departureTime,
+                                    trip.busRoute.travelTime
+                                  )}
                                 </p>
                               </div>
-                              <p className="text-gray-500 text-[16px] mt-1">{trip.busRoute.busStationTo.name}</p>
+                              <p className="text-gray-500 text-[16px] mt-1">
+                                {trip.busRoute.busStationTo.name}
+                              </p>
                             </div>
                           </div>
                           <div className="flex flex-col items-end text-[16px] text-gray-600 mt-1 min-w-max">
@@ -787,11 +996,16 @@ const InforUserPage = () => {
                               <span className="text-xl leading-none">•</span>
                               <span>{trip.bus.busType.name}</span>
                               <span className="text-xl leading-none">•</span>
-                              <span style={{ color: "#00613d" }} className="font-semibold">
+                              <span
+                                style={{ color: "#00613d" }}
+                                className="font-semibold"
+                              >
                                 {trip.count} chỗ trống
                               </span>
                             </div>
-                            <span className="text-red-500 font-semibold mt-1 text-[19px]">{trip.price.toLocaleString("vi-VN")}đ</span>
+                            <span className="text-red-500 font-semibold mt-1 text-[19px]">
+                              {trip.price.toLocaleString("vi-VN")}đ
+                            </span>
                           </div>
                         </div>
                         <hr className="my-4 border-t border-gray-300" />
@@ -850,7 +1064,9 @@ const InforUserPage = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-6 ml-2">
             <div>
-              <h4 className="text-sm font-semibold mb-4 text-center">Tầng trên</h4>
+              <h4 className="text-sm font-semibold mb-4 text-center">
+                Tầng trên
+              </h4>
               <div className="grid grid-cols-3 gap-2">
                 {upperSeats.map((seat) => (
                   <div key={seat} className="flex flex-col items-center">
@@ -866,7 +1082,11 @@ const InforUserPage = () => {
                       className="w-8 h-8 cursor-pointer"
                       onClick={() =>
                         !bookedSeats.includes(seat) &&
-                        handleSeatSelection(seat, selectedSeats, setSelectedSeats)
+                        handleSeatSelection(
+                          seat,
+                          selectedSeats,
+                          setSelectedSeats
+                        )
                       }
                     />
                     <span className="text-[13px] mt-1">{seat}</span>
@@ -875,7 +1095,9 @@ const InforUserPage = () => {
               </div>
             </div>
             <div>
-              <h4 className="text-sm font-semibold mb-4 text-center">Tầng dưới</h4>
+              <h4 className="text-sm font-semibold mb-4 text-center">
+                Tầng dưới
+              </h4>
               <div className="grid grid-cols-3 gap-2">
                 {lowerSeats.map((seat) => (
                   <div key={seat} className="flex flex-col items-center">
@@ -891,7 +1113,11 @@ const InforUserPage = () => {
                       className="w-8 h-8 cursor-pointer"
                       onClick={() =>
                         !bookedSeats.includes(seat) &&
-                        handleSeatSelection(seat, selectedSeats, setSelectedSeats)
+                        handleSeatSelection(
+                          seat,
+                          selectedSeats,
+                          setSelectedSeats
+                        )
                       }
                     />
                     <span className="text-[13px] mt-1">{seat}</span>
@@ -924,7 +1150,9 @@ const InforUserPage = () => {
             </div>
             <div className="flex justify-between mb-2">
               <span>Số ghế</span>
-              <span className="font-medium">{selectedSeats.join(", ") || "-"}</span>
+              <span className="font-medium">
+                {selectedSeats.join(", ") || "-"}
+              </span>
             </div>
           </div>
         </div>
@@ -939,16 +1167,39 @@ const InforUserPage = () => {
     if (activeSection === "account") {
       return (
         <div className="md:col-span-5">
-          <h2 className="text-xl font-bold text-gray-800 mb-1">Thông tin tài khoản</h2>
-          <p className="text-sm text-gray-500 mb-6">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+          <h2 className="text-xl font-bold text-gray-800 mb-1">
+            Thông tin tài khoản
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Quản lý thông tin hồ sơ để bảo mật tài khoản
+          </p>
           <div className="bg-white rounded-xl p-6 border">
             <div className="flex justify-center mb-6 relative">
-              <img src={avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-2 border-gray-300" />
+              <img
+                src={avatar}
+                alt="Avatar"
+                className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
+              />
               {isEditing && (
                 <label className="absolute bottom-0 right-0 bg-[#ef5222] text-white p-2 rounded-full cursor-pointer">
-                  <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
                   </svg>
                 </label>
               )}
@@ -990,11 +1241,15 @@ const InforUserPage = () => {
                     className="w-full border border-gray-300 rounded-lg px-4 py-2"
                   />
                 ) : (
-                  <p className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100">{formatDate(userInfo.birthDate)}</p>
+                  <p className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100">
+                    {formatDate(userInfo.birthDate)}
+                  </p>
                 )}
               </div>
               <div>
-                <label className="block text-gray-500 mb-1">Số điện thoại:</label>
+                <label className="block text-gray-500 mb-1">
+                  Số điện thoại:
+                </label>
                 <input
                   type="text"
                   name="phone"
@@ -1019,15 +1274,24 @@ const InforUserPage = () => {
             <div className="flex justify-center mt-8">
               {isEditing ? (
                 <div className="flex gap-4">
-                  <button onClick={handleSave} className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition">
+                  <button
+                    onClick={handleSave}
+                    className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition"
+                  >
                     Lưu
                   </button>
-                  <button onClick={handleEditToggle} className="bg-gray-300 text-gray-800 px-6 py-2 rounded-full font-medium hover:bg-gray-400 transition">
+                  <button
+                    onClick={handleEditToggle}
+                    className="bg-gray-300 text-gray-800 px-6 py-2 rounded-full font-medium hover:bg-gray-400 transition"
+                  >
                     Hủy
                   </button>
                 </div>
               ) : (
-                <button onClick={handleEditToggle} className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition">
+                <button
+                  onClick={handleEditToggle}
+                  className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition"
+                >
                   Chỉnh sửa
                 </button>
               )}
@@ -1038,12 +1302,18 @@ const InforUserPage = () => {
     } else if (activeSection === "reset-password") {
       return (
         <div className="md:col-span-5">
-          <h2 className="text-xl font-bold text-gray-800 mb-1">Đặt lại mật khẩu</h2>
-          <p className="text-sm text-gray-500 mb-6">Thay đổi mật khẩu để tăng cường bảo mật tài khoản</p>
+          <h2 className="text-xl font-bold text-gray-800 mb-1">
+            Đặt lại mật khẩu
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Thay đổi mật khẩu để tăng cường bảo mật tài khoản
+          </p>
           <div className="bg-white rounded-xl p-6 border">
             <div className="grid grid-cols-1 gap-4 text-sm text-gray-800">
               <div>
-                <label className="block text-gray-500 mb-1">Mật khẩu hiện tại:</label>
+                <label className="block text-gray-500 mb-1">
+                  Mật khẩu hiện tại:
+                </label>
                 <input
                   type="password"
                   name="currentPassword"
@@ -1054,7 +1324,9 @@ const InforUserPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-gray-500 mb-1">Mật khẩu mới:</label>
+                <label className="block text-gray-500 mb-1">
+                  Mật khẩu mới:
+                </label>
                 <input
                   type="password"
                   name="newPassword"
@@ -1065,7 +1337,9 @@ const InforUserPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-gray-500 mb-1">Xác nhận mật khẩu mới:</label>
+                <label className="block text-gray-500 mb-1">
+                  Xác nhận mật khẩu mới:
+                </label>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -1090,10 +1364,28 @@ const InforUserPage = () => {
     } else if (activeSection === "history-ticket") {
       return (
         <div className="md:col-span-5">
-          <h2 className="text-xl font-bold text-gray-800 mb-1">Lịch sử vé xe</h2>
-          <p className="text-sm text-gray-500 mb-6">Danh sách các hóa đơn đặt vé của bạn</p>
-          <Table columns={getColumns()} dataSource={invoices} rowKey="id" pagination={{ pageSize: 5 }} />
-          <Modal title="Thông tin vé" open={isTicketModalVisible} onCancel={handleTicketModalClose} footer={[<Button key="close" onClick={handleTicketModalClose}>Đóng</Button>]}>
+          <h2 className="text-xl font-bold text-gray-800 mb-1">
+            Lịch sử vé xe
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Danh sách các hóa đơn đặt vé của bạn
+          </p>
+          <Table
+            columns={getColumns()}
+            dataSource={invoices}
+            rowKey="id"
+            pagination={{ pageSize: 5 }}
+          />
+          <Modal
+            title="Thông tin vé"
+            open={isTicketModalVisible}
+            onCancel={handleTicketModalClose}
+            footer={[
+              <Button key="close" onClick={handleTicketModalClose}>
+                Đóng
+              </Button>,
+            ]}
+          >
             {renderTicketDetails()}
           </Modal>
           {renderChangeTicketModal()}
@@ -1113,50 +1405,94 @@ const InforUserPage = () => {
             <button
               onClick={() => setActiveSection("account")}
               className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition ${
-                activeSection === "account" ? "text-orange-600 bg-[#FFF3E0] hover:bg-[#FFE0B2]" : "text-gray-600 hover:text-orange-500"
+                activeSection === "account"
+                  ? "text-orange-600 bg-[#FFF3E0] hover:bg-[#FFE0B2]"
+                  : "text-gray-600 hover:text-orange-500"
               }`}
             >
-              <img src="/images/infor_user.svg" className="w-7 h-7" alt="Thông tin" />
+              <img
+                src="/images/infor_user.svg"
+                className="w-7 h-7"
+                alt="Thông tin"
+              />
               Thông tin tài khoản
             </button>
             <button
               onClick={() => setActiveSection("reset-password")}
               className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition ${
-                activeSection === "reset-password" ? "text-orange-600 bg-[#FFF3E0] hover:bg-[#FFE0B2]" : "text-gray-600 hover:text-orange-500"
+                activeSection === "reset-password"
+                  ? "text-orange-600 bg-[#FFF3E0] hover:bg-[#FFE0B2]"
+                  : "text-gray-600 hover:text-orange-500"
               }`}
             >
-              <img src="/images/change_password.svg" className="w-7 h-7" alt="Mật khẩu" />
+              <img
+                src="/images/change_password.svg"
+                className="w-7 h-7"
+                alt="Mật khẩu"
+              />
               Đặt lại mật khẩu
             </button>
             <button
               onClick={() => setActiveSection("history-ticket")}
               className={`flex items-center gap-2 font-semibold px-4 py-2 rounded-lg transition ${
-                activeSection === "history-ticket" ? "text-orange-600 bg-[#FFF3E0] hover:bg-[#FFE0B2]" : "text-gray-600 hover:text-orange-500"
+                activeSection === "history-ticket"
+                  ? "text-orange-600 bg-[#FFF3E0] hover:bg-[#FFE0B2]"
+                  : "text-gray-600 hover:text-orange-500"
               }`}
             >
-              <img src="/images/history.svg" className="w-7 h-7" alt="Lịch sử" />
+              <img
+                src="/images/history.svg"
+                className="w-7 h-7"
+                alt="Lịch sử"
+              />
               Lịch sử vé xe
             </button>
           </div>
           {renderSection()}
         </div>
         {showLogoutConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onClick={() => setShowLogoutConfirm(false)}>
-            <div className="bg-white rounded-xl p-6 shadow-xl max-w-md text-center transform -translate-y-20" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
+            onClick={() => setShowLogoutConfirm(false)}
+          >
+            <div
+              className="bg-white rounded-xl p-6 shadow-xl max-w-md text-center transform -translate-y-20"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex justify-center mb-4">
                 <div className="bg-green-100 rounded-full p-3">
-                  <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-6 h-6 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Bạn có chắc muốn đăng xuất?</h3>
-              <p className="text-gray-500 text-sm mb-6">Nếu bạn đăng xuất, phiên làm việc hiện tại sẽ kết thúc.</p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                Bạn có chắc muốn đăng xuất?
+              </h3>
+              <p className="text-gray-500 text-sm mb-6">
+                Nếu bạn đăng xuất, phiên làm việc hiện tại sẽ kết thúc.
+              </p>
               <div className="flex justify-center gap-4">
-                <button onClick={() => setShowLogoutConfirm(false)} className="px-5 py-1 rounded-md border border-gray-300 hover:bg-gray-100 transition font-medium">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="px-5 py-1 rounded-md border border-gray-300 hover:bg-gray-100 transition font-medium"
+                >
                   Hủy
                 </button>
-                <button onClick={handleLogout} className="px-5 py-1 rounded-md bg-[#6366f1] text-white hover:bg-indigo-600 transition font-medium">
+                <button
+                  onClick={handleLogout}
+                  className="px-5 py-1 rounded-md bg-[#6366f1] text-white hover:bg-indigo-600 transition font-medium"
+                >
                   Đăng xuất
                 </button>
               </div>
@@ -1164,8 +1500,16 @@ const InforUserPage = () => {
           </div>
         )}
       </section>
-      <Snackbar open={snackBar.open} autoHideDuration={3000} onClose={handleCloseSnackBar}>
-        <Alert onClose={handleCloseSnackBar} severity={snackBar.severity} sx={{ width: "100%" }}>
+      <Snackbar
+        open={snackBar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackBar}
+      >
+        <Alert
+          onClose={handleCloseSnackBar}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackBar.message}
         </Alert>
       </Snackbar>

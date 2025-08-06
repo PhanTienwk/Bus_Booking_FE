@@ -4,6 +4,7 @@ import { DownOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom"; // Để điều hướng
 import { getUserInfor } from "../services/UserService";
 import "./Header2.css";
+import { ExpandAltOutlined } from "@ant-design/icons";
 const HomePage = () => {
   const [avatar, setAvatar] = useState("/images/avatar.jpg");
   const [userInfo, setUserInfo] = useState({
@@ -21,7 +22,6 @@ const HomePage = () => {
       try {
         const response = await getUserInfor(); // Gọi API
 
-        console.log("respon", response);
         if (response?.code === 1000) {
           const result = response.result;
           setUserInfo({
@@ -58,13 +58,13 @@ const HomePage = () => {
     {
       key: "2",
       label: "Hồ sơ",
-      extra: "⌘P",
+
       onClick: () => handleNavigateProfile(),
     },
     {
       key: "3",
       label: "Hóa đơn",
-      extra: "⌘B",
+      // extra: "⌘B",
     },
     {
       key: "4",
@@ -73,7 +73,7 @@ const HomePage = () => {
           <i className="fas fa-sign-out-alt"></i> Đăng xuất
         </span>
       ),
-      extra: "⌘D",
+
       onClick: () => handleLogOut(),
     },
   ];
@@ -84,7 +84,11 @@ const HomePage = () => {
   };
 
   const handleLogOut = () => {
-    // Xóa thông tin người dùng hoặc token (ví dụ)
+    // Clear localStorage or sessionStorage (e.g., remove token)
+    localStorage.removeItem("token"); // Adjust key name based on your app
+    sessionStorage.removeItem("token"); // If using sessionStorage
+
+    // Reset userInfo state
     setUserInfo({
       name: "",
       gender: "1",
@@ -94,7 +98,11 @@ const HomePage = () => {
       cccd: "",
       avatar: "",
     });
+
+    // Reset avatar state
     setAvatar("/images/avatar.jpg");
+
+    // Redirect to login page
     navigate("/login");
   };
 
@@ -146,12 +154,15 @@ const HomePage = () => {
               <a href="/">Liên hệ</a>
               <a href="/">Về chúng tôi</a>
             </nav>
-            {userInfo ? (
+            {userInfo.phone ? (
               <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 rounded-full">
                 <UserDropdown />
               </button>
             ) : (
-              <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 rounded-full">
+              <button
+                className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 rounded-full"
+                onClick={() => handleLogOut()}
+              >
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
