@@ -98,6 +98,8 @@ const InforUserPage = () => {
         handleOpenSnackBar("Lỗi khi lấy danh sách tỉnh thành!", "error");
       }
     };
+    
+
     fetchProvinces();
   }, []);
 
@@ -477,36 +479,41 @@ const InforUserPage = () => {
     return;
   }
 
-  setnewBusId(trip.bus.id);
+  setnewBusId(trip.id);
   setIsSeatSelectionModalVisible(true);
 };
 
   const handleConfirmSeatSelection = async () => {
-    if (selectedSeats.length === 0) {
-      handleOpenSnackBar("Vui lòng chọn một ghế!", "error");
+  if (selectedSeats.length === 0) {
+    handleOpenSnackBar("Vui lòng chọn một ghế!", "error");
+    return;
+  }
+  try {
+    setIsLoading(true);
+    const selectedTrip = trips.find(trip => trip.id === newBusId);
+    if (!selectedTrip) {
+      handleOpenSnackBar("Không tìm thấy chuyến xe!", "error");
       return;
     }
-    try {
-      setIsLoading(true);
-      const res = await changeTicket(changeTicketId, newBusId, selectedSeats);
-      if (res.code === 1000) {
-        handleOpenSnackBar("Đổi vé thành công!", "success");
-        const ticketRes = await getTicketsByInvoiceId(selectedInvoice.id);
-        if (ticketRes?.code === 1000) {
-          setSelectedInvoice({ ...selectedInvoice, tickets: ticketRes.result || [] });
-        }
-        handleSeatSelectionModalClose();
-        handleChangeTicketModalClose();
-      } else {
-        handleOpenSnackBar(res.message || "Đổi vé thất bại!", "error");
+    const res = await changeTicket(changeTicketId, newBusId, selectedSeats, selectedTrip.price);
+    if (res.code === 1000) {
+      handleOpenSnackBar("Đổi vé thành công!", "success");
+      const ticketRes = await getTicketsByInvoiceId(selectedInvoice.id);
+      if (ticketRes?.code === 1000) {
+        setSelectedInvoice({ ...selectedInvoice, tickets: ticketRes.result || [] });
       }
-    } catch (error) {
-      console.error("Lỗi khi đổi vé:", error);
-      handleOpenSnackBar(error?.response?.data?.message || "Lỗi khi đổi vé!", "error");
-    } finally {
-      setIsLoading(false);
+      handleSeatSelectionModalClose();
+      handleChangeTicketModalClose();
+    } else {
+      handleOpenSnackBar(res.message || "Đổi vé thất bại!", "error");
     }
-  };
+  } catch (error) {
+    console.error("Lỗi khi đổi vé:", error);
+    handleOpenSnackBar(error.message || "Lỗi khi đổi vé!", "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const getColumns = () => {
     return [

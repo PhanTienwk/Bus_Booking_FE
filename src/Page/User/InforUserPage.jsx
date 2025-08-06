@@ -63,7 +63,7 @@ const InforUserPage = () => {
         const InvoicesRes = await handleGetInvoiceByUserId(
           response.result.phone
         );
-        const ticketRes = await handleGetTicketByPhone(response.result.phone);
+        // const ticketRes = await handleGetTicketByPhone(response.result.phone);
 
         const responseBL = await axios.get("https://api.vietqr.io/v2/banks");
         if (responseBL.data.code === "00") {
@@ -89,11 +89,11 @@ const InforUserPage = () => {
           handleOpenSnackBar("Lấy thông tin người dùng thất bại!", "error");
         }
 
-        if (ticketRes?.code === 1000) {
-          setTicket(ticketRes.result || []);
-        } else {
-          handleOpenSnackBar("Lấy danh sách vé thất bại!", "error");
-        }
+        // if (ticketRes?.code === 1000) {
+        //   setTicket(ticketRes.result || []);
+        // } else {
+        //   handleOpenSnackBar("Lấy danh sách vé thất bại!", "error");
+        // }
 
         if (InvoicesRes?.code === 1000) {
           setInvoice(InvoicesRes.result || []);

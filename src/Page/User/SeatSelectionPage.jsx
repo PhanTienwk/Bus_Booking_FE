@@ -40,7 +40,7 @@ const SeatSelectionPage = () => {
     const getSeatLayout = async () => {
       try {
         const { upperSeats, lowerSeats, bookedSeats } = await fetchSeatLayout(
-          tripDetails.bus.id
+          tripDetails.id
         );
         setUpperSeats(upperSeats);
         setLowerSeats(lowerSeats);

@@ -69,14 +69,17 @@ const getTicketsByInvoiceId = async (invoiceId) => {
   }
 };
 
-const changeTicket = async (ticketId, newTripId) => {
+const changeTicket = async (ticketId, busTripId, seatPositions, price) => {
   try {
-    const response = await axios.put(`/tickets/${ticketId}/change`, {
-      newTripId: newTripId,
+    const response = await axios.put(`/api/tickets/${ticketId}/change`, {
+      ticketId,
+      busTripId,
+      seatPosition: seatPositions[0], 
+      price,
     });
-    return response.data;
+    return response;
   } catch (error) {
-    throw error;
+    throw error.response?.code || { message: "Lỗi khi đổi vé!" };
   }
 };
 
