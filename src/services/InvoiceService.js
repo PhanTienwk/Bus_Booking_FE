@@ -9,7 +9,7 @@ const getAllInvoicesId = (id) => {
 };
 
 const handleGetInvoiceByUserId = (id) => {
-  return axios.get(`/api/admin/get-invoice-by-userid?phone=${id}`);
+  return axios.get(`/api/admin/get-invoice-by-userid?id=${id}`);
 };
 
 const handleUpdateInvoiceStatus = (id, status) => {
@@ -49,23 +49,26 @@ const handleFilterInvoices = (payload) => {
 
 const getTicketsByInvoiceId = async (invoiceId) => {
   try {
-    const response = await axios.get(`/api/admin/get-invoice-by-id/${invoiceId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await axios.get(
+      `/api/admin/get-invoice-by-id/${invoiceId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (response.code === 1000) {
-      console.log(response.result)
+      console.log(response.result);
       return {
         code: response.code,
         result: response.result || [],
       };
     } else {
-      throw new Error(response.message || 'Lấy thông tin vé thất bại');
+      throw new Error(response.message || "Lấy thông tin vé thất bại");
     }
   } catch (error) {
-    console.error('Lỗi khi gọi API getTicketsByInvoiceId:', error);
+    console.error("Lỗi khi gọi API getTicketsByInvoiceId:", error);
   }
 };
 
@@ -82,9 +85,6 @@ const changeTicket = async (ticketId, busTripId, seatPositions, price) => {
     throw error.response?.code || { message: "Lỗi khi đổi vé!" };
   }
 };
-
-
-
 
 export {
   handleGetBankList,
