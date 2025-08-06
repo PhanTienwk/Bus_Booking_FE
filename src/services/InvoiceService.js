@@ -43,7 +43,6 @@ const handleGetBankList = (id) => {
   return axios.get(`/https://api.vietqr.io/v2/banks`);
 };
 
-<<<<<<< HEAD
 const handleFilterInvoices = (payload) => {
   return axios.post(`/api/filter`, payload);
 };
@@ -84,8 +83,6 @@ const changeTicket = async (ticketId, newTripId) => {
 
 
 
-export { getAllInvoices, getAllInvoicesId, handleGetInvoiceByUserId, markInvoiceAsPaid,changeTicket, markInvoiceAsExpired,handleFilterInvoices,getTicketsByInvoiceId };
-=======
 export {
   handleGetBankList,
   handleAddBankDT,
@@ -95,5 +92,7 @@ export {
   handleUpdateInvoiceStatus,
   markInvoiceAsPaid,
   markInvoiceAsExpired,
+  changeTicket,
+  getTicketsByInvoiceId,
+  handleFilterInvoices,
 };
->>>>>>> 013dfd4c1075a8e8b830e291d03e3557ec714368
