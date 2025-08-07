@@ -306,12 +306,12 @@ const HomePage = () => {
 
         <section className="bg-white relative">
           <div className="max-w-6xl mx-auto mt-6 mb-3 rounded-xl border-[8px] border-[#AA2E081A] shadow-sm">
-            <div className="rounded-[0.4rem] border border-[#EF5222]">
+            <div className="rounded-[0.4rem] border border-[#2474e5]">
               <div className="flex justify-between items-center mb-4 pt-6 md:px-8">
-                <div className="flex gap-6 text-base text-[#EF5222]">
+                <div className="flex gap-6 text-base text-[#2474e5]">
                   <label
                     className={`flex items-center gap-1 ${
-                      tripType === "oneway" ? "text-[#EF5222]" : "text-gray-500"
+                      tripType === "oneway" ? "text-[#2474e5]" : "text-gray-500"
                     }`}
                   >
                     <input
@@ -320,7 +320,7 @@ const HomePage = () => {
                       value="oneway"
                       checked={tripType === "oneway"}
                       onChange={(e) => setTripType(e.target.value)}
-                      className="accent-[#EF5222]"
+                      className="accent-[#2474e5]"
                     />
                     Một chiều
                   </label>
@@ -328,7 +328,7 @@ const HomePage = () => {
                   <label
                     className={`flex items-center gap-1 ${
                       tripType === "roundtrip"
-                        ? "text-[#EF5222]"
+                        ? "text-[#2474e5]"
                         : "text-gray-500"
                     }`}
                   >
@@ -338,12 +338,12 @@ const HomePage = () => {
                       value="roundtrip"
                       checked={tripType === "roundtrip"}
                       onChange={(e) => setTripType(e.target.value)}
-                      className="accent-[#EF5222]"
+                      className="accent-[#2474e5]"
                     />
                     Khứ hồi
                   </label>
                 </div>
-                <a href="/" className="text-base text-[#EF5222]">
+                <a href="/" className="text-base text-[#2474e5]">
                   Hướng dẫn mua vé
                 </a>
               </div>
@@ -475,7 +475,7 @@ const HomePage = () => {
           <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[40%] z-10">
             <button
               onClick={handleSearch}
-              className="bg-[#EF5222] text-white px-[77px] py-3 rounded-full font-semibold hover:brightness-105 shadow-lg"
+              className="bg-[#2474e5] text-white px-[77px] py-3 rounded-full font-semibold hover:brightness-105 shadow-lg"
               aria-label="Tìm kiếm chuyến xe"
             >
               Tìm chuyến xe
@@ -698,7 +698,7 @@ const HomePage = () => {
                         <button
                           className={`px-3 py-1 border rounded text-[15px] ${
                             filters.busTypes.includes("Xe thường")
-                              ? "bg-[#EF5222] text-white"
+                              ? "bg-[#2474e5] text-white"
                               : ""
                           }`}
                           onClick={() => handleBusTypeFilter("Xe thường")}
@@ -708,7 +708,7 @@ const HomePage = () => {
                         <button
                           className={`px-3 py-1 border rounded text-[15px] ${
                             filters.busTypes.includes("Limousine")
-                              ? "bg-[#EF5222] text-white"
+                              ? "bg-[#2474e5] text-white"
                               : ""
                           }`}
                           onClick={() => handleBusTypeFilter("Limousine")}
@@ -726,7 +726,7 @@ const HomePage = () => {
                         <button
                           className={`px-3 py-1 border rounded text-[15px] ${
                             filters.floors.includes("Tầng trên")
-                              ? "bg-[#EF5222] text-white"
+                              ? "bg-[#2474e5] text-white"
                               : ""
                           }`}
                           onClick={() => handleFloorFilter("Tầng trên")}
@@ -736,7 +736,7 @@ const HomePage = () => {
                         <button
                           className={`px-3 py-1 border rounded text-[15px] ${
                             filters.floors.includes("Tầng dưới")
-                              ? "bg-[#EF5222] text-white"
+                              ? "bg-[#2474e5] text-white"
                               : ""
                           }`}
                           onClick={() => handleFloorFilter("Tầng dưới")}
@@ -755,7 +755,7 @@ const HomePage = () => {
                         {routeTitle || "Vui lòng tìm kiếm chuyến xe"}
                       </h3>
                       <div className="flex gap-2">
-                        <button className="flex items-center gap-1 bg-[#fef6f3] border border-orange-300 text-[#EF5222] rounded px-2 py-1 text-base">
+                        <button className="flex items-center gap-1 bg-[#fef6f3] border border-orange-300 text-[#2474e5] rounded px-2 py-1 text-base">
                           <img
                             src="/images/save-money.png"
                             alt="Giá rẻ bất ngờ"
@@ -763,7 +763,7 @@ const HomePage = () => {
                           />
                           Giá rẻ bất ngờ
                         </button>
-                        <button className="flex items-center gap-1 bg-[#fef6f3] border border-orange-300 text-[#EF5222] rounded px-2 py-1 text-base">
+                        <button className="flex items-center gap-1 bg-[#fef6f3] border border-orange-300 text-[#2474e5] rounded px-2 py-1 text-base">
                           <img
                             src="/images/time.png"
                             alt="Giờ khởi hành"
@@ -771,7 +771,7 @@ const HomePage = () => {
                           />
                           Giờ khởi hành
                         </button>
-                        <button className="flex items-center gap-1 bg-[#fef6f3] border border-orange-300 text-[#EF5222] rounded px-2 py-1 text-base">
+                        <button className="flex items-center gap-1 bg-[#fef6f3] border border-orange-300 text-[#2474e5] rounded px-2 py-1 text-base">
                           <img
                             src="/images/car-seat.png"
                             alt="Ghế trống"
@@ -788,7 +788,7 @@ const HomePage = () => {
                           <button
                             className={`flex-1 text-center py-3 ${
                               selectedTab === "departure"
-                                ? "text-[#EF5222] border-b-[3px] border-[#EF5222]"
+                                ? "text-[#2474e5] border-b-[3px] border-[#2474e5]"
                                 : "text-gray-800"
                             } uppercase text-base tracking-wide`}
                             onClick={() => setSelectedTab("departure")}
@@ -801,7 +801,7 @@ const HomePage = () => {
                           <button
                             className={`flex-1 text-center py-3 ${
                               selectedTab === "return"
-                                ? "text-[#EF5222] border-b-[3px] border-[#EF5222]"
+                                ? "text-[#2474e5] border-b-[3px] border-[#2474e5]"
                                 : "text-gray-800"
                             } uppercase text-base tracking-wide`}
                             onClick={() => setSelectedTab("return")}
@@ -956,7 +956,7 @@ const HomePage = () => {
             <section className="bg-white py-10">
               <div className="max-w-6xl mx-auto px-4">
                 <h2 className="text-3xl font-bold text-green-800 text-center mb-2">
-                  FUTA BUS LINES – CHẤT LƯỢNG LÀ DANH DỰ
+                  PTIT BUS LINES – CHẤT LƯỢNG LÀ DANH DỰ
                 </h2>
                 <p className="text-center text-gray-600 mb-10">
                   Được khách hàng tin tưởng và lựa chọn

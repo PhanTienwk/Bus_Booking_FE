@@ -155,7 +155,7 @@ const CheckoutPage = () => {
     const checkPayment = async () => {
       try {
         const res = await fetch(
-          "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgYRqPXF7Po2jCahf1gVNkF3UZ1AJixRmUGFoHSdWPNRaswT-hJSnZ7lYhn5hkMEKZR-u8dcsdjlnjEQLGYdfJ1ryD26oUbPZZZiYCMRNhl4HZqeEefTgDfI4BPVqQiyGItS48-MIKHIscVsogFxq-iiXFUkC9CvykZ_z7Qw51JMT0fsfUMxMoMB6Jcs0qpvskS1nFXr3iYoDb6KcU9Gp1oB6ZIO_7S-jrUOv_QbdNbyMtjCRzl_k4VruRC5FsLeYKsHvxXCHuTwXxPxAiTqQDs38n01w&lib=MCc3iB5ALg69Lw4T0CX1P96Tx4pJUxSTV"
+          "https://script.google.com/macros/s/AKfycbwAoy7Ry4dRnRhIQiJ8Z6hoqMPvtYkzIJmU6yEyJWqP-GxqSusmbKHA3Sfeg5A_sRd7/exec"
         );
         const resJson = await res.json();
         const data = resJson.data;

@@ -19,8 +19,8 @@ import {
 } from "antd";
 import { PlusSquareOutlined, FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-// import moment from "moment";
-import moment from "moment-timezone";
+import moment from "moment";
+// import moment from "moment-timezone";
 import { handleGetAllBusApi } from "../../services/BusService";
 import {
   handleGetAllBusRoute,
