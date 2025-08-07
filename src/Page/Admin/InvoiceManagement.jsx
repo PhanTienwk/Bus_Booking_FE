@@ -1,7 +1,7 @@
 import { Table, Popover, Button, Input, Select } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getAllInvoices, getAllInvoicesId, handleFilterInvoices } from "../../services/InvoiceService";
+import { getAllInvoices, getAllInvoicesId, handleFilterInvoices,updateInvoice } from "../../services/InvoiceService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -157,16 +157,29 @@ const AdminLayout = () => {
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
-    try {
-      toast.success("Cập nhật hóa đơn thành công (mô phỏng)");
+  try {
+    const updatedInvoice = {
+      id: selectedInvoice.id,
+      name: selectedInvoice.name,
+      phone: selectedInvoice.phone,
+      email: selectedInvoice.email,
+      status: selectedInvoice.status,
+    };
+
+    const response = await updateInvoice(selectedInvoice.id, updatedInvoice);
+    if (response.code === 1000) {
+      toast.success("Cập nhật hóa đơn thành công!");
       setUpdateModalOpen(false);
       setSelectedInvoice(null);
       setTickets([]);
       fetchInvoices();
-    } catch (error) {
-      toast.error("Lỗi khi cập nhật hóa đơn");
-      console.error("Update invoice error:", error);
+    } else {
+      toast.error(response.message || "Cập nhật hóa đơn thất bại!");
     }
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Lỗi khi cập nhật hóa đơn!");
+    console.error("Update invoice error:", error);
+  }
   };
 
   const handleInputChange = (e) => {
