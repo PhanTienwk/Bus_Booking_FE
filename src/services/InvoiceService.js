@@ -53,7 +53,7 @@ const handleGetBankList = (id) => {
 };
 
 const handleFilterInvoices = (payload) => {
-  return axios.post(`/api/filter`, payload);
+  return axios.post(`/api/admin/invoices/filter`, payload);
 };
 
 const getTicketsByInvoiceId = async (invoiceId) => {
