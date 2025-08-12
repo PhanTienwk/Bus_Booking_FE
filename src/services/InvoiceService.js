@@ -39,12 +39,21 @@ const markInvoiceAsExpired = (invoiceId, selectedSeats, busId) => {
   });
 };
 
+const updateInvoice = async (invoiceId, invoiceData) => {
+  try {
+    const response = await axios.put(`/api/admin/invoices/${invoiceId}`, invoiceData);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const handleGetBankList = (id) => {
   return axios.get(`/https://api.vietqr.io/v2/banks`);
 };
 
 const handleFilterInvoices = (payload) => {
-  return axios.post(`/api/filter`, payload);
+  return axios.post(`/api/admin/invoices/filter`, payload);
 };
 
 const getTicketsByInvoiceId = async (invoiceId) => {
@@ -98,4 +107,5 @@ export {
   changeTicket,
   getTicketsByInvoiceId,
   handleFilterInvoices,
+  updateInvoice,
 };

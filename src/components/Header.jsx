@@ -133,7 +133,7 @@ const HomePage = () => {
   const isLoggedIn = !!localStorage.getItem("token");
   return (
     <div className="bg-white">
-      <header className="bg-[#EF5222] py-3 px-6">
+      <header className="bg-[#2474e5] py-3 px-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img src="/images/vietnam.svg" alt="Cờ VN" className="w-5 h-5" />

@@ -138,8 +138,9 @@ const InforUserPage = () => {
       try {
         setIsLoading(true);
         const response = await getUserInfor();
+
+        console.log("respone", response);
         const InvoicesRes = await handleGetInvoiceByUserId(response.result.id);
-        //    const ticketRes = await handleGetTicketByPhone(response.result.phone);
 
         const responseBL = await axios.get("https://api.vietqr.io/v2/banks");
         if (responseBL.data.code === "00") {
@@ -588,7 +589,7 @@ const InforUserPage = () => {
       return;
     }
 
-    setnewBusId(trip.bus.id);
+    setnewBusId(trip.id);
     setIsSeatSelectionModalVisible(true);
   };
 
