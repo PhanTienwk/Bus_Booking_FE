@@ -194,6 +194,7 @@ const LoginPage = () => {
         "http://localhost:8080/api/auth/google",
         { token: credential }
       );
+      console.log(response)
       if (response.data.result.isNewUser) {
         setRegisterEmail(response.data.result.email);
         setCompleteData({ ...completeData, name: response.data.result.name });
