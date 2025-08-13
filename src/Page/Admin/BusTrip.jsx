@@ -71,7 +71,13 @@ export default function BusTripManage() {
         const driversRes = await handleGetAllUserApi();
         setBusRoutes(busRoutesRes.result || []);
         setBuses(busesRes.result || []);
-        setDrivers(driversRes.result || []);
+        // console.log("cvcv", driversRes);
+        setDrivers(
+          driversRes.result.filter((driver) => driver.account.role.id === 1) ||
+            []
+        );
+        //    setDrivers((driversRes.result || []).filter(driver => driver.id === 1));
+
         if (busTripsRes.code === 1000) {
           setData(busTripsRes.result);
           setFilteredData(busTripsRes.result);
@@ -420,7 +426,6 @@ export default function BusTripManage() {
     setOpenFormFilter(false);
   };
 
-  // Add Modal
   const AddModal = (
     <div className="container">
       <div className="row">
@@ -674,7 +679,7 @@ export default function BusTripManage() {
         <div className="col-md-6">
           <div className="mb-3">
             <label htmlFor="costOperating" className="form-label">
-              Chi phí vận hành <span style={{ color: "red" }}>*</span>
+              Chi phí vận hành (VNĐ)<span style={{ color: "red" }}>*</span>
             </label>
             <Input
               id="costOperating"
@@ -690,7 +695,7 @@ export default function BusTripManage() {
         <div className="col-md-6">
           <div className="mb-3">
             <label htmlFor="costIncurred" className="form-label">
-              Chi phí phát sinh <span style={{ color: "red" }}>*</span>
+              Chi phí phát sinh (VNĐ)<span style={{ color: "red" }}>*</span>
             </label>
             <Input
               id="costIncurred"
@@ -704,7 +709,7 @@ export default function BusTripManage() {
         <div className="col-md-6">
           <div className="mb-3">
             <label htmlFor="price" className="form-label">
-              Giá vé <span style={{ color: "red" }}>*</span>
+              Giá vé (VNĐ)<span style={{ color: "red" }}>*</span>
             </label>
             <Input
               id="price"
@@ -755,6 +760,7 @@ export default function BusTripManage() {
               Tài xế <span style={{ color: "red" }}>*</span>
             </label>
             <Select
+              style={{ width: "95px" }}
               id="driverId"
               className="w-100"
               placeholder="Chọn tài xế"

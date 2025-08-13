@@ -130,6 +130,7 @@ const HomePage = () => {
     </Dropdown>
   );
 
+  const isLoggedIn = !!localStorage.getItem("token");
   return (
     <div className="bg-white">
       <header className="bg-[#2474e5] py-3 px-6">
@@ -154,7 +155,7 @@ const HomePage = () => {
               <a href="/">Liên hệ</a>
               <a href="/">Về chúng tôi</a>
             </nav>
-            {userInfo.phone ? (
+            {isLoggedIn ? (
               <button className="flex items-center gap-2 text-white bg-white bg-opacity-20 px-4 rounded-full">
                 <UserDropdown />
               </button>

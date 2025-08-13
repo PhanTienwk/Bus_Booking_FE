@@ -13,7 +13,7 @@ import {
   handleAddBankDT,
   handleGetBankList,
 } from "../../services/InvoiceService";
-
+import { handleUpdateTicketStatus } from "../../services/ticketService";
 import { handleGetAllProvince } from "../../services/BusStationService";
 import { searchTripsByProvinces } from "../../services/HomeService";
 import { fetchSeatLayout } from "../../services/SeatSelectionService";
@@ -21,7 +21,7 @@ import { Snackbar, Alert } from "@mui/material";
 import { Table, Modal, Button, Input, Select as AntdSelect } from "antd";
 import { format, parseISO } from "date-fns";
 import Select from "react-select";
-
+import { handleGetTicketByUserId } from "../../services/ticketService";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import axios from "axios";
@@ -89,6 +89,10 @@ const InforUserPage = () => {
     bankName: "",
   });
   const [showBankForm, setShowBankForm] = useState(false);
+  const [selectedTickets, setSelectedTickets] = useState([]); // Array các ticket được chọn để hủy
+  const [showCancelTicketModal, setShowCancelTicketModal] = useState(false);
+  const [selectedInvoiceCancel, setSelectedInvoiceCancel] = useState(null);
+  const [selectedTicketCancel, setSelectedTicketCancel] = useState(null);
 
   const navigate = useNavigate();
 
@@ -137,11 +141,6 @@ const InforUserPage = () => {
 
         console.log("respone", response);
         const InvoicesRes = await handleGetInvoiceByUserId(response.result.id);
-        //    const ticketRes = await handleGetTicketByPhone(response.result.phone);
-
-        // const InvoicesRes = await handleGetInvoiceByUserId(
-        //   response.result.phone
-        // );
 
         const responseBL = await axios.get("https://api.vietqr.io/v2/banks");
         if (responseBL.data.code === "00") {
@@ -537,7 +536,7 @@ const InforUserPage = () => {
 
   const handleTicketModalClose = () => {
     setIsTicketModalVisible(false);
-    setSelectedInvoice(null);
+    //  setSelectedInvoice(null);
   };
 
   const handleChangeTicket = (ticketId) => {
@@ -673,9 +672,9 @@ const InforUserPage = () => {
         key: "paymentMethod",
         render: (method) => {
           const methods = {
-            0: "Chưa thanh toán",
-            2: "Thanh toán online",
-            5: "Tiền mặt",
+            2: "Chưa thanh toán",
+            1: "Thanh toán online",
+            0: "Tiền mặt",
           };
           return methods[method] || `Phương thức ${method}`;
         },
@@ -688,13 +687,14 @@ const InforUserPage = () => {
             <Button
               type="primary"
               ghost
-              onClick={() => handleTicketCancel(record)}
+              onClick={() => handleShowTableCancel(record)}
             >
               Hủy vé
             </Button>
           </div>
         ),
       },
+
       {
         title: "Hành động",
         key: "action",
@@ -739,6 +739,22 @@ const InforUserPage = () => {
         departureTime ? formatDateTime(departureTime) : "Chưa xác định",
     },
     {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        const statusMap = {
+          0: " Đã hủy",
+          1: "Đã đặt",
+          2: "Chờ xử lý",
+          3: "Hoàn thành",
+          4: "Đổi vé",
+        };
+        return statusMap[status] || "Không xác định";
+      },
+    },
+
+    {
       title: "Hành động",
       key: "action",
       render: (_, record) =>
@@ -753,13 +769,209 @@ const InforUserPage = () => {
         ) : null,
     },
   ];
+  const ticketCancelColumns = () => [
+    {
+      title: "",
+      dataIndex: "id",
+      key: "checkbox",
+      render: (id, record) => (
+        <input
+          type="checkbox"
+          onChange={(e) => handleSelectTicket(record, e.target.checked)}
+          checked={selectedTickets.some((ticket) => ticket.id === record.id)}
+          disabled={![1, 2].includes(record.status)} // Chỉ cho phép chọn nếu status 1 hoặc 2
+        />
+      ),
+      width: 50,
+    },
+    { title: "Mã vé", dataIndex: "id", key: "id" },
+    {
+      title: "Số ghế",
+      dataIndex: "seatPosition",
+      key: "seatNumber",
+      render: (seatPosition) => seatPosition?.name || "Chưa xác định",
+    },
+    {
+      title: "Loại vé",
+      dataIndex: ["invoice", "busTrip", "bus", "busType", "name"],
+      key: "ticketType",
+      render: (busTypeName) => busTypeName || "Thường",
+    },
+    {
+      title: "Giá vé",
+      dataIndex: ["invoice", "busTrip", "price"],
+      key: "price",
+      render: (price) => `${(price || 0).toFixed(2)} VNĐ`,
+    },
+    {
+      title: "Thời gian khởi hành",
+      dataIndex: ["invoice", "busTrip", "departureTime"],
+      key: "departureTime",
+      render: (departureTime) =>
+        departureTime ? formatDateTime(departureTime) : "Chưa xác định",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        const statusMap = {
+          0: "Đã hủy",
+          1: "Đã đặt",
+          2: "Chờ xử lý",
+          3: "Hoàn thành",
+          4: "Đổi vé",
+          5: "Đang xử lý hủy",
+        };
+        return statusMap[status] || "Không xác định";
+      },
+    },
+  ];
 
+  const handleSelectTicket = (record, checked) => {
+    setSelectedTickets((prev) =>
+      checked
+        ? [...prev, record]
+        : prev.filter((ticket) => ticket.id !== record.id)
+    );
+    console.log("select", selectedTickets); // Lưu ý: console.log có thể không hiển thị giá trị mới ngay lập tức
+  };
+
+  const handleCancelTicket = async () => {
+    try {
+      if (selectedTickets.length === 0) {
+        handleOpenSnackBar("Vui lòng chọn vé để hủy!", "error");
+        return;
+      }
+
+      // Bật trạng thái đang tải
+      setIsLoading(true);
+
+      // Tạo mảng promise để cập nhật trạng thái vé
+      const cancelPromises = selectedTickets.map(async (ticket) => {
+        // Kiểm tra trạng thái vé
+        if (ticket.status === 0) {
+          throw new Error(`Vé ${ticket.id} đã được hủy trước đó!`);
+        }
+        if (ticket.status === 3) {
+          throw new Error(`Vé ${ticket.id} đã hoàn thành, không thể hủy!`);
+        }
+        // Kiểm tra thời gian khởi hành
+        if (new Date(ticket.invoice.busTrip.departureTime) < new Date()) {
+          throw new Error(`Chuyến xe của vé ${ticket.id} đã khởi hành!`);
+        }
+        // Cập nhật trạng thái vé thành 5
+        await handleUpdateTicketStatus(ticket.id, 5);
+      });
+
+      // Chờ tất cả các yêu cầu hoàn tất
+      const results = await Promise.allSettled(cancelPromises);
+
+      // Kiểm tra kết quả
+      const failedCancellations = results.filter(
+        (result) => result.status === "rejected"
+      );
+      if (failedCancellations.length > 0) {
+        const errorMessages = failedCancellations
+          .map((result) => result.reason.message)
+          .join("; ");
+        handleOpenSnackBar(`Có lỗi khi hủy vé: ${errorMessages}`, "error");
+        return;
+      }
+
+      // Hiển thị thông báo thành công
+      handleOpenSnackBar("Hủy vé thành công!", "success");
+
+      // Làm mới danh sách hóa đơn
+      const InvoicesRes = await handleGetInvoiceByUserId(userInfo.id);
+      if (InvoicesRes?.code === 1000) {
+        setInvoices(InvoicesRes.result || []);
+      } else {
+        handleOpenSnackBar("Lấy danh sách hóa đơn thất bại!", "error");
+      }
+
+      // Đóng modal và xóa danh sách vé đã chọn
+      setShowTicketDetails(false);
+      setSelectedTickets([]);
+      setSelectedInvoiceCancel(null);
+    } catch (error) {
+      console.error("Lỗi khi hủy vé:", error);
+      handleOpenSnackBar(
+        error?.response?.data?.message || "Lỗi khi hủy vé!",
+        "error"
+      );
+    } finally {
+      // Tắt trạng thái đang tải
+      setIsLoading(false);
+    }
+  };
+  const handleShowTableCancel = async (record) => {
+    try {
+      const ticketRes = await getTicketsByInvoiceId(record.id); // Sửa: Lấy vé theo invoice id
+      if (ticketRes?.code === 1000) {
+        setSelectedTicketCancel(ticketRes.result || []);
+      } else {
+        handleOpenSnackBar("Lấy danh sách vé thất bại!", "error");
+        return;
+      }
+      setSelectedInvoiceCancel(record);
+      setShowTicketDetails(true);
+    } catch (error) {
+      console.error("Lỗi khi lấy vé:", error);
+      handleOpenSnackBar("Lấy danh sách vé thất bại!", "error");
+    }
+  };
   // huy ve
+
+  const handleConfirmCancelTickets = async () => {
+    if (selectedTickets.length === 0) {
+      handleOpenSnackBar("Vui lòng chọn ít nhất một vé để hủy!", "error");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const promises = selectedTickets.map(async (ticket) => {
+        if (ticket.status === 1) {
+          // If ticket is booked, show bank details form
+          setSelectedInvoiceId(ticket.id);
+          setShowBankForm(true);
+        } else if (ticket.status === 2) {
+          // If ticket is pending payment, cancel directly
+          await handleUpdateTicketStatus(ticket.id, 0);
+        }
+      });
+
+      await Promise.all(promises);
+      handleOpenSnackBar("Hủy vé thành công!", "success");
+
+      // Refresh invoice list
+      const InvoicesRes = await handleGetInvoiceByUserId(userInfo.id);
+      if (InvoicesRes?.code === 1000) {
+        setInvoices(InvoicesRes.result || []);
+      } else {
+        handleOpenSnackBar("Lấy danh sách hóa đơn thất bại!", "error");
+      }
+
+      setShowCancelTicketModal(false);
+      setSelectedTickets([]);
+    } catch (error) {
+      console.error("Lỗi khi hủy vé:", error);
+      handleOpenSnackBar(
+        error?.response?.data?.message || "Lỗi khi hủy vé!",
+        "error"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  console.log("checkckc", selectedTicketCancel);
+
   const handleTicketCancel = (record) => {
     setSelectedTicket(record);
     console.log("record", record);
-    const departureTime = new Date(record.busTrip.departureTime);
-    const currentTime = new Date();
+    // const departureTime = new Date(record.busTrip.departureTime);
+    // const currentTime = new Date();
 
     console.log("statusd", record.status);
     if (!record || record.status === undefined) {
@@ -767,19 +979,16 @@ const InforUserPage = () => {
       return;
     }
 
-    if (record.status === 1) {
+    if (record.status === 2) {
       // chờ thanh toán thì hủy vé ko cần nhập stk
 
       if (new Date(record.busTrip.departureTime) < new Date()) {
-        handleOpenSnackBar(
-          "Không thể hủy vé vì chuyến xe đã khởi hành!",
-          "error"
-        );
+        handleOpenSnackBar("Chuyến xe đã hoàn thành!", "error");
         return;
       }
       setSelectedInvoiceId(null);
       setShowCancelConfirm(true);
-    } else if (record.status === 2) {
+    } else if (record.status === 1) {
       setSelectedInvoiceId(record.id);
 
       setShowBankForm(true);
@@ -802,9 +1011,10 @@ const InforUserPage = () => {
       return;
     }
 
+    console.log("check ticket ", selectedTicket, bankDetails);
     try {
       const response = await handleAddBankDT({
-        idUser: selectedTicket.user.id,
+        idUser: selectedTicket.invoice.user.id,
         idInvoice: selectedTicket.id,
         bankName: bankDetails.bankName,
         bankAccountNumber: bankDetails.bankAccountNumber,
@@ -812,7 +1022,7 @@ const InforUserPage = () => {
 
       if (response.code === 1000) {
         // Cập nhật trạng thái hóa đơn thành "Chờ xử lý hủy" (status = 4)
-        const cancelRes = await handleUpdateInvoiceStatus(selectedInvoiceId, 4);
+        const cancelRes = await handleUpdateTicketStatus(selectedInvoiceId, 2);
 
         if (cancelRes.code === 1000) {
           handleOpenSnackBar(
@@ -878,18 +1088,30 @@ const InforUserPage = () => {
     }
   };
 
+  const TicketDetailsModal = (
+    <div className="p-4">
+      <h3 className="text-lg font-semibold mb-4"></h3>
+      <Table
+        columns={ticketCancelColumns()}
+        dataSource={selectedTicketCancel}
+        rowKey="id"
+        pagination={false}
+      />
+      <Button
+        type="primary"
+        onClick={() => handleCancelTicket()}
+        className="bg-[#ef5222] hover:bg-orange-600"
+      >
+        Hủy
+      </Button>
+    </div>
+  );
   const BankDetailsModal = (
     <div className="p-4">
       <div className="grid grid-cols-1 gap-4 text-sm text-gray-800">
         <div>
           <label className="block text-gray-500 mb-1">Tên ngân hàng:</label>
-          {console.log("bankList:", bankList)}
-          {console.log(
-            "Filtered banks:",
-            Array.isArray(bankList)
-              ? bankList.filter((bank) => bank.isTransfer === 1)
-              : []
-          )}
+
           <AntdSelect
             name="bankName"
             value={bankDetails.bankName.code}
@@ -1622,6 +1844,7 @@ const InforUserPage = () => {
             title="Thông tin vé"
             open={isTicketModalVisible}
             onCancel={handleTicketModalClose}
+            width={720}
             footer={[
               <Button key="close" onClick={handleTicketModalClose}>
                 Đóng
@@ -1755,6 +1978,15 @@ const InforUserPage = () => {
           {snackBar.message}
         </Alert>
       </Snackbar>
+      <Modal
+        title={`Chi tiết vé của hóa đơn #${selectedInvoiceId}`}
+        open={showTicketDetails}
+        onCancel={() => setShowTicketDetails(false)}
+        footer={null}
+        width={800}
+      >
+        {TicketDetailsModal}
+      </Modal>
       <Modal
         title="Xác nhận hủy vé"
         open={showCancelConfirm}
