@@ -19,7 +19,9 @@ import InvoiceManagement from "../Page/Admin/InvoiceManagement";
 import TripManagement from "../Page/Admin/TripManagement";
 import UserInformation from "../Page/Admin/UserInformation";
 import DriverPage from "../Page/Driver/DriverPage";
-import ForgotPassword from "../Page/User/ForgotPassword"
+import ForgotPassword from "../Page/User/ForgotPassword";
+import ConsultTicket from "../Page/User/ConsultTicket";
+import ConsultInvoice from "../Page/User/ConsultInvoice";
 // import Test from "../Page/User/test";
 
 import "../tailwind.css";
@@ -39,6 +41,8 @@ const AppRoutes = () => {
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/user" element={<HomePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/consult-ticket" element={<ConsultTicket />}/>
+        <Route path="/consult-invoice" element={<ConsultInvoice />}/>
         {/* <Route path="/test" element={<Test />} /> */}
 
         <Route path="/admin" element={<UserManagement />} />

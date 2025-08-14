@@ -95,6 +95,20 @@ const changeTicket = async (ticketId, busTripId, seatPositions, price) => {
   }
 };
 
+const consultInvoice = async (invoiceId, phone) => {
+  try {
+    const response = await axios.post("/api/consultInvoice", {
+      invoiceId,
+      phone,
+    });
+    return response;
+  } catch (error) {
+    throw new Error(
+      error.response?.message || "Không thể kết nối đến server. Vui lòng thử lại sau!"
+    );
+  }
+};
+
 export {
   handleGetBankList,
   handleAddBankDT,
@@ -108,4 +122,5 @@ export {
   getTicketsByInvoiceId,
   handleFilterInvoices,
   updateInvoice,
+  consultInvoice,
 };
