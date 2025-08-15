@@ -8,14 +8,14 @@ const handleUpdateTicketStatus = (id, status) => {
 
 const consultTicket = async (ticketId, phone) => {
   try {
-    const response = await axios.post("/api/consultTicket", {
+    const response = await axios.post("/api/admin/consultTicket", {
       ticketId,
       phone,
     });
     return response;
   } catch (error) {
     throw new Error(
-      error.response?.message || "Không thể kết nối đến server. Vui lòng thử lại sau!"
+      error.errorMessage  || "Tra cứu vé thất bại!"
     );
   }
 };
