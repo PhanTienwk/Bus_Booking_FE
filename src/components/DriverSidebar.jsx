@@ -7,7 +7,8 @@ const menuItems = [
 
 const AdminSidebar = ({ activeIndex, setActiveIndex }) => {
   const handleLogout = () => {
-    console.log("Đăng xuất");
+    localStorage.clear();
+    window.location.href = "/";
   };
 
   return (

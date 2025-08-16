@@ -14,7 +14,9 @@ const menuItems = [
 
 const AdminSidebar = ({ activeIndex, setActiveIndex }) => {
   const handleLogout = () => {
+    localStorage.clear();
     console.log("Đăng xuất");
+    window.location.href = "/";
   };
 
   return (

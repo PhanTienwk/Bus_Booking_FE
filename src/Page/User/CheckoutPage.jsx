@@ -25,58 +25,12 @@ const CheckoutPage = () => {
     invoiceCodeReturn,
   } = location.state || {};
 
-  const [countdown, setCountdown] = useState(2 * 60);
+  const [countdown, setCountdown] = useState(3 * 60);
   const [hasPaid, setHasPaid] = useState(false);
   const [hasExpired, setHasExpired] = useState(false);
 
-  // useEffect(() => {
-  //   if (countdown <= 0 && !hasPaid) {
-  //     if (!hasExpired) {
-  //       setHasExpired(true);
-  //       markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
-  //         .then(() => {
-  //           if (
-  //             invoiceCodeReturn &&
-  //             selectedSeatsReturn &&
-  //             returnTrip?.bus?.id
-  //           ) {
-  //             return markInvoiceAsExpired(
-  //               invoiceCodeReturn,
-  //               selectedSeatsReturn,
-  //               returnTrip.bus.id
-  //             );
-  //           }
-  //         })
-  //         .then(() => {
-  //           navigate("/user");
-  //         })
-  //         .catch((error) => {
-  //           console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
-  //         });
-  //     }
-  //     return;
-  //   }
-
-  //   const timer = setInterval(() => {
-  //     setCountdown((prev) => prev - 1);
-  //   }, 1000);
-
-  //   return () => clearInterval(timer);
-  // }, [
-  //   countdown,
-  //   hasPaid,
-  //   hasExpired,
-  //   invoiceCode,
-  //   invoiceCodeReturn,
-  //   selectedSeats,
-  //   selectedSeatsReturn,
-  //   returnTrip,
-  //   busId,
-  //   navigate,
-  // ]);
-
   useEffect(() => {
-    const EXPIRE_SECONDS = 2 * 60;
+    const EXPIRE_SECONDS = 3 * 60;
 
     const savedStartTime = sessionStorage.getItem("paymentStartTime");
     const now = Math.floor(Date.now() / 1000);
@@ -94,28 +48,6 @@ const CheckoutPage = () => {
 
     setCountdown(remaining);
 
-    if (remaining <= 0) {
-      setHasExpired(true);
-      markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
-        .then(() => {
-          if (invoiceCodeReturn && selectedSeatsReturn && returnTrip?.bus?.id) {
-            return markInvoiceAsExpired(
-              invoiceCodeReturn,
-              selectedSeatsReturn,
-              returnTrip.bus.id
-            );
-          }
-        })
-        .then(() => {
-          sessionStorage.removeItem("paymentStartTime");
-          navigate("/user");
-        })
-        .catch((error) => {
-          console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
-        });
-      return;
-    }
-
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -127,7 +59,47 @@ const CheckoutPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (countdown <= 0 && !hasPaid && !hasExpired) {
+      setHasExpired(true);
+
+      console.log("=== HẾT THỜI GIAN, CHUẨN BỊ GỌI API HẾT HẠN ===");
+      console.log("invoiceCode:", invoiceCode);
+      console.log("selectedSeats:", selectedSeats);
+      console.log("busId:", busId);
+
+      markInvoiceAsExpired(invoiceCode, selectedSeats, busId)
+        .then((res) => {
+          console.log("API hết hạn lượt đi thành công:", res);
+
+          if (invoiceCodeReturn && selectedSeatsReturn && returnTrip?.bus?.id) {
+            console.log("Có dữ liệu lượt về, gọi API hết hạn lượt về:");
+            console.log("invoiceCodeReturn:", invoiceCodeReturn);
+            console.log("selectedSeatsReturn:", selectedSeatsReturn);
+            console.log("returnTrip.bus.id:", returnTrip.bus.id);
+
+            return markInvoiceAsExpired(
+              invoiceCodeReturn,
+              selectedSeatsReturn,
+              returnTrip.bus.id
+            );
+          } else {
+            console.log("Không có dữ liệu lượt về, bỏ qua API lượt về");
+          }
+        })
+        .then((res2) => {
+          console.log("API hết hạn lượt về thành công:", res2);
+          sessionStorage.removeItem("paymentStartTime");
+          navigate("/user");
+        })
+        .catch((error) => {
+          console.error("Lỗi cập nhật trạng thái hóa đơn hết hạn:", error);
+        });
+    }
   }, [
+    countdown,
     hasPaid,
     hasExpired,
     invoiceCode,
@@ -226,10 +198,9 @@ const CheckoutPage = () => {
             </h3>
             <div className="flex flex-col gap-4 text-sm">
               {[
-                { name: "Thanh toán tiền mặt", img: "/images/money.png" },
                 {
                   name: "Thanh toán Momo",
-                  img: "/images/agribank.png",
+                  img: "/images/mbbank-logo.png",
                   selected: true,
                 },
               ].map((method, idx) => (

@@ -60,3 +60,18 @@ export const completeRegistration = async (data) => {
     throw new Error(error.response?.data?.message || 'Hoàn tất đăng ký thất bại.');
   }
 };
+
+
+export const forgotPassword = async (email, phone) => {
+  try {
+    const response = await axiosInstance.post("/api/forgot-password", {
+      email,
+      phone,
+    });
+    return response;
+  } catch (error) {
+    throw new Error(
+      error.response?.message || "Không thể kết nối đến server. Vui lòng thử lại sau!"
+    );
+  }
+};

@@ -6,6 +6,7 @@ const handleUpdateTicketStatus = (id, status) => {
   return axios.put(`/api/admin/update-ticket-status?id=${id}&status=${status}`);
 };
 
+
 const handleGetAllTicket = () => {
   return axios.get(`/api/admin/list-ticket`);
 };
@@ -19,9 +20,28 @@ const handleFilterTickets = (filterData) => {
     bankAccountNumber: filterData.bankAccountNumber || "",
   });
 };
+
+const consultTicket = async (ticketId, phone) => {
+  try {
+    const response = await axios.post("/api/admin/consultTicket", {
+      ticketId,
+      phone,
+    });
+    return response;
+  } catch (error) {
+    throw new Error(
+      error.errorMessage  || "Tra cứu vé thất bại!"
+    );
+  }
+};
 export {
   handleFilterTickets,
   handleGetTicketByUserId,
   handleUpdateTicketStatus,
   handleGetAllTicket,
+  consultTicket
 };
+
+
+
+

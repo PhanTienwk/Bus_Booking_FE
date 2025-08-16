@@ -4,7 +4,6 @@ import { DownOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom"; // Để điều hướng
 import { getUserInfor } from "../services/UserService";
 import "./Header2.css";
-import { ExpandAltOutlined } from "@ant-design/icons";
 const HomePage = () => {
   const [avatar, setAvatar] = useState("/images/avatar.jpg");
   const [userInfo, setUserInfo] = useState({
@@ -149,9 +148,9 @@ const HomePage = () => {
                 Trang chủ
               </a>
               <a href="/">Lịch trình</a>
-              <a href="/">Tra cứu vé</a>
+              <a href="/consult-ticket">Tra cứu vé</a>
               <a href="/">Tin tức</a>
-              <a href="/">Hóa đơn</a>
+              <a href="/consult-invoice">Hóa đơn</a>
               <a href="/">Liên hệ</a>
               <a href="/">Về chúng tôi</a>
             </nav>
