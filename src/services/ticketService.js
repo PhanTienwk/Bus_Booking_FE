@@ -6,4 +6,22 @@ const handleUpdateTicketStatus = (id, status) => {
   return axios.put(`/api/admin/update-ticket-status?id=${id}&status=${status}`);
 };
 
-export { handleGetTicketByUserId, handleUpdateTicketStatus };
+const handleGetAllTicket = () => {
+  return axios.get(`/api/admin/list-ticket`);
+};
+const handleFilterTickets = (filterData) => {
+  return axios.post("/api/admin/filter-ticket-cancel", {
+    name: filterData.name || "",
+    phone: filterData.phone || "",
+    email: filterData.email || "",
+    status: filterData.status || "",
+    seatName: filterData.seatName || "",
+    bankAccountNumber: filterData.bankAccountNumber || "",
+  });
+};
+export {
+  handleFilterTickets,
+  handleGetTicketByUserId,
+  handleUpdateTicketStatus,
+  handleGetAllTicket,
+};

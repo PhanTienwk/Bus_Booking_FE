@@ -9,6 +9,7 @@ import LocationManage from "./LocationManagement";
 import Statistic from "./Statistic";
 import UserInformation from "./UserInformation";
 import BusManage from "./Bus";
+import TicketCanCelManage from "./TicketCancelManage";
 import {
   Box,
   Card,
@@ -670,18 +671,20 @@ const UserManagement = () => {
       case 2:
         return <InvoiceManage />;
       case 3:
-        return <RouteManage />;
+        return <TicketCanCelManage />;
       case 4:
-        return <BusTrip />;
+        return <RouteManage />;
       case 5:
-        return <BusStationManage />;
+        return <BusTrip />;
       case 6:
-        return <BusManage />;
+        return <BusStationManage />;
       case 7:
-        return <LocationManage />;
+        return <BusManage />;
       case 8:
-        return <Statistic />;
+        return <LocationManage />;
       case 9:
+        return <Statistic />;
+      case 10:
         return <UserInformation />;
       case 0:
       default:

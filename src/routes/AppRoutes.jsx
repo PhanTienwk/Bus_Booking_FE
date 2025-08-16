@@ -19,6 +19,7 @@ import InvoiceManagement from "../Page/Admin/InvoiceManagement";
 import TripManagement from "../Page/Admin/TripManagement";
 import UserInformation from "../Page/Admin/UserInformation";
 import DriverPage from "../Page/Driver/DriverPage";
+import TicketCancelManage from "../Page/Admin/TicketCancelManage";
 // import Test from "../Page/User/test";
 
 import "../tailwind.css";
@@ -48,7 +49,10 @@ const AppRoutes = () => {
         <Route path="/admin/location" element={<LocationManagement />} />
         <Route path="/admin/statistic" element={<Statistic />} />
         <Route path="/admin/information" element={<UserInformation />} />
-
+        <Route
+          path="/admin/ticket-cancel-manage"
+          element={<TicketCancelManage />}
+        />
         <Route path="/driver" element={<DriverPage />} />
       </Routes>
     </Router>
