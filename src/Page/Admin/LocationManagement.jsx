@@ -14,7 +14,7 @@ import {
   handleAddProvince,
   handleUpdateProvince,
   handleUpdateProvinceStatus,
-  handleFilterProvinces,
+  handleFilterProvince,
 } from "../../services/ProvinceService";
 import { handleGetAllProvince } from "../../services/BusStationService";
 import FilterButtonProvince from "../../components/Button/FilterButtonProvince";
@@ -119,7 +119,7 @@ export default function ProvinceManage() {
         );
         setData(updatedData);
         if (filterParams) {
-          const filterResponse = await handleFilterProvinces(filterParams);
+          const filterResponse = await handleFilterProvince(filterParams);
           if (filterResponse.code === 1000) {
             setFilteredData(filterResponse.result);
           } else {
@@ -185,7 +185,9 @@ export default function ProvinceManage() {
   // Xử lý lọc
   const onSubmitPopover = async (filterData) => {
     try {
-      const response = await handleFilterProvinces(filterData);
+      console.log("filterdata", filterData);
+      const response = await handleFilterProvince(filterData);
+      console.log("response", response, filterData);
       if (response.code === 1000) {
         setFilterParams(filterData);
         setFilteredData(response.result);

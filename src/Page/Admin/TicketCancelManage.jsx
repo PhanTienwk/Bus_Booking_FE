@@ -20,6 +20,7 @@ import {
   CardContent,
   TextField,
 } from "@mui/material";
+import dayjs from "dayjs";
 
 const AdminLayout = () => {
   const [ticketList, setTicketList] = useState([]);
@@ -35,9 +36,13 @@ const AdminLayout = () => {
     name: "",
     phone: "",
     email: "",
-    status: "",
+    status: undefined,
     seatName: "",
     bankAccountNumber: "",
+    minAmount: "",
+    maxAmount: "",
+    startTime: "",
+    endTime: "",
   });
   const [banks, setBanks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -154,21 +159,88 @@ const AdminLayout = () => {
 
   const onSubmitPopover = async (filterData) => {
     try {
-      const response = await handleFilterTickets(filterData);
-      if (response.code === 1000) {
-        setFilterParams(filterData);
-        setFilteredTicketList(response.result || []);
+      // Tạo bản sao của filterData và chuyển undefined thành chuỗi rỗng
+      const processedFilterData = {
+        name: filterData.name ?? "",
+        phone: filterData.phone ?? "",
+        email: filterData.email ?? "",
+        status: filterData.status ?? "",
+        seatName: filterData.seatName ?? "",
+        bankAccountNumber: filterData.bankAccountNumber ?? "",
+        minAmount: filterData.minAmount ?? "",
+        maxAmount: filterData.maxAmount ?? "",
+        startTime: filterData.startTime ?? "",
+        endTime: filterData.endTime ?? "",
+      };
+
+      // Hàm định dạng thời gian thành YYYY-MM-DDTHH:mm:ss.SSS
+      const formatDateTime = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const seconds = String(date.getSeconds()).padStart(2, "0");
+        const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+      };
+
+      // Xử lý thời gian: Thêm 7 giờ nếu startTime và endTime không rỗng
+      if (processedFilterData.startTime) {
+        const startTime = new Date(processedFilterData.startTime);
+        if (!isNaN(startTime)) {
+          startTime.setHours(startTime.getHours() + 7);
+          processedFilterData.startTime = formatDateTime(startTime);
+        } else {
+          console.warn(
+            "startTime không hợp lệ:",
+            processedFilterData.startTime
+          );
+          processedFilterData.startTime = "";
+        }
+      }
+
+      if (processedFilterData.endTime) {
+        const endTime = new Date(processedFilterData.endTime);
+        if (!isNaN(endTime)) {
+          endTime.setHours(endTime.getHours() + 7);
+          processedFilterData.endTime = formatDateTime(endTime);
+        } else {
+          console.warn("endTime không hợp lệ:", processedFilterData.endTime);
+          processedFilterData.endTime = "";
+        }
+      }
+
+      console.log(
+        "Dữ liệu gửi đến API:",
+        JSON.stringify(processedFilterData, null, 2)
+      );
+
+      // Gửi yêu cầu API với dữ liệu đã xử lý
+      const response = await handleFilterTickets(processedFilterData);
+      console.log("Phản hồi API:", response);
+
+      // Kiểm tra phản hồi API
+      if (response?.code === 1000 || response?.data?.code === 1000) {
+        // Cập nhật filterParams với dữ liệu đã xử lý
+        setFilterParams(processedFilterData);
+        // Cập nhật danh sách vé
+        setFilteredTicketList(response.data?.result || response.result || []);
         toast.success("Lọc vé thành công!");
       } else {
-        toast.error(response.message || "Lọc vé thất bại!");
+        toast.error(
+          response.data?.message || response.message || "Lọc vé thất bại!"
+        );
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Lỗi khi lọc vé!");
-      console.error("Filter tickets error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Lỗi khi lọc vé! Vui lòng kiểm tra kết nối hoặc máy chủ."
+      );
+      console.error("Lỗi lọc vé:", error);
     }
     setOpenFormFilter(false);
   };
-
   const handleSelectStatus = async (value, record) => {
     try {
       const response = await handleUpdateTicketStatus(record.id, value);
@@ -206,7 +278,7 @@ const AdminLayout = () => {
 
   const getColumns = () => [
     {
-      title: "ID",
+      title: "Mã vé",
       dataIndex: "id",
       key: "id",
     },
@@ -224,6 +296,11 @@ const AdminLayout = () => {
       title: "Email",
       render: (_, record) => record?.invoice?.email ?? "Không xác định",
       key: "email",
+    },
+    {
+      title: "Tên ghế",
+      render: (_, record) => record?.seatPosition?.name ?? "Không xác định",
+      key: "seatName",
     },
     {
       title: "Ngân hàng",
@@ -252,6 +329,14 @@ const AdminLayout = () => {
       key: "totalAmount",
     },
     {
+      title: "Thời gian khởi hành",
+      render: (_, record) =>
+        record?.busTrip?.departureTime
+          ? dayjs(record.busTrip.departureTime).format("YYYY-MM-DD HH:mm")
+          : "Không xác định",
+      key: "departureTime",
+    },
+    {
       title: "Trạng thái vé",
       key: "updateStatus",
       render: (_, record) => (
@@ -265,11 +350,22 @@ const AdminLayout = () => {
         </Select>
       ),
     },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (_, record) => (
+        <>
+          <MuiButton color="primary" onClick={() => handleView(record)}>
+            Xem chi tiết
+          </MuiButton>
+        </>
+      ),
+    },
   ];
 
   const ticketColumns = [
     {
-      title: "ID Vé",
+      title: "Mã vé",
       dataIndex: "id",
       key: "id",
     },
@@ -285,27 +381,23 @@ const AdminLayout = () => {
         record?.seatPosition?.bus?.name || "Không xác định",
     },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        switch (status) {
-          case 0:
-            return "Đã hủy";
-          case 1:
-            return "Đã đặt";
-          case 2:
-            return "Chờ xử lý";
-          case 3:
-            return "Hoàn thành";
-          case 4:
-            return "Đổi vé";
-          case 5:
-            return "Đang xử lý hủy";
-          default:
-            return "Không xác định";
-        }
-      },
+      title: "Bến xe đi",
+      key: "busStationFrom",
+      render: (_, record) =>
+        record?.busTrip?.busRoute.busStationFrom?.name || "Không xác định",
+    },
+    {
+      title: "Bến xe đến",
+      dataIndex: ["busTrip", "busRoute", "busStationTo", "name"],
+      key: "busStationTo",
+      render: (text) => text || "Chưa xác định",
+    },
+    {
+      title: "Thời gian khởi hành",
+      dataIndex: ["invoice", "busTrip", "departureTime"],
+      key: "departureTime",
+      render: (text) =>
+        text ? dayjs(text).format("YYYY-MM-DD HH:mm") : "Chưa xác định",
     },
   ];
 
