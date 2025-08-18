@@ -561,11 +561,23 @@ const UserManagement = () => {
                 <h4 className="text-sm font-semibold mb-4">Ghi chú</h4>
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-gray-300 rounded"></div>
+                    <div
+                      className="w-4 h-4 bg-gray-300 rounded"
+                      style={{
+                        WebkitPrintColorAdjust: "exact",
+                        printColorAdjust: "exact",
+                      }}
+                    ></div>
                     <span>Ghế trống</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-100 rounded"></div>
+                    <div
+                      className="w-4 h-4 bg-blue-100 rounded"
+                      style={{
+                        WebkitPrintColorAdjust: "exact",
+                        printColorAdjust: "exact",
+                      }}
+                    ></div>
                     <span>Có khách</span>
                   </div>
                 </div>
@@ -580,8 +592,8 @@ const UserManagement = () => {
                     <th className="px-4 py-2 border">Số ghế</th>
                     <th className="px-4 py-2 border">Họ tên</th>
                     <th className="px-4 py-2 border">SĐT</th>
-                    <th className="px-4 py-2 border">Điểm lên</th>
-                    <th className="px-4 py-2 border">Điểm xuống</th>
+                    {/* <th className="px-4 py-2 border">Điểm lên</th>
+                    <th className="px-4 py-2 border">Điểm xuống</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -595,10 +607,10 @@ const UserManagement = () => {
                         </td>
                         <td className="px-4 py-2 border">{seat.name}</td>
                         <td className="px-4 py-2 border">{seat.phone}</td>
-                        <td className="px-4 py-2 border">{seat.pickupPoint}</td>
+                        {/* <td className="px-4 py-2 border">{seat.pickupPoint}</td>
                         <td className="px-4 py-2 border">
                           {seat.dropOffPoint}
-                        </td>
+                        </td> */}
                       </tr>
                     ))}
                 </tbody>
