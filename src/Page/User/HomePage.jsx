@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { handleGetAllProvince } from "../../services/BusStationService";
 import { searchTripsByProvinces } from "../../services/HomeService";
 import { DatePicker, ConfigProvider, Select as AntSelect } from "antd";
+import ChatBot from "../User/ChatBot";
 
 import {
   Radio,
@@ -1314,6 +1315,7 @@ const HomePage = () => {
             {snackBar.message}
           </Alert>
         </Snackbar>
+        <ChatBot />
         <Footer />
       </div>
     </ConfigProvider>
