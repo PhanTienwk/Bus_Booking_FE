@@ -199,7 +199,7 @@ const CheckoutPage = () => {
             <div className="flex flex-col gap-4 text-sm">
               {[
                 {
-                  name: "Thanh toán Momo",
+                  name: "Thanh toán MB Bank",
                   img: "/images/mbbank-logo.png",
                   selected: true,
                 },
