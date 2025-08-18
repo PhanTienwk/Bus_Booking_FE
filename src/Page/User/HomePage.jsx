@@ -7,10 +7,37 @@ import { useNavigate } from "react-router-dom";
 import { handleGetAllProvince } from "../../services/BusStationService";
 import { searchTripsByProvinces } from "../../services/HomeService";
 import { DatePicker, ConfigProvider, Select as AntSelect } from "antd";
+
+import {
+  Radio,
+  Button,
+  Typography,
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Tag,
+  Space,
+  Input,
+  Divider,
+} from "antd";
+import {
+  SearchOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
+  StarFilled,
+  SafetyOutlined,
+  TrophyOutlined,
+  CarOutlined,
+  ClockCircleOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 import viVN from "antd/locale/vi_VN";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
-
+import "./HomePage.css";
+const { Title, Text, Paragraph } = Typography;
 const HomePage = () => {
   const [provinces, setProvinces] = useState([]);
   const [departure, setDeparture] = useState(null);
@@ -294,7 +321,7 @@ const HomePage = () => {
       <div>
         <Header />
 
-        <section className="bg-white">
+        {/* <section className="bg-white">
           <div className="max-w-6xl mx-auto">
             <img
               src="/images/home_background.png"
@@ -302,135 +329,115 @@ const HomePage = () => {
               className="rounded-xl shadow-lg mt-6 w-full"
             />
           </div>
-        </section>
+        </section> */}
 
-        <section className="bg-white relative">
-          <div className="max-w-6xl mx-auto mt-6 mb-3 rounded-xl border-[8px] border-[#AA2E081A] shadow-sm">
-            <div className="rounded-[0.4rem] border border-[#2474e5]">
-              <div className="flex justify-between items-center mb-4 pt-6 md:px-8">
-                <div className="flex gap-6 text-base text-[#2474e5]">
-                  <label
-                    className={`flex items-center gap-1 ${
-                      tripType === "oneway" ? "text-[#2474e5]" : "text-gray-500"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="type"
-                      value="oneway"
-                      checked={tripType === "oneway"}
-                      onChange={(e) => setTripType(e.target.value)}
-                      className="accent-[#2474e5]"
-                    />
-                    Một chiều
-                  </label>
+        <div className="button-search-trip flex flex-col">
+          <section className="button-search-container bg-white relative rounded-[0.5rem]">
+            <div className="max-w-6xl mx-auto mt-6 mb-3 ">
+              <div>
+                <div className="flex justify-between items-center mb-4 pt-6 md:px-8">
+                  <div className="flex gap-6 text-base text-[#2474e5]">
+                    <label
+                      className={`flex items-center gap-1 ${
+                        tripType === "oneway"
+                          ? "text-[#2474e5]"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="type"
+                        value="oneway"
+                        checked={tripType === "oneway"}
+                        onChange={(e) => setTripType(e.target.value)}
+                        className="accent-[#2474e5]"
+                      />
+                      Một chiều
+                    </label>
 
-                  <label
-                    className={`flex items-center gap-1 ${
-                      tripType === "roundtrip"
-                        ? "text-[#2474e5]"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="type"
-                      value="roundtrip"
-                      checked={tripType === "roundtrip"}
-                      onChange={(e) => setTripType(e.target.value)}
-                      className="accent-[#2474e5]"
-                    />
-                    Khứ hồi
-                  </label>
+                    <label
+                      className={`flex items-center gap-1 ${
+                        tripType === "roundtrip"
+                          ? "text-[#2474e5]"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="type"
+                        value="roundtrip"
+                        checked={tripType === "roundtrip"}
+                        onChange={(e) => setTripType(e.target.value)}
+                        className="accent-[#2474e5]"
+                      />
+                      Khứ hồi
+                    </label>
+                  </div>
+                  <a href="/" className="text-base text-[#2474e5]">
+                    Hướng dẫn mua vé
+                  </a>
                 </div>
-                <a href="/" className="text-base text-[#2474e5]">
-                  Hướng dẫn mua vé
-                </a>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 py-4 md:px-8 mb-[35px]">
-                <Select
-                  options={filteredDepartures}
-                  value={departure}
-                  onChange={setDeparture}
-                  placeholder="Điểm đi"
-                  className="w-full"
-                  classNamePrefix="select"
-                  isSearchable
-                  styles={{
-                    container: (base) => ({ ...base, width: "100%" }),
-                    control: (base, state) => ({
-                      ...base,
-                      height: "100%",
-                      minHeight: "48px",
-                      borderColor: state.isFocused ? "#1677ff" : "#d9d9d9",
-                      boxShadow: state.isFocused
-                        ? "0 0 0 2px rgba(5, 145, 255, 0.1)"
-                        : "none",
-                      "&:hover": {
-                        borderColor: "#1677ff",
-                      },
-                    }),
-                  }}
-                />
-                <Select
-                  options={filteredDestinations}
-                  value={destination}
-                  onChange={setDestination}
-                  placeholder="Điểm đến"
-                  className="w-full"
-                  classNamePrefix="select"
-                  isSearchable
-                  styles={{
-                    container: (base) => ({ ...base, width: "100%" }),
-                    control: (base, state) => ({
-                      ...base,
-                      height: "100%",
-                      minHeight: "48px",
-                      borderColor: state.isFocused ? "#1677ff" : "#d9d9d9",
-                      boxShadow: state.isFocused
-                        ? "0 0 0 2px rgba(5, 145, 255, 0.1)"
-                        : "none",
-                      "&:hover": {
-                        borderColor: "#1677ff",
-                      },
-                    }),
-                  }}
-                />
-                <DatePicker
-                  value={
-                    departureDate
-                      ? dayjs(departureDate, backendDateFormat)
-                      : null
-                  }
-                  onChange={(date, dateString) => {
-                    if (!date) {
-                      setDepartureDate("");
-                    } else {
-                      setDepartureDate(
-                        dayjs(dateString, displayDateFormat).format(
-                          backendDateFormat
-                        )
-                      );
-                    }
-                  }}
-                  format={displayDateFormat}
-                  className="w-full h-[48px]"
-                  placeholder="Chọn ngày đi"
-                  disabledDate={(current) =>
-                    current && current < dayjs().startOf("day")
-                  }
-                />
-                {tripType === "roundtrip" && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 py-4 md:px-8 mb-[35px]">
+                  <Select
+                    options={filteredDepartures}
+                    value={departure}
+                    onChange={setDeparture}
+                    placeholder="Điểm đi"
+                    className="w-full"
+                    classNamePrefix="select"
+                    isSearchable
+                    styles={{
+                      container: (base) => ({ ...base, width: "100%" }),
+                      control: (base, state) => ({
+                        ...base,
+                        height: "100%",
+                        minHeight: "48px",
+                        borderColor: state.isFocused ? "#1677ff" : "#d9d9d9",
+                        boxShadow: state.isFocused
+                          ? "0 0 0 2px rgba(5, 145, 255, 0.1)"
+                          : "none",
+                        "&:hover": {
+                          borderColor: "#1677ff",
+                        },
+                      }),
+                    }}
+                  />
+                  <Select
+                    options={filteredDestinations}
+                    value={destination}
+                    onChange={setDestination}
+                    placeholder="Điểm đến"
+                    className="w-full"
+                    classNamePrefix="select"
+                    isSearchable
+                    styles={{
+                      container: (base) => ({ ...base, width: "100%" }),
+                      control: (base, state) => ({
+                        ...base,
+                        height: "100%",
+                        minHeight: "48px",
+                        borderColor: state.isFocused ? "#1677ff" : "#d9d9d9",
+                        boxShadow: state.isFocused
+                          ? "0 0 0 2px rgba(5, 145, 255, 0.1)"
+                          : "none",
+                        "&:hover": {
+                          borderColor: "#1677ff",
+                        },
+                      }),
+                    }}
+                  />
                   <DatePicker
                     value={
-                      returnDate ? dayjs(returnDate, backendDateFormat) : null
+                      departureDate
+                        ? dayjs(departureDate, backendDateFormat)
+                        : null
                     }
                     onChange={(date, dateString) => {
                       if (!date) {
-                        setReturnDate("");
+                        setDepartureDate("");
                       } else {
-                        setReturnDate(
+                        setDepartureDate(
                           dayjs(dateString, displayDateFormat).format(
                             backendDateFormat
                           )
@@ -439,49 +446,141 @@ const HomePage = () => {
                     }}
                     format={displayDateFormat}
                     className="w-full h-[48px]"
-                    placeholder="Chọn ngày về"
+                    placeholder="Chọn ngày đi"
                     disabledDate={(current) =>
-                      current &&
-                      (current < dayjs().startOf("day") ||
-                        (departureDate &&
-                          current <
-                            dayjs(departureDate, backendDateFormat).startOf(
-                              "day"
-                            )))
+                      current && current < dayjs().startOf("day")
                     }
                   />
-                )}
-                <AntSelect
-                  value={ticketCount}
-                  onChange={(value) => setTicketCount(value)}
-                  options={[
-                    { value: "1", label: "1 vé" },
-                    { value: "2", label: "2 vé" },
-                    { value: "3", label: "3 vé" },
-                    { value: "4", label: "4 vé" },
-                    { value: "5", label: "5 vé" },
-                  ]}
-                  className="w-full"
-                  size="large"
-                  style={{
-                    height: 48,
-                  }}
-                  aria-label="Chọn số lượng vé"
-                />
+                  {tripType === "roundtrip" && (
+                    <DatePicker
+                      value={
+                        returnDate ? dayjs(returnDate, backendDateFormat) : null
+                      }
+                      onChange={(date, dateString) => {
+                        if (!date) {
+                          setReturnDate("");
+                        } else {
+                          setReturnDate(
+                            dayjs(dateString, displayDateFormat).format(
+                              backendDateFormat
+                            )
+                          );
+                        }
+                      }}
+                      format={displayDateFormat}
+                      className="w-full h-[48px]"
+                      placeholder="Chọn ngày về"
+                      disabledDate={(current) =>
+                        current &&
+                        (current < dayjs().startOf("day") ||
+                          (departureDate &&
+                            current <
+                              dayjs(departureDate, backendDateFormat).startOf(
+                                "day"
+                              )))
+                      }
+                    />
+                  )}
+                  <AntSelect
+                    value={ticketCount}
+                    onChange={(value) => setTicketCount(value)}
+                    options={[
+                      { value: "1", label: "1 vé" },
+                      { value: "2", label: "2 vé" },
+                      { value: "3", label: "3 vé" },
+                      { value: "4", label: "4 vé" },
+                      { value: "5", label: "5 vé" },
+                    ]}
+                    className="w-full"
+                    size="large"
+                    style={{
+                      height: 48,
+                    }}
+                    aria-label="Chọn số lượng vé"
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[40%] z-10">
-            <button
-              onClick={handleSearch}
-              className="bg-[#2474e5] text-white px-[77px] py-3 rounded-full font-semibold hover:brightness-105 shadow-lg"
-              aria-label="Tìm kiếm chuyến xe"
-            >
-              Tìm chuyến xe
-            </button>
-          </div>
-        </section>
+            <div className=" absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-[40%] z-100">
+              <button
+                onClick={handleSearch}
+                className="bg-[#2474e5] text-white px-[77px] py-3 rounded-full font-semibold hover:brightness-105 shadow-lg"
+                aria-label="Tìm kiếm chuyến xe"
+              >
+                Tìm chuyến xe
+              </button>
+            </div>
+          </section>
+
+          <section className="text-white py-12 relative overflow-hidden">
+            <div className="absolute bg-black bg-opacity-30"></div>
+            <div className="max-w-6xl mx-auto px-4 relative z-10">
+              <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+                  Hơn 40 triệu khách hàng tin tưởng
+                </h1>
+                <p className="text-xl md:text-2xl text-blue-100 font-medium">
+                  Kết nối mọi miền đất nước với chất lượng dịch vụ hàng đầu
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-6 text-center">
+                <div className="bg-white bg-opacity-15 backdrop-blur-md rounded-xl p-4 border border-white border-opacity-30 hover:bg-opacity-25 transition-all duration-300 shadow-lg">
+                  <div className="text-3xl font-bold text-yellow-300 mb-1">
+                    40M+
+                  </div>
+                  <div className="text-sm text-white font-medium">
+                    Khách hàng
+                  </div>
+                </div>
+
+                <div className="bg-white bg-opacity-15 backdrop-blur-md rounded-xl p-4 border border-white border-opacity-30 hover:bg-opacity-25 transition-all duration-300 shadow-lg">
+                  <div className="text-3xl font-bold text-yellow-300 mb-1">
+                    350+
+                  </div>
+                  <div className="text-sm text-white font-medium">Phòng vé</div>
+                </div>
+
+                <div className="bg-white bg-opacity-15 backdrop-blur-md rounded-xl p-4 border border-white border-opacity-30 hover:bg-opacity-25 transition-all duration-300 shadow-lg">
+                  <div className="text-3xl font-bold text-yellow-300 mb-1">
+                    6,500+
+                  </div>
+                  <div className="text-sm text-white font-medium">
+                    Chuyến/ngày
+                  </div>
+                </div>
+
+                <div className="bg-white bg-opacity-15 backdrop-blur-md rounded-xl p-4 border border-white border-opacity-30 hover:bg-opacity-25 transition-all duration-300 shadow-lg">
+                  <div className="text-3xl font-bold text-yellow-300 mb-1 flex items-center justify-center">
+                    <StarFilled className="mr-1" />5
+                  </div>
+                  <div className="text-sm text-white font-medium">
+                    Chất lượng
+                  </div>
+                </div>
+
+                <div className="bg-white bg-opacity-15 backdrop-blur-md rounded-xl p-4 border border-white border-opacity-30 hover:bg-opacity-25 transition-all duration-300 shadow-lg">
+                  <div className="text-3xl font-bold text-yellow-300 mb-1 flex items-center justify-center">
+                    <SafetyOutlined />
+                  </div>
+                  <div className="text-sm text-white font-medium">
+                    An toàn tuyệt đối
+                  </div>
+                </div>
+
+                <div className="bg-white bg-opacity-15 backdrop-blur-md rounded-xl p-4 border border-white border-opacity-30 hover:bg-opacity-25 transition-all duration-300 shadow-lg">
+                  <div className="text-3xl font-bold text-yellow-300 mb-1 flex items-center justify-center">
+                    <TrophyOutlined />
+                  </div>
+                  <div className="text-sm text-white font-medium">
+                    Uy tín hàng đầu
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
 
         {showSearchResults && (
           <section className="bg-white pt-6 pb-10">

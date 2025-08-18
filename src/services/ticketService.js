@@ -6,4 +6,39 @@ const handleUpdateTicketStatus = (id, status) => {
   return axios.put(`/api/admin/update-ticket-status?id=${id}&status=${status}`);
 };
 
-export { handleGetTicketByUserId, handleUpdateTicketStatus };
+const handleGetAllTicket = () => {
+  return axios.get(`/api/admin/list-ticket`);
+};
+const handleFilterTickets = (filterData) => {
+  return axios.post("/api/admin/filter-ticket-cancel", {
+    name: filterData.name || "",
+    phone: filterData.phone || "",
+    email: filterData.email || "",
+    status: filterData.status || "",
+    seatName: filterData.seatName || "",
+    bankAccountNumber: filterData.bankAccountNumber || "",
+    minAmount: filterData.minAmount || "",
+    maxAmount: filterData.maxAmount || "",
+    startTime: filterData.startTime || "",
+    endTime: filterData.endTime || "",
+  });
+};
+
+const consultTicket = async (ticketId, phone) => {
+  try {
+    const response = await axios.post("/api/admin/consultTicket", {
+      ticketId,
+      phone,
+    });
+    return response;
+  } catch (error) {
+    throw new Error(error.errorMessage || "Tra cứu vé thất bại!");
+  }
+};
+export {
+  handleFilterTickets,
+  handleGetTicketByUserId,
+  handleUpdateTicketStatus,
+  handleGetAllTicket,
+  consultTicket,
+};

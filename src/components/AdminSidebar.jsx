@@ -1,9 +1,8 @@
-
-
 const menuItems = [
   { icon: "/images/admin_image/user.png", label: "Quản lý Người Dùng" },
   { icon: "/images/admin_image/driver.png", label: "Quản lý Tài Xế" },
   { icon: "/images/admin_image/order.png", label: "Quản Lý Hóa Đơn" },
+  { icon: "/images/admin_image/cancel.png", label: "Quản Lý Hủy vé" },
   { icon: "/images/admin_image/route.png", label: "Quản Lý Tuyến Xe" },
   { icon: "/images/admin_image/map.png", label: "Quản Lý Chuyến Xe" },
   { icon: "/images/admin_image/bus-station.png", label: "Quản Lý Bến Xe" },

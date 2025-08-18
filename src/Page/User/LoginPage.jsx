@@ -11,19 +11,20 @@ import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 
-const GOOGLE_CLIENT_ID ="390711226494-urem8cmikmj3kos069kq6l0gdmuarluo.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  "390711226494-urem8cmikmj3kos069kq6l0gdmuarluo.apps.googleusercontent.com";
 
 const LoginPage = () => {
-  const [isLogin, setIsLogin] = useState(true); 
-  const [showPassword, setShowPassword] = useState(false); 
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const [message, setMessage] = useState(""); 
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
-  const [showOTPForm, setShowOTPForm] = useState(false); 
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]); 
-  const otpInputs = useRef([]); 
-  const [registerEmail, setRegisterEmail] = useState(""); 
-  const [showCompleteForm, setShowCompleteForm] = useState(false); 
+  const [showOTPForm, setShowOTPForm] = useState(false);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const otpInputs = useRef([]);
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [completeData, setCompleteData] = useState({
     name: "",
     cccd: "",
@@ -31,7 +32,7 @@ const LoginPage = () => {
     gender: "",
     birthDate: "",
     password: "",
-  }); 
+  });
 
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -72,7 +73,9 @@ const LoginPage = () => {
         email: credentials.email,
         password: credentials.password,
       });
+
       if (data && data.token) {
+        console.log("dataaaa", data);
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.role);
         setMessage("Đăng nhập thành công!");
@@ -121,7 +124,9 @@ const LoginPage = () => {
     try {
       const data = await verifyOTP({ email: registerEmail, otp: otpCode });
       if (data.code === 200) {
-        setMessage("Xác thực OTP thành công! Vui lòng hoàn tất thông tin đăng ký.");
+        setMessage(
+          "Xác thực OTP thành công! Vui lòng hoàn tất thông tin đăng ký."
+        );
         setShowOTPForm(false);
         setShowCompleteForm(true);
         setOtp(["", "", "", "", "", ""]);
@@ -183,7 +188,9 @@ const LoginPage = () => {
         setMessage("Hoàn tất đăng ký thất bại.");
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || "Không thể kết nối đến server.");
+      setMessage(
+        error.response?.data?.message || "Không thể kết nối đến server."
+      );
     }
   };
 
@@ -383,7 +390,10 @@ const LoginPage = () => {
                         )}
                       </form>
                     ) : showCompleteForm ? (
-                      <form className="space-y-4" onSubmit={handleCompleteSubmit}>
+                      <form
+                        className="space-y-4"
+                        onSubmit={handleCompleteSubmit}
+                      >
                         <div className="flex items-center border rounded-md px-3 py-2 bg-[#fff7f5]">
                           <input
                             type="text"
@@ -453,7 +463,10 @@ const LoginPage = () => {
                         )}
                       </form>
                     ) : (
-                      <form className="space-y-4" onSubmit={handleRegisterSubmit}>
+                      <form
+                        className="space-y-4"
+                        onSubmit={handleRegisterSubmit}
+                      >
                         <div className="flex items-center border rounded-md px-3 py-2 bg-[#fff7f5]">
                           <img
                             src="/images/email.png"
