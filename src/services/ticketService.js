@@ -6,7 +6,6 @@ const handleUpdateTicketStatus = (id, status) => {
   return axios.put(`/api/admin/update-ticket-status?id=${id}&status=${status}`);
 };
 
-
 const handleGetAllTicket = () => {
   return axios.get(`/api/admin/list-ticket`);
 };
@@ -18,6 +17,10 @@ const handleFilterTickets = (filterData) => {
     status: filterData.status || "",
     seatName: filterData.seatName || "",
     bankAccountNumber: filterData.bankAccountNumber || "",
+    minAmount: filterData.minAmount || "",
+    maxAmount: filterData.maxAmount || "",
+    startTime: filterData.startTime || "",
+    endTime: filterData.endTime || "",
   });
 };
 
@@ -29,9 +32,7 @@ const consultTicket = async (ticketId, phone) => {
     });
     return response;
   } catch (error) {
-    throw new Error(
-      error.errorMessage  || "Tra cứu vé thất bại!"
-    );
+    throw new Error(error.errorMessage || "Tra cứu vé thất bại!");
   }
 };
 export {
@@ -39,9 +40,5 @@ export {
   handleGetTicketByUserId,
   handleUpdateTicketStatus,
   handleGetAllTicket,
-  consultTicket
+  consultTicket,
 };
-
-
-
-

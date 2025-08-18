@@ -24,10 +24,17 @@ const handleFilterProvinces = (data) => {
     status: data.status,
   });
 };
-
+const handleFilterProvince = (data) => {
+  return axios.post("/api/filter-province", {
+    id: data.id,
+    name: data.name,
+    status: data.status,
+  });
+};
 export {
   handleAddProvince,
   handleUpdateProvince,
   handleUpdateProvinceStatus,
   handleFilterProvinces,
+  handleFilterProvince,
 };
