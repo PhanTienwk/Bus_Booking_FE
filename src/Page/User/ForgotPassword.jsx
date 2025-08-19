@@ -58,7 +58,9 @@ export default function ForgotPassword() {
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100vh",
-          backgroundColor: "#f0f2f5",
+          backgroundImage: "url('/images/admin_image/banner6.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         <Card

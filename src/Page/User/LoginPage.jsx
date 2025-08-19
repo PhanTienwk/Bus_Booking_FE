@@ -162,6 +162,7 @@ const LoginPage = () => {
       phone,
       gender: parseInt(gender),
       birthDate,
+      password: completeData.password
     };
 
     try {
@@ -185,7 +186,7 @@ const LoginPage = () => {
         else if (role === "USER") navigate("/user");
         else if (role === "DRIVER") navigate("/driver");
       } else {
-        setMessage("Hoàn tất đăng ký thất bại.");
+        setMessage("Hoàn tất đăng ký thành công.");
       }
     } catch (error) {
       setMessage(
@@ -237,14 +238,13 @@ const LoginPage = () => {
 
         <section className="bg-white pt-10">
           <div className="max-w-6xl mx-auto">
-
-            <div className="mt-6 rounded-xl border-[8px] border-[#AA2E081A] shadow-sm bg-white">
-              <div className="rounded-lg border border-[#2fa4e7] p-6">
+            <div className="rounded-xl border-[8px] border-[#AA2E081A] shadow-sm bg-white">
+              <div className="rounded-lg border border-[#2474e5] p-6">
 
                 <div className="flex flex-col md:flex-row">
                   <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center">
                     <img
-                      src="/images/signin.png"
+                      src="/images/banner-login2.png"
                       alt="Xe buýt"
                       className="w-full max-w-md object-contain"
                     />
@@ -271,7 +271,7 @@ const LoginPage = () => {
                         }}
                         className={`w-1/2 px-4 py-2 text-center font-medium border-b-2 transition-all duration-200 ${
                           isLogin
-                            ? "text-[#2fa4e7] border-[#2fa4e7]"
+                            ? "text-[#2474e5] border-[#2474e5]"
                             : "text-gray-500 border-transparent"
                         }`}
                       >
@@ -286,7 +286,7 @@ const LoginPage = () => {
                         }}
                         className={`w-1/2 px-4 py-2 text-center font-medium border-b-2 transition-all duration-200 ${
                           !isLogin && !showOTPForm && !showCompleteForm
-                            ? "text-[#2fa4e7] border-[#2fa4e7]"
+                            ? "text-[#2474e5] border-[#2474e5]"
                             : "text-gray-500 border-transparent"
                         }`}
                       >
@@ -343,7 +343,7 @@ const LoginPage = () => {
 
                           <button
                             type="submit"
-                            className="w-full bg-[#2fa4e7] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                            className="w-full bg-[#2474e5] text-white rounded-full py-2 mt-2 hover:opacity-90"
                           >
                             Đăng nhập
                           </button>
@@ -360,7 +360,7 @@ const LoginPage = () => {
                           />
                         </div>
                         {message && (
-                          <p className="text-center text-red-500">{message}</p>
+                          <p className="text-center text-blue-500">{message}</p>
                         )}
                       </div>
                     ) : showOTPForm ? (
@@ -375,20 +375,20 @@ const LoginPage = () => {
                               onChange={(e) => handleOTPChange(e, index)}
                               onKeyDown={(e) => handleOTPKeyDown(e, index)}
                               ref={(el) => (otpInputs.current[index] = el)}
-                              className="w-10 h-10 text-center border rounded-md bg-[#fff7f5] outline-none focus:border-[#2fa4e7]"
+                              className="w-10 h-10 text-center border rounded-md bg-[#fff7f5] outline-none focus:border-[#2474e5]"
                               aria-label={`OTP digit ${index + 1}`}
                             />
                           ))}
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-[#2fa4e7] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                          className="w-full bg-[#2474e5] text-white rounded-full py-2 mt-2 hover:opacity-90"
                           disabled={otp.join("").length !== 6}
                         >
                           Xác thực OTP
                         </button>
                         {message && (
-                          <p className="text-center text-red-500">{message}</p>
+                          <p className="text-center text-blue-500">{message}</p>
                         )}
                       </form>
                     ) : showCompleteForm ? (
@@ -454,14 +454,31 @@ const LoginPage = () => {
                             aria-label="Date of birth"
                           />
                         </div>
+                         <div className="flex items-center border rounded-md px-3 py-2 bg-[#fff7f5]">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          placeholder="Mật khẩu"
+                          value={completeData.password}
+                          onChange={handleCompleteChange}
+                          className="bg-transparent outline-none w-full"
+                          aria-label="Password"
+                        />
+                        <img
+                          src={showPassword ? "/images/eye.png" : "/images/hide.png"}
+                          alt="Toggle Password"
+                          className="w-4 h-4 mr-2 cursor-pointer"
+                          onClick={() => setShowPassword(!showPassword)}
+                        />
+                      </div>
                         <button
                           type="submit"
-                          className="w-full bg-[#2fa4e7] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                          className="w-full bg-[#2474e5] text-white rounded-full py-2 mt-2 hover:opacity-90"
                         >
                           Hoàn tất đăng ký
                         </button>
                         {message && (
-                          <p className="text-center text-red-500">{message}</p>
+                          <p className="text-center text-blue-500">{message}</p>
                         )}
                       </form>
                     ) : (
@@ -486,7 +503,7 @@ const LoginPage = () => {
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-[#2fa4e7] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                          className="w-full bg-[#2474e5] text-white rounded-full py-2 mt-2 hover:opacity-90"
                         >
                           Đăng ký
                         </button>
@@ -502,7 +519,7 @@ const LoginPage = () => {
                           />
                         </div>
                         {message && (
-                          <p className="text-center text-red-500">{message}</p>
+                          <p className="text-center text-blue-500">{message}</p>
                         )}
                       </form>
                     )}
@@ -510,7 +527,7 @@ const LoginPage = () => {
                     <div className="text-right mt-4 flex items-center gap-2">
                       <a
                         href="/forgot-password"
-                        className="text-[#2fa4e7] text-sm"
+                        className="text-[#2474e5] text-sm"
                       >
                         Quên mật khẩu?
                       </a>
@@ -525,6 +542,7 @@ const LoginPage = () => {
         <section className="bg-white py-10">
           <div className="max-w-6xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-green-800 text-center mb-2">
+
               KẾT NỐI PTITB GROUP
             </h2>
             <p className="text-gray-600 mb-8">
