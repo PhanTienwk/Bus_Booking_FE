@@ -17,11 +17,16 @@ import {
   getScheduleByDriverAndDateRange,
 } from "../../services/DriverService";
 
+import {
+  getUserInfor,
+} from "../../services/UserService";
+
 import { handleGetPassengerTripInfo } from "../../services/BusTripService";
 import DriverInformation from "./DriverInformation";
 
 const UserManagement = () => {
-  const username = "Tài xế Dũng";
+  const [username, setUsername] = useState("");
+  const [avatar, setAvatar] = useState("");
   const [userInfo, setUserInfo] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const { Text } = AntTypography;
@@ -49,6 +54,30 @@ const UserManagement = () => {
         console.error("Lỗi lấy thông tin người dùng:", err);
       });
   }, []);
+
+  useEffect(() => {
+      const fetchUserData = async () => {
+        try {
+          const response = await getUserInfor();
+          if (response?.code === 1000) {
+            const result = response.result;
+            setUsername(result.name || result.email || "Admin");
+            setAvatar(result.avatar || "");
+          } else {
+            setUsername("Admin");
+            setAvatar("");
+            console.error("Không lấy được thông tin user:", response.message);
+          }
+        } catch (error) {
+          console.error("Lỗi khi gọi API getUserInfor:", error);
+          setUsername("Admin");
+          setAvatar("");
+        }
+      };
+  
+      fetchUserData();
+    }, []);
+  
 
   useEffect(() => {
     if (!userInfo) return;
@@ -507,7 +536,7 @@ const UserManagement = () => {
         setActiveIndex={setActiveIndex}
       />
       <main className="ml-64 w-full bg-gray-50 min-h-screen">
-        <AdminTopbar username={username} />
+        <AdminTopbar username={username} avatar={avatar} />
         {renderContent()}
       </main>
       <Modal

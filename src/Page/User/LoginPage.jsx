@@ -202,7 +202,7 @@ const LoginPage = () => {
         "http://localhost:8080/api/auth/google",
         { token: credential }
       );
-      console.log(response)
+      console.log(response);
       if (response.data.result.isNewUser) {
         setRegisterEmail(response.data.result.email);
         setCompleteData({ ...completeData, name: response.data.result.name });
@@ -240,6 +240,7 @@ const LoginPage = () => {
           <div className="max-w-6xl mx-auto">
             <div className="rounded-xl border-[8px] border-[#AA2E081A] shadow-sm bg-white">
               <div className="rounded-lg border border-[#2474e5] p-6">
+
                 <div className="flex flex-col md:flex-row">
                   <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center">
                     <img
@@ -523,7 +524,7 @@ const LoginPage = () => {
                       </form>
                     )}
 
-                    <div className="text-left mt-4 flex items-center gap-2">
+                    <div className="text-right mt-4 flex items-center gap-2">
                       <a
                         href="/forgot-password"
                         className="text-[#2474e5] text-sm"
@@ -541,10 +542,12 @@ const LoginPage = () => {
         <section className="bg-white py-10">
           <div className="max-w-6xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-green-800 text-center mb-2">
-              KẾT NỐI BUS BOOKING GROUP
+
+              KẾT NỐI PTITB GROUP
             </h2>
             <p className="text-gray-600 mb-8">
-              Kết nối đa dạng hệ sinh thái BUS BOOKING Group qua App BUS BOOKING
+              Kết nối đa dạng hệ sinh thái PTITB Group qua App PTITB: mua vé Xe
+              Phương Trang, Xe Buýt, Xe Hợp Đồng, Giao Hàng,...
             </p>
 
             <div className="max-w-4xl mx-auto">
