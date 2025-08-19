@@ -23,7 +23,7 @@ const AdminSidebar = ({ activeIndex, setActiveIndex }) => {
     <div className="w-64 bg-white h-screen shadow-sm border-r px-4 py-6 fixed flex flex-col justify-between">
       <div>
         <div className="flex justify-center mb-8">
-          <img src="/images/logo.png" alt="FUTA Bus Lines" className="h-14" />
+          <img src="/images/logo_web.png" alt="FUTA Bus Lines" className="h-14" />
         </div>
 
         <ul className="space-y-3 text-sm font-medium">

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Header from "../../components/Header";
 import { Snackbar, Alert } from "@mui/material";
 import Footer from "../../components/Footer";
+import { jwtDecode } from "jwt-decode";
 import {
   fetchSeatLayout,
   handleSeatSelection,
@@ -33,6 +34,7 @@ const SeatSelectionPage = () => {
   const [upperSeatsReturn, setUpperSeatsReturn] = useState([]);
   const [lowerSeatsReturn, setLowerSeatsReturn] = useState([]);
   const [bookedSeatsReturn, setBookedSeatsReturn] = useState([]);
+  const [role, setRole] = useState(null);
 
   const navigate = useNavigate();
 

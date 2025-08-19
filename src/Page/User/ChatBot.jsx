@@ -48,7 +48,7 @@ const Chatbot = () => {
       } else if (Array.isArray(data)) {
         reply = formatTripsResponse(data);
         const tripIds = data.map(trip => trip.id || trip.trip_id).filter(id => id);
-        saveTripHistory(tripIds);
+        // saveTripHistory(tripIds);
       } else {
         reply = 'Không thể xử lý phản hồi từ server.';
       }
@@ -77,25 +77,6 @@ const Chatbot = () => {
     let history = JSON.parse(localStorage.getItem('tripHistory') || '[]');
     history = [...new Set([...tripIds, ...history])].slice(0, 3);
     localStorage.setItem('tripHistory', JSON.stringify(history));
-  };
-
-  const handleRecommend = async () => {
-    const history = JSON.parse(localStorage.getItem('tripHistory') || '[]');
-    if (history.length === 0) {
-      setMessages(prev => [...prev, { text: 'Chưa có lịch sử xem chuyến xe.', sender: 'bot', timestamp: new Date().toLocaleTimeString() }]);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await axios.post('http://localhost:5000/recommend', { trip_ids: history });
-      const data = response.data.response;
-      const reply = formatTripsResponse(data);
-      setMessages(prev => [...prev, { text: 'Đề xuất chuyến xe:\n' + reply, sender: 'bot', timestamp: new Date().toLocaleTimeString() }]);
-    } catch (error) {
-      setMessages(prev => [...prev, { text: 'Lỗi khi lấy đề xuất: ' + error.message, sender: 'bot', timestamp: new Date().toLocaleTimeString() }]);
-    }
-    setIsLoading(false);
   };
 
   return (
@@ -137,9 +118,9 @@ const Chatbot = () => {
               <FaPaperPlane />
             </button>
           </form>
-          <button onClick={handleRecommend} className="recommend-button" disabled={isLoading}>
+          {/* <button onClick={handleRecommend} className="recommend-button" disabled={isLoading}>
             Đề xuất chuyến xe
-          </button>
+          </button> */}
         </div>
       )}
     </div>

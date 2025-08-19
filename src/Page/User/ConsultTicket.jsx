@@ -90,107 +90,144 @@ export default function ForgotPassword() {
   };
 
   const handlePrint = () => {
-    const WinPrint = window.open("", "", "width=900,height=650");
-    WinPrint.document.write(`
-      <html>
-        <head>
-          <title>In vé xe</title>
-          <style>
+  if (!ticketInfo) {
+    message.error("Không có thông tin vé để in!");
+    return;
+  }
+
+  const WinPrint = window.open("", "", "width=900,height=650");
+  WinPrint.document.write(`
+    <html>
+      <head>
+        <title>In vé xe - ${ticketInfo?.seat || "N/A"}</title>
+        <style>
+          body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+          }
+          .ticket {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #004aad;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+          }
+          .ticket-header {
+            text-align: center;
+            border-bottom: 2px dashed #004aad;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+          }
+          .ticket-header img.logo {
+            max-width: 120px;
+            margin-bottom: 10px;
+          }
+          .ticket-header h1 {
+            color: #004aad;
+            font-size: 28px;
+            margin: 0;
+            font-weight: bold;
+          }
+          .ticket-header p {
+            color: #333;
+            font-size: 16px;
+            margin: 5px 0;
+          }
+          .ticket-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            font-size: 16px;
+            color: #333;
+          }
+          .ticket-body p {
+            margin: 10px 0;
+            line-height: 1.5;
+          }
+          .ticket-body .label {
+            font-weight: bold;
+            color: #004aad;
+          }
+          .ticket-footer {
+            text-align: center;
+            margin-top: 20px;
+            border-top: 2px dashed #004aad;
+            padding-top: 15px;
+          }
+          .ticket-footer .qr-placeholder {
+            width: 120px;
+            height: 120px;
+            background: #ccc;
+            display: inline-block;
+            margin: 10px 0;
+            border-radius: 5px;
+          }
+          .ticket-footer p {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0;
+          }
+          .ticket-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+          }
+          @media print {
             body {
-              font-family: Arial, sans-serif;
+              background: white;
               margin: 0;
-              padding: 20px;
-              background-color: #f5f5f5;
             }
             .ticket {
-              max-width: 600px;
-              margin: 0 auto;
-              background: white;
-              border: 2px solid #004aad;
-              border-radius: 10px;
-              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-              padding: 20px;
-            }
-            .ticket-header {
-              text-align: center;
-              border-bottom: 2px dashed #004aad;
-              padding-bottom: 10px;
-              margin-bottom: 20px;
+              box-shadow: none;
+              border: none;
             }
             .ticket-header img.logo {
-              max-width: 100px;
+              filter: grayscale(100%);
             }
-            .ticket-header h1 {
-              color: #004aad;
-              font-size: 24px;
-              margin: 10px 0;
-            }
-            .ticket-body {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 20px;
-            }
-            .ticket-body p {
-              margin: 8px 0;
-              font-size: 16px;
-            }
-            .ticket-body .label {
-              font-weight: bold;
-              color: #333;
-            }
-            .ticket-footer {
-              text-align: center;
-              margin-top: 20px;
-              border-top: 2px dashed #004aad;
-              padding-top: 10px;
-            }
-            .ticket-footer .qr-placeholder {
-              width: 100px;
-              height: 100px;
-              background: #ccc;
-              display: inline-block;
-              margin-top: 10px;
-            }
-            .ticket-footer p {
-              font-size: 14px;
-              color: #666;
-            }
-            @media print {
-              body { background: white; }
-              .ticket { box-shadow: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="ticket">
-            <div class="ticket-header">
-              <img src="https://via.placeholder.com/100" alt="Logo" class="logo" />
-              <h1>VÉ XE KHÁCH</h1>
-              <p>CÔNG TY VẬN TẢI BUS BOOKING</p>
-            </div>
-            <div class="ticket-body">
-              <p><span class="label">Tên người đặt:</span> ${ticketInfo.name}</p>
-              <p><span class="label">Email người đặt:</span> ${ticketInfo.email}</p>
-              <p><span class="label">Vị trí ghế:</span> ${ticketInfo.seat}</p>
-              <p><span class="label">Bến xuất phát:</span> ${ticketInfo.departure}</p>
-              <p><span class="label">Bến tới:</span> ${ticketInfo.destination}</p>
-              <p><span class="label">Thời gian xuất phát:</span> ${formatDateTime(ticketInfo.departureTime)}</p>
-              <p><span class="label">Trạng thái:</span> ${getStatusText(ticketInfo.status)}</p>
-            </div>
-            <div class="ticket-footer">
-              <div class="qr-placeholder"></div>
-              <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</p>
-              <p>Liên hệ hỗ trợ: 1900 1234 | Email: support@busbooking.com</p>
-            </div>
+          }
+        </style>
+      </head>
+      <body>
+        <div class="ticket">
+          <div class="ticket-header">
+            <img src="https://via.placeholder.com/120" alt="Logo" class="logo" />
+            <h1>VÉ XE KHÁCH</h1>
+            <p>CÔNG TY VẬN TẢI BUS BOOKING</p>
           </div>
-        </body>
-      </html>
-    `);
-    WinPrint.document.close();
-    WinPrint.focus();
-    WinPrint.print();
-    WinPrint.close();
-  };
+          <div class="ticket-body">
+            <p><span class="label">Tên khách hàng:</span> ${ticketInfo.name}</p>
+            <p><span class="label">Email:</span> ${ticketInfo.email}</p>
+            <p><span class="label">Vị trí ghế:</span> ${ticketInfo.seat}</p>
+            <p><span class="label">Bến xuất phát:</span> ${ticketInfo.departure}</p>
+            <p><span class="label">Bến đến:</span> ${ticketInfo.destination}</p>
+            <p><span class="label">Thời gian xuất phát:</span> ${formatDateTime(ticketInfo.departureTime)}</p>
+            <p><span class="label">Trạng thái:</span> ${getStatusText(ticketInfo.status)}</p>
+          </div>
+          <div class="ticket-info">
+            <p><span class="label">Lưu ý:</span> Vui lòng có mặt tại bến xe trước giờ khởi hành ít nhất 30 phút.</p>
+            <p>Vé chỉ có giá trị cho hành khách và chuyến xe được chỉ định.</p>
+          </div>
+          <div class="ticket-footer">
+            <div class="qr-placeholder"></div>
+            <p>Cảm ơn quý khách đã sử dụng dịch vụ của chúng tôi!</p>
+            <p>Liên hệ hỗ trợ: 1900 1234 | Email: support@busbooking.com</p>
+            <p>Website: www.busbooking.com</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `);
+  WinPrint.document.close();
+  WinPrint.focus();
+  WinPrint.print();
+  WinPrint.close();
+};
+
 
   return (
     <>
@@ -201,7 +238,9 @@ export default function ForgotPassword() {
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100vh",
-          backgroundColor: "#f0f2f5",
+          backgroundImage: "url('/images/admin_image/banner6.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         <Card
@@ -308,11 +347,13 @@ export default function ForgotPassword() {
                 <Form.Item label="Trạng thái">
                   <Input value={getStatusText(ticketInfo.status)} readOnly />
                 </Form.Item>
-                <Form.Item>
-                  <Button type="default" onClick={handlePrint} block>
-                    In vé xe
-                  </Button>
-                </Form.Item>
+                {ticketInfo.status === 1 && (
+                  <Form.Item>
+                    <Button type="default" onClick={handlePrint} block>
+                       In vé xe
+                   </Button>
+                  </Form.Item>
+                )}
               </Form>
             </Card>
           )}
