@@ -66,11 +66,14 @@ const AdminLayout = () => {
     try {
       const response = await handleGetAllTicket();
       const validTickets = response.result.filter(
-        (ticket) => ticket?.invoice?.user
+        (ticket) => ticket?.invoice?.user && [0, 2, 4].includes(ticket.status)
       );
       setTicketList(validTickets);
+      setFilteredTicketList(validTickets); // Cập nhật cả filteredTicketList
       if (response.result.length !== validTickets.length) {
-        console.warn("Một số vé có dữ liệu không hợp lệ!");
+        console.warn(
+          "Một số vé có dữ liệu không hợp lệ hoặc trạng thái không phù hợp!"
+        );
       }
     } catch (error) {
       toast.error("Lỗi khi tải danh sách vé");
@@ -79,7 +82,6 @@ const AdminLayout = () => {
       setIsLoading(false);
     }
   };
-
   const fetchBanks = async () => {
     try {
       const response = await handleGetAllBank();
@@ -357,7 +359,10 @@ const AdminLayout = () => {
           onChange={(value) => handleSelectStatus(value, record)}
         >
           <Select.Option value={0}>Đã hủy</Select.Option>
-          <Select.Option value={5}>Chờ xử lý hủy</Select.Option>
+          <Select.Option value={4} disabled>
+            Đổi vé
+          </Select.Option>
+          <Select.Option value={2}>Chờ xử lý hủy</Select.Option>
         </Select>
       ),
     },
