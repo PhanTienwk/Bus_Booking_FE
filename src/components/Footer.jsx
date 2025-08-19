@@ -22,14 +22,14 @@ const HomePage = () => {
                 </svg>
               </div>
               <span className="self-center text-2xl font-semibold text-[#EF5222]">
-                FutaBus Booking
+                PTITB Bus Booking
               </span>
             </a>
           </div>
           <div className="grid grid-cols-2 text-sm gap-x-3 gap-y-8 lg:w-2/3 sm:grid-cols-4">
             <div className="space-y-3">
               <h3 className="tracking-wide uppercase dark:text-gray-900 text-[16px] font-bold text-[#00613D] uppercase">
-                FUTA Bus Lines
+                PTITB Bus Lines
               </h3>
               <ul className="space-y-1 list-disc list-inside marker:text-gray-400">
                 <li>
@@ -88,7 +88,7 @@ const HomePage = () => {
             </div>
             <div className="space-y-3 w-fit">
               <h3 className="uppercase dark:text-gray-900 text-[16px] font-bold text-[#00613D] uppercase">
-                TẢI APP FUTA
+                TẢI APP PTITB
               </h3>
               <ul className="space-y-1 list-disc list-inside marker:text-gray-400">
                 <li>
@@ -160,7 +160,7 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-        <div className="text-center text-sm mt-8 bg-[#00613D] text-white py-4">
+        <div className="text-center text-sm mt-8 bg-[#2474e5] text-white py-4">
           © 2025 | Đồ án thực tập tốt nghiệp. Thực hiện bởi: Nguyễn Văn Dũng,
           Phan Văn Tiến, Nguyễn Văn Chiến
         </div>

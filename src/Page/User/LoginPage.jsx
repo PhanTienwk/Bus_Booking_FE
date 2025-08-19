@@ -201,7 +201,7 @@ const LoginPage = () => {
         "http://localhost:8080/api/auth/google",
         { token: credential }
       );
-      console.log(response)
+      console.log(response);
       if (response.data.result.isNewUser) {
         setRegisterEmail(response.data.result.email);
         setCompleteData({ ...completeData, name: response.data.result.name });
@@ -237,8 +237,10 @@ const LoginPage = () => {
 
         <section className="bg-white pt-10">
           <div className="max-w-6xl mx-auto">
-            <div className="rounded-xl border-[8px] border-[#AA2E081A] shadow-sm bg-white">
-              <div className="rounded-lg border border-[#EF5222] p-6">
+
+            <div className="mt-6 rounded-xl border-[8px] border-[#AA2E081A] shadow-sm bg-white">
+              <div className="rounded-lg border border-[#2fa4e7] p-6">
+
                 <div className="flex flex-col md:flex-row">
                   <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center">
                     <img
@@ -269,7 +271,7 @@ const LoginPage = () => {
                         }}
                         className={`w-1/2 px-4 py-2 text-center font-medium border-b-2 transition-all duration-200 ${
                           isLogin
-                            ? "text-[#EF5222] border-[#EF5222]"
+                            ? "text-[#2fa4e7] border-[#2fa4e7]"
                             : "text-gray-500 border-transparent"
                         }`}
                       >
@@ -284,7 +286,7 @@ const LoginPage = () => {
                         }}
                         className={`w-1/2 px-4 py-2 text-center font-medium border-b-2 transition-all duration-200 ${
                           !isLogin && !showOTPForm && !showCompleteForm
-                            ? "text-[#EF5222] border-[#EF5222]"
+                            ? "text-[#2fa4e7] border-[#2fa4e7]"
                             : "text-gray-500 border-transparent"
                         }`}
                       >
@@ -341,7 +343,7 @@ const LoginPage = () => {
 
                           <button
                             type="submit"
-                            className="w-full bg-[#EF5222] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                            className="w-full bg-[#2fa4e7] text-white rounded-full py-2 mt-2 hover:opacity-90"
                           >
                             Đăng nhập
                           </button>
@@ -373,14 +375,14 @@ const LoginPage = () => {
                               onChange={(e) => handleOTPChange(e, index)}
                               onKeyDown={(e) => handleOTPKeyDown(e, index)}
                               ref={(el) => (otpInputs.current[index] = el)}
-                              className="w-10 h-10 text-center border rounded-md bg-[#fff7f5] outline-none focus:border-[#EF5222]"
+                              className="w-10 h-10 text-center border rounded-md bg-[#fff7f5] outline-none focus:border-[#2fa4e7]"
                               aria-label={`OTP digit ${index + 1}`}
                             />
                           ))}
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-[#EF5222] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                          className="w-full bg-[#2fa4e7] text-white rounded-full py-2 mt-2 hover:opacity-90"
                           disabled={otp.join("").length !== 6}
                         >
                           Xác thực OTP
@@ -454,7 +456,7 @@ const LoginPage = () => {
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-[#EF5222] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                          className="w-full bg-[#2fa4e7] text-white rounded-full py-2 mt-2 hover:opacity-90"
                         >
                           Hoàn tất đăng ký
                         </button>
@@ -484,7 +486,7 @@ const LoginPage = () => {
                         </div>
                         <button
                           type="submit"
-                          className="w-full bg-[#EF5222] text-white rounded-full py-2 mt-2 hover:opacity-90"
+                          className="w-full bg-[#2fa4e7] text-white rounded-full py-2 mt-2 hover:opacity-90"
                         >
                           Đăng ký
                         </button>
@@ -505,10 +507,10 @@ const LoginPage = () => {
                       </form>
                     )}
 
-                    <div className="text-left mt-4 flex items-center gap-2">
+                    <div className="text-right mt-4 flex items-center gap-2">
                       <a
                         href="/forgot-password"
-                        className="text-[#EF5222] text-sm"
+                        className="text-[#2fa4e7] text-sm"
                       >
                         Quên mật khẩu?
                       </a>
@@ -523,10 +525,10 @@ const LoginPage = () => {
         <section className="bg-white py-10">
           <div className="max-w-6xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-green-800 text-center mb-2">
-              KẾT NỐI FUTA GROUP
+              KẾT NỐI PTITB GROUP
             </h2>
             <p className="text-gray-600 mb-8">
-              Kết nối đa dạng hệ sinh thái FUTA Group qua App FUTA: mua vé Xe
+              Kết nối đa dạng hệ sinh thái PTITB Group qua App PTITB: mua vé Xe
               Phương Trang, Xe Buýt, Xe Hợp Đồng, Giao Hàng,...
             </p>
 
