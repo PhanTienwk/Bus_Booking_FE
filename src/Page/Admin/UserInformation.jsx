@@ -33,7 +33,7 @@ const InforUserPage = () => {
   const fetchUserData = async () => {
     try {
       setIsLoading(true);
-      const response = await getUserInfor(); // Gọi API
+      const response = await getUserInfor();
       console.log(response)
 
       if (response?.code === 1000) {
