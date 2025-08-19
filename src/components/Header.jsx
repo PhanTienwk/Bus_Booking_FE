@@ -84,8 +84,7 @@ const HomePage = () => {
 
   const handleLogOut = () => {
     // Clear localStorage or sessionStorage (e.g., remove token)
-    localStorage.removeItem("token"); // Adjust key name based on your app
-    sessionStorage.removeItem("token"); // If using sessionStorage
+    localStorage.clear();
 
     // Reset userInfo state
     setUserInfo({
