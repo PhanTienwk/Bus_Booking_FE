@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef,useContext } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import {
@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+
 
 const GOOGLE_CLIENT_ID =
   "390711226494-urem8cmikmj3kos069kq6l0gdmuarluo.apps.googleusercontent.com";
@@ -67,29 +68,31 @@ const LoginPage = () => {
 
   // Xử lý submit form đăng nhập
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const data = await login({
-        email: credentials.email,
-        password: credentials.password,
-      });
+  e.preventDefault();
+  try {
+    const data = await login({
+      email: credentials.email,
+      password: credentials.password,
+    });
 
-      if (data && data.token) {
-        console.log("dataaaa", data);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
-        setMessage("Đăng nhập thành công!");
-        if (data.role === "ADMIN") navigate("/admin");
-        else if (data.role === "USER") navigate("/user");
-        else if (data.role === "DRIVER") navigate("/driver");
-        else setMessage("Vai trò không xác định, vui lòng liên hệ admin.");
-      } else {
-        setMessage("Không nhận được token.");
-      }
-    } catch (error) {
-      setMessage(error.message || "Đăng nhập thất bại.");
+    if (data && data.token) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+
+
+      setMessage("Đăng nhập thành công!");
+
+      if (data.role === "ADMIN") navigate("/admin");
+      else if (data.role === "USER") navigate("/user");
+      else if (data.role === "DRIVER") navigate("/driver");
+      else setMessage("Vai trò không xác định, vui lòng liên hệ admin.");
+    } else {
+      setMessage("Không nhận được token.");
     }
-  };
+  } catch (error) {
+    setMessage(error.message || "Đăng nhập thất bại.");
+  }
+};
 
   // Xử lý submit form đăng ký
   const handleRegisterSubmit = async (e) => {
