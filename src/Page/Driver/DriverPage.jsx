@@ -17,11 +17,16 @@ import {
   getScheduleByDriverAndDateRange,
 } from "../../services/DriverService";
 
+import {
+  getUserInfor,
+} from "../../services/UserService";
+
 import { handleGetPassengerTripInfo } from "../../services/BusTripService";
 import DriverInformation from "./DriverInformation";
 
 const UserManagement = () => {
-  const username = "Tài xế Dũng";
+  const [username, setUsername] = useState("");
+  const [avatar, setAvatar] = useState("");
   const [userInfo, setUserInfo] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const { Text } = AntTypography;
@@ -49,6 +54,30 @@ const UserManagement = () => {
         console.error("Lỗi lấy thông tin người dùng:", err);
       });
   }, []);
+
+  useEffect(() => {
+      const fetchUserData = async () => {
+        try {
+          const response = await getUserInfor();
+          if (response?.code === 1000) {
+            const result = response.result;
+            setUsername(result.name || result.email || "Admin");
+            setAvatar(result.avatar || "");
+          } else {
+            setUsername("Admin");
+            setAvatar("");
+            console.error("Không lấy được thông tin user:", response.message);
+          }
+        } catch (error) {
+          console.error("Lỗi khi gọi API getUserInfor:", error);
+          setUsername("Admin");
+          setAvatar("");
+        }
+      };
+  
+      fetchUserData();
+    }, []);
+  
 
   useEffect(() => {
     if (!userInfo) return;
@@ -507,7 +536,7 @@ const UserManagement = () => {
         setActiveIndex={setActiveIndex}
       />
       <main className="ml-64 w-full bg-gray-50 min-h-screen">
-        <AdminTopbar username={username} />
+        <AdminTopbar username={username} avatar={avatar} />
         {renderContent()}
       </main>
       <Modal
@@ -561,11 +590,23 @@ const UserManagement = () => {
                 <h4 className="text-sm font-semibold mb-4">Ghi chú</h4>
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-gray-300 rounded"></div>
+                    <div
+                      className="w-4 h-4 bg-gray-300 rounded"
+                      style={{
+                        WebkitPrintColorAdjust: "exact",
+                        printColorAdjust: "exact",
+                      }}
+                    ></div>
                     <span>Ghế trống</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-100 rounded"></div>
+                    <div
+                      className="w-4 h-4 bg-blue-100 rounded"
+                      style={{
+                        WebkitPrintColorAdjust: "exact",
+                        printColorAdjust: "exact",
+                      }}
+                    ></div>
                     <span>Có khách</span>
                   </div>
                 </div>
@@ -580,8 +621,8 @@ const UserManagement = () => {
                     <th className="px-4 py-2 border">Số ghế</th>
                     <th className="px-4 py-2 border">Họ tên</th>
                     <th className="px-4 py-2 border">SĐT</th>
-                    <th className="px-4 py-2 border">Điểm lên</th>
-                    <th className="px-4 py-2 border">Điểm xuống</th>
+                    {/* <th className="px-4 py-2 border">Điểm lên</th>
+                    <th className="px-4 py-2 border">Điểm xuống</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -595,10 +636,10 @@ const UserManagement = () => {
                         </td>
                         <td className="px-4 py-2 border">{seat.name}</td>
                         <td className="px-4 py-2 border">{seat.phone}</td>
-                        <td className="px-4 py-2 border">{seat.pickupPoint}</td>
+                        {/* <td className="px-4 py-2 border">{seat.pickupPoint}</td>
                         <td className="px-4 py-2 border">
                           {seat.dropOffPoint}
-                        </td>
+                        </td> */}
                       </tr>
                     ))}
                 </tbody>

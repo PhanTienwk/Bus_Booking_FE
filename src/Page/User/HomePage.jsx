@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { handleGetAllProvince } from "../../services/BusStationService";
 import { searchTripsByProvinces } from "../../services/HomeService";
 import { DatePicker, ConfigProvider, Select as AntSelect } from "antd";
+import ChatBot from "../User/ChatBot";
 
 import {
   Radio,
@@ -335,7 +336,7 @@ const HomePage = () => {
           <section className="button-search-container bg-white relative rounded-[0.5rem]">
             <div className="max-w-6xl mx-auto mt-6 mb-3 ">
               <div>
-                <div className="flex justify-between items-center mb-4 pt-6 md:px-8">
+                <div className="flex justify-between items-center mb-4 pt-4 md:px-8">
                   <div className="flex gap-6 text-base text-[#2474e5]">
                     <label
                       className={`flex items-center gap-1 ${
@@ -1314,6 +1315,7 @@ const HomePage = () => {
             {snackBar.message}
           </Alert>
         </Snackbar>
+        <ChatBot />
         <Footer />
       </div>
     </ConfigProvider>

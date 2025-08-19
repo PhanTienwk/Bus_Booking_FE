@@ -235,10 +235,12 @@ const LoginPage = () => {
       <div className="min-h-screen bg-gray-100">
         <Header />
 
-        <section className="bg-white mt-10">
+        <section className="bg-white pt-10">
           <div className="max-w-6xl mx-auto">
+
             <div className="mt-6 rounded-xl border-[8px] border-[#AA2E081A] shadow-sm bg-white">
               <div className="rounded-lg border border-[#2fa4e7] p-6">
+
                 <div className="flex flex-col md:flex-row">
                   <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center">
                     <img

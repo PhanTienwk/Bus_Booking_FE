@@ -1,5 +1,5 @@
 .button-search-trip {
-    height: 110vh;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -168,7 +168,7 @@
     to { transform: rotate(360deg) translateX(50px) rotate(-360deg); }
 }
 .button-search-container{
-    width:970px;
+    width:1000px;
     z-index: 1000;
 }
 .button-search-trip{
