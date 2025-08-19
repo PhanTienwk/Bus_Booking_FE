@@ -11,6 +11,7 @@ import {
 } from "../../services/ticketService";
 import { handleGetAllBank } from "../../services/BankDetailService";
 import FilterButtonTicketCancel from "../../components/Button/FilterButtonTicketCancel";
+import { Snackbar, Alert } from "@mui/material";
 import {
   Typography,
   Modal,
@@ -46,7 +47,11 @@ const AdminLayout = () => {
   });
   const [banks, setBanks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [snackBar, setSnackBar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   useEffect(() => {
     fetchBanks();
     fetchTickets();
@@ -151,7 +156,15 @@ const AdminLayout = () => {
       console.error("Update invoice error:", error);
     }
   };
+  // Xử lý Snackbar
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackBar({ open: true, message, severity });
+  };
 
+  const handleCloseSnackBar = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackBar({ ...snackBar, open: false });
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSelectedInvoice((prev) => ({ ...prev, [name]: value }));
@@ -226,17 +239,14 @@ const AdminLayout = () => {
         setFilterParams(processedFilterData);
         // Cập nhật danh sách vé
         setFilteredTicketList(response.data?.result || response.result || []);
-        toast.success("Lọc vé thành công!");
+        handleOpenSnackBar("Lọc vé!", "success");
       } else {
         toast.error(
           response.data?.message || response.message || "Lọc vé thất bại!"
         );
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "Lỗi khi lọc vé! Vui lòng kiểm tra kết nối hoặc máy chủ."
-      );
+      handleOpenSnackBar("Lỗi khi Lọc vé bến xe!", "error");
       console.error("Lỗi lọc vé:", error);
     }
     setOpenFormFilter(false);
@@ -245,7 +255,7 @@ const AdminLayout = () => {
     try {
       const response = await handleUpdateTicketStatus(record.id, value);
       if (response.code === 1000) {
-        toast.success("Cập nhật trạng thái vé thành công!");
+        handleOpenSnackBar("Cập nhật trạng thái thành công!", "success");
         // Update ticket status in state
         setFilteredTicketList((prev) =>
           prev.map((ticket) =>
@@ -266,7 +276,7 @@ const AdminLayout = () => {
           );
         }
       } else {
-        toast.error(response.message || "Cập nhật trạng thái vé thất bại!");
+        handleOpenSnackBar("Lỗi khi cập nhật trạng thái!", "error");
       }
     } catch (error) {
       toast.error(
@@ -297,11 +307,11 @@ const AdminLayout = () => {
       render: (_, record) => record?.invoice?.email ?? "Không xác định",
       key: "email",
     },
-    {
-      title: "Tên ghế",
-      render: (_, record) => record?.seatPosition?.name ?? "Không xác định",
-      key: "seatName",
-    },
+    // {
+    //   title: "Tên ghế",
+    //   render: (_, record) => record?.seatPosition?.name ?? "Không xác định",
+    //   key: "seatName",
+    // },
     {
       title: "Ngân hàng",
       key: "bank",
@@ -314,11 +324,11 @@ const AdminLayout = () => {
           : "Không có thông tin";
       },
     },
-    {
-      title: "Số lượng vé",
-      render: (_, record) => record?.invoice?.numberOfTickets || 0,
-      key: "numberOfTickets",
-    },
+    // {
+    //   title: "Số lượng vé",
+    //   render: (_, record) => record?.invoice?.numberOfTickets || 0,
+    //   key: "numberOfTickets",
+    // },
     {
       title: "Tổng tiền",
       render: (_, record) =>
@@ -328,14 +338,14 @@ const AdminLayout = () => {
         }) || "0 đ",
       key: "totalAmount",
     },
-    {
-      title: "Thời gian khởi hành",
-      render: (_, record) =>
-        record?.busTrip?.departureTime
-          ? dayjs(record.busTrip.departureTime).format("YYYY-MM-DD HH:mm")
-          : "Không xác định",
-      key: "departureTime",
-    },
+    // {
+    //   title: "Thời gian khởi hành",
+    //   render: (_, record) =>
+    //     record?.busTrip?.departureTime
+    //       ? dayjs(record.busTrip.departureTime).format("YYYY-MM-DD HH:mm")
+    //       : "Không xác định",
+    //   key: "departureTime",
+    // },
     {
       title: "Trạng thái vé",
       key: "updateStatus",
@@ -343,6 +353,7 @@ const AdminLayout = () => {
         <Select
           style={{ width: 150 }}
           value={record.status !== undefined ? record.status : 0}
+          disabled={record.status === 0}
           onChange={(value) => handleSelectStatus(value, record)}
         >
           <Select.Option value={0}>Đã hủy</Select.Option>
@@ -738,6 +749,21 @@ const AdminLayout = () => {
           </Modal>
         </div>
       </main>
+
+      <Snackbar
+        open={snackBar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackBar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackBar}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

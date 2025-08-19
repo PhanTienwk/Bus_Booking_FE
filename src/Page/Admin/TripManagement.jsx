@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 
 const BusTripPage = () => {
-  const username = "Admin Dũng";
+  const username = "";
 
   const [tripList, setTripList] = useState([]);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
@@ -113,10 +113,7 @@ const BusTripPage = () => {
       title: "Hành động",
       key: "action",
       render: (_, record) => (
-        <Button
-          color="error"
-          onClick={() => handleDelete(record)}
-        >
+        <Button color="error" onClick={() => handleDelete(record)}>
           Xóa
         </Button>
       ),

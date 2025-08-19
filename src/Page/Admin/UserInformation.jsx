@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { getUserInfor, updateUserInfor,updatePassword } from "../../services/UserService";
+import {
+  getUserInfor,
+  updateUserInfor,
+  updatePassword,
+} from "../../services/UserService";
 import { Snackbar, Alert } from "@mui/material";
 
 const InforUserPage = () => {
@@ -17,9 +21,9 @@ const InforUserPage = () => {
     avatar: "",
   });
   const [passwordData, setPasswordData] = useState({
-  currentPassword: "",
-  newPassword: "",
-  confirmPassword: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
   const [avatar, setAvatar] = useState("/images/avatar.jpg");
   const [snackBar, setSnackBar] = useState({
@@ -28,47 +32,45 @@ const InforUserPage = () => {
     severity: "success",
   });
 
-
   useEffect(() => {
-  const fetchUserData = async () => {
-    try {
-      setIsLoading(true);
-      const response = await getUserInfor(); // Gọi API
-      console.log(response)
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getUserInfor(); // Gọi API
+        console.log(response);
 
-      if (response?.code === 1000) {
-        const result = response.result;
-        setUserInfo({
-          name: result.name || "",
-          gender: String(result.gender || "1"),
-          birthDate: result.birthDate || "",
-          phone: result.phone || "",
-          email: result.email || "",
-          cccd: result.cccd || "",
-          avatar: result.avatar || "",
-        });
-        setAvatar(result.avatar || "/images/avatar.jpg");
-      } else {
-        handleOpenSnackBar("Lấy thông tin người dùng thất bại!", "error");
+        if (response?.code === 1000) {
+          const result = response.result;
+          setUserInfo({
+            name: result.name || "",
+            gender: String(result.gender || "1"),
+            birthDate: result.birthDate || "",
+            phone: result.phone || "",
+            email: result.email || "",
+            cccd: result.cccd || "",
+            avatar: result.avatar || "",
+          });
+          setAvatar(result.avatar || "/images/avatar.jpg");
+        } else {
+          handleOpenSnackBar("Lấy thông tin người dùng thất bại!", "error");
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+        handleOpenSnackBar(
+          error?.response?.data?.message || "Lỗi khi lấy thông tin người dùng!",
+          "error"
+        );
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin người dùng:", error);
-      handleOpenSnackBar(
-        error?.response?.data?.message || "Lỗi khi lấy thông tin người dùng!",
-        "error"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
-  fetchUserData();
-}, []);
+    fetchUserData();
+  }, []);
   const handlePasswordChange = (e) => {
-  const { name, value } = e.target;
-  setPasswordData({ ...passwordData, [name]: value });
+    const { name, value } = e.target;
+    setPasswordData({ ...passwordData, [name]: value });
   };
-
 
   const handleLogout = () => {
     console.log("Đăng xuất thành công");
@@ -85,48 +87,55 @@ const InforUserPage = () => {
   };
 
   const handleAvatarChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAvatar(reader.result); 
-    };
-    reader.readAsDataURL(file);
-    setUserInfo({ ...userInfo, avatar: file });
-  }
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAvatar(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setUserInfo({ ...userInfo, avatar: file });
+    }
   };
   const handlePasswordSave = async () => {
-  const { currentPassword, newPassword, confirmPassword } = passwordData;
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
 
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    handleOpenSnackBar("Vui lòng điền đầy đủ thông tin!", "error");
-    return;
-  }
-
-  if (newPassword !== confirmPassword) {
-    handleOpenSnackBar("Mật khẩu mới không khớp!", "error");
-    return;
-  }
-
-  try {
-    const res = await updatePassword({
-      currentPassword,
-      newPassword,
-    });
-
-    if (res.code === 1000) {
-      handleOpenSnackBar("Cập nhật mật khẩu thành công!", "success");
-      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-    } else {
-      handleOpenSnackBar(res.message || "Cập nhật mật khẩu thất bại!", "error");
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      handleOpenSnackBar("Vui lòng điền đầy đủ thông tin!", "error");
+      return;
     }
-  } catch (error) {
-    console.error("Lỗi khi cập nhật mật khẩu:", error);
-    handleOpenSnackBar(
-      error?.response?.data?.message || "Lỗi khi cập nhật mật khẩu!",
-      "error"
-    );
-  }
+
+    if (newPassword !== confirmPassword) {
+      handleOpenSnackBar("Mật khẩu mới không khớp!", "error");
+      return;
+    }
+
+    try {
+      const res = await updatePassword({
+        currentPassword,
+        newPassword,
+      });
+
+      if (res.code === 1000) {
+        handleOpenSnackBar("Cập nhật mật khẩu thành công!", "success");
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      } else {
+        handleOpenSnackBar(
+          res.message || "Cập nhật mật khẩu thất bại!",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error("Lỗi khi cập nhật mật khẩu:", error);
+      handleOpenSnackBar(
+        error?.response?.data?.message || "Lỗi khi cập nhật mật khẩu!",
+        "error"
+      );
+    }
   };
 
   const handleSave = async () => {
@@ -155,13 +164,13 @@ const InforUserPage = () => {
       formData.append("phone", userInfo.phone);
       formData.append("cccd", userInfo.cccd);
       if (userInfo.avatar instanceof File) {
-        formData.append("file", userInfo.avatar); 
+        formData.append("file", userInfo.avatar);
       }
       for (let pair of formData.entries()) {
-       console.log(`${pair[0]}:`, pair[1]);
+        console.log(`${pair[0]}:`, pair[1]);
       }
       const updateRes = await updateUserInfor(formData);
-      console.log(updateRes)
+      console.log(updateRes);
       if (updateRes.code === 1000) {
         handleOpenSnackBar("Cập nhật thông tin thành công!", "success");
         setIsEditing(false);
@@ -272,7 +281,9 @@ const InforUserPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-gray-500 mb-1">Số điện thoại:</label>
+                <label className="block text-gray-500 mb-1">
+                  Số điện thoại:
+                </label>
                 <input
                   type="text"
                   name="phone"
@@ -299,7 +310,7 @@ const InforUserPage = () => {
                 <div className="flex gap-4">
                   <button
                     onClick={handleSave}
-                    className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition"
+                    className="bg-[#2fa4e7] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2fa4e7] transition"
                   >
                     Lưu
                   </button>
@@ -313,7 +324,7 @@ const InforUserPage = () => {
               ) : (
                 <button
                   onClick={handleEditToggle}
-                  className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition"
+                  className="bg-[#2fa4e7] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2fa4e7] transition"
                 >
                   Chỉnh sửa
                 </button>
@@ -374,7 +385,10 @@ const InforUserPage = () => {
               </div>
             </div>
             <div className="flex justify-center mt-8">
-              <button onClick={handlePasswordSave} className="bg-[#ef5222] text-white px-6 py-2 rounded-full font-medium hover:bg-orange-600 transition">
+              <button
+                onClick={handlePasswordSave}
+                className="bg-[#2fa4e7] text-white px-6 py-2 rounded-full font-medium hover:bg-[#2fa4e7] transition"
+              >
                 Lưu thay đổi
               </button>
             </div>

@@ -53,7 +53,7 @@ const AdminSidebar = ({ activeIndex, setActiveIndex }) => {
       <button
         onClick={handleLogout}
         className="w-full text-white py-2 rounded-lg font-semibold transition hover:opacity-90"
-        style={{ backgroundColor: "#ef5222" }}
+        style={{ backgroundColor: "#2fa4e7" }}
       >
         Đăng xuất
       </button>

@@ -1,6 +1,8 @@
 import React from "react";
-
-const AdminTopbar = ({ username = "Admin Trần" }) => {
+const AdminTopbar = ({
+  username = "Admin Trần",
+  avatar = "/images/admin_image/users.png",
+}) => {
   return (
     <div className="flex justify-between items-center border-b border-gray-200 py-2 px-6 bg-white">
       <div className="flex items-center gap-2">
@@ -15,7 +17,7 @@ const AdminTopbar = ({ username = "Admin Trần" }) => {
 
       <div className="flex items-center gap-3">
         <img
-          src="/images/admin_image/users.png"
+          src={avatar}
           alt="avatar"
           className="w-8 h-8 rounded-full object-cover"
         />

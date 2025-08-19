@@ -40,13 +40,23 @@ import {
   handleFilterUsers,
   handleAddUser,
 } from "../../services/UserService";
+import { getUserInfor } from "../../services/UserService";
 import FilterButtonUser from "../../components/Button/FilterButtonUser";
 
 const UserManagement = () => {
-  const username = "Admin Dũng";
+  const [username, setUserName] = useState("Admin");
   const [activeIndex, setActiveIndex] = useState(0);
   const [, setUserList] = useState([]);
-
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    gender: "1",
+    birthDate: "",
+    phone: "",
+    email: "",
+    cccd: "",
+    avatar: "",
+  });
+  const [avatar, setAvatar] = useState("/images/avatar.jpg");
   const [filteredData, setFilteredData] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [openFormFilter, setOpenFormFilter] = useState(false);
@@ -79,6 +89,8 @@ const UserManagement = () => {
           const filteredUsers = usersRes.result?.filter(
             (user) => user.account?.role?.id === 1 && user.account?.status === 1
           );
+          console.log("name", usersRes);
+
           setUserList(filteredUsers);
           setFilteredData(filteredUsers);
         } else {
@@ -92,7 +104,39 @@ const UserManagement = () => {
 
     fetchData();
   }, []);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getUserInfor();
+        console.log("ressponse", response);
+        setUserName(response.result.name);
+        if (response?.code === 1000) {
+          const result = response.result;
+          setUserInfo({
+            name: result.name || "",
+            gender: String(result.gender || "1"),
+            birthDate: result.birthDate || "",
+            phone: result.phone || "",
+            email: result.email || "",
+            cccd: result.cccd || "",
+            avatar: result.avatar || "",
+            id: result.id || null, // Lưu id người dùng
+          });
+          setAvatar(result.avatar || "/images/avatar.jpg");
+        } else {
+          handleOpenSnackBar("Lấy thông tin người dùng thất bại!", "error");
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+        handleOpenSnackBar(
+          error?.response?.data?.message || "Lỗi khi lấy dữ liệu!",
+          "error"
+        );
+      }
+    };
 
+    fetchUserData();
+  }, []);
   const handleOpenSnackBar = (message, severity) => {
     setSnackBar({ open: true, message, severity });
   };
@@ -788,7 +832,7 @@ const UserManagement = () => {
     <div className="flex">
       <AdminSidebar activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
       <main className="ml-64 w-full bg-gray-50 min-h-screen">
-        <AdminTopbar username={username} />
+        <AdminTopbar username={username} avatar={userInfo.avatar} />
         {renderContent()}
       </main>
     </div>
