@@ -258,18 +258,19 @@ const AdminLayout = () => {
       const response = await handleUpdateTicketStatus(record.id, value);
       if (response.code === 1000) {
         handleOpenSnackBar("Cập nhật trạng thái thành công!", "success");
-        // Update ticket status in state
+        // Cập nhật trạng thái trong ticketList
+        setTicketList((prev) =>
+          prev.map((ticket) =>
+            ticket.id === record.id ? { ...ticket, status: value } : ticket
+          )
+        );
+        // Cập nhật trạng thái trong filteredTicketList
         setFilteredTicketList((prev) =>
           prev.map((ticket) =>
             ticket.id === record.id ? { ...ticket, status: value } : ticket
           )
         );
-        const responseticket = await handleGetAllTicket();
-        const validTickets = responseticket.result.filter(
-          (ticket) => ticket?.invoice?.user
-        );
-        setTicketList(validTickets);
-        // Update tickets in modal if open
+        // Cập nhật tickets trong modal nếu đang mở
         if (selectedInvoice && selectedInvoice.id === record.invoice.id) {
           setTickets((prev) =>
             prev.map((ticket) =>
