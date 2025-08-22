@@ -25,12 +25,12 @@ const CheckoutPage = () => {
     invoiceCodeReturn,
   } = location.state || {};
 
-  const [countdown, setCountdown] = useState(3 * 60);
+  const [countdown, setCountdown] = useState(10 * 60);
   const [hasPaid, setHasPaid] = useState(false);
   const [hasExpired, setHasExpired] = useState(false);
 
   useEffect(() => {
-    const EXPIRE_SECONDS = 3 * 60;
+    const EXPIRE_SECONDS = 10 * 60;
 
     const savedStartTime = sessionStorage.getItem("paymentStartTime");
     const now = Math.floor(Date.now() / 1000);
